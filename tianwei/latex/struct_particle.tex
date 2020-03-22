@@ -1,0 +1,66 @@
+\hypertarget{struct_particle}{}\doxysection{Particle Struct Reference}
+\label{struct_particle}\index{Particle@{Particle}}
+
+
+A struct containing some variables of a particle.  
+
+
+
+
+{\ttfamily \#include $<$data\+\_\+set.\+h$>$}
+
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{struct_particle_a43c4b8b02bbd1b2bb9da259e177313fa}\label{struct_particle_a43c4b8b02bbd1b2bb9da259e177313fa}} 
+vector \mbox{\hyperlink{struct_particle_a43c4b8b02bbd1b2bb9da259e177313fa}{position}}
+\begin{DoxyCompactList}\small\item\em 2d coordinate \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{struct_particle_ae6d46dc24a6666d526f211151fecca5f}\label{struct_particle_ae6d46dc24a6666d526f211151fecca5f}} 
+double \mbox{\hyperlink{struct_particle_ae6d46dc24a6666d526f211151fecca5f}{mass}}
+\begin{DoxyCompactList}\small\item\em mass \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{struct_particle_accb1e1d25f4f162ee0240d393d52ef06}\label{struct_particle_accb1e1d25f4f162ee0240d393d52ef06}} 
+vector \mbox{\hyperlink{struct_particle_accb1e1d25f4f162ee0240d393d52ef06}{velocity}}
+\begin{DoxyCompactList}\small\item\em 2d velocity \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{struct_particle_a9201a4d681f8d78736c4bd4d69576189}\label{struct_particle_a9201a4d681f8d78736c4bd4d69576189}} 
+double \mbox{\hyperlink{struct_particle_a9201a4d681f8d78736c4bd4d69576189}{density}}
+\begin{DoxyCompactList}\small\item\em the value of density field \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{struct_particle_a39e27ebf8bbfd348252b89e1c4db3b92}\label{struct_particle_a39e27ebf8bbfd348252b89e1c4db3b92}} 
+double \mbox{\hyperlink{struct_particle_a39e27ebf8bbfd348252b89e1c4db3b92}{pressure}}
+\begin{DoxyCompactList}\small\item\em the value of pressure field \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{struct_particle_a2099324297789a54499e8f8508a9018c}\label{struct_particle_a2099324297789a54499e8f8508a9018c}} 
+double \mbox{\hyperlink{struct_particle_a2099324297789a54499e8f8508a9018c}{accelerat}}
+\begin{DoxyCompactList}\small\item\em acceleration of the particle, namely dv/dt \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{struct_particle_ada4078899d0c360556978fdc82d82eac}\label{struct_particle_ada4078899d0c360556978fdc82d82eac}} 
+index \mbox{\hyperlink{struct_particle_ada4078899d0c360556978fdc82d82eac}{tag}}
+\begin{DoxyCompactList}\small\item\em whether it\textquotesingle{}s an interior particle, repulsive particle or ghost particle \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{struct_particle_abebed32b665971d65fe472103e52bc2c}\label{struct_particle_abebed32b665971d65fe472103e52bc2c}} 
+index $\ast$ \mbox{\hyperlink{struct_particle_abebed32b665971d65fe472103e52bc2c}{ptc\+\_\+nearby}}
+\begin{DoxyCompactList}\small\item\em array containing the index array of nearby particles \end{DoxyCompactList}\item 
+double $\ast$ \mbox{\hyperlink{struct_particle_a2dd404e17fdad492c2d4e184b4e98803}{Wij}}
+\item 
+vector $\ast$ \mbox{\hyperlink{struct_particle_a3976a5615dc6f9e82ecd8df83caa522b}{Wij\+\_\+grad}}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+A struct containing some variables of a particle. 
+
+\doxysubsection{Member Data Documentation}
+\mbox{\Hypertarget{struct_particle_a2dd404e17fdad492c2d4e184b4e98803}\label{struct_particle_a2dd404e17fdad492c2d4e184b4e98803}} 
+\index{Particle@{Particle}!Wij@{Wij}}
+\index{Wij@{Wij}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{Wij}{Wij}}
+{\footnotesize\ttfamily double$\ast$ Particle\+::\+Wij}
+
+array containing the value of kernel function w.\+r.\+t. the nearby particles. The sequence is corresponding to the sequence in ptc\+\_\+nearby \mbox{\Hypertarget{struct_particle_a3976a5615dc6f9e82ecd8df83caa522b}\label{struct_particle_a3976a5615dc6f9e82ecd8df83caa522b}} 
+\index{Particle@{Particle}!Wij\_grad@{Wij\_grad}}
+\index{Wij\_grad@{Wij\_grad}!Particle@{Particle}}
+\doxysubsubsection{\texorpdfstring{Wij\_grad}{Wij\_grad}}
+{\footnotesize\ttfamily vector$\ast$ Particle\+::\+Wij\+\_\+grad}
+
+2 x N matrix, N is the total number of nearby particles. ~\newline
+ The sequence is corresponding to the sequence in ptc\+\_\+nearby 
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{data__set_8h}{data\+\_\+set.\+h}}\end{DoxyCompactItemize}

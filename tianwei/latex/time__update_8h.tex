@@ -1,0 +1,57 @@
+\hypertarget{time__update_8h}{}\doxysection{time\+\_\+update.\+h File Reference}
+\label{time__update_8h}\index{time\_update.h@{time\_update.h}}
+{\ttfamily \#include \char`\"{}data\+\_\+set.\+h\char`\"{}}\newline
+\doxysubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{struct_particle}{Particle}} $\ast$ \mbox{\hyperlink{time__update_8h_ad7d96c1ecc475561bbbfe0b866a0d20a}{Init}} ()
+\begin{DoxyCompactList}\small\item\em Initiate the data structure as well as initial condition. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{time__update_8h_a2a8889b247a81f293d1be008ab339334}{Time\+Update}} (\mbox{\hyperlink{struct_particle}{Particle}} $\ast$\&all\+\_\+particle, double dt)
+\begin{DoxyCompactList}\small\item\em Compute the new velocity and position of every interior particle. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Function Documentation}
+\mbox{\Hypertarget{time__update_8h_ad7d96c1ecc475561bbbfe0b866a0d20a}\label{time__update_8h_ad7d96c1ecc475561bbbfe0b866a0d20a}} 
+\index{time\_update.h@{time\_update.h}!Init@{Init}}
+\index{Init@{Init}!time\_update.h@{time\_update.h}}
+\doxysubsubsection{\texorpdfstring{Init()}{Init()}}
+{\footnotesize\ttfamily \mbox{\hyperlink{struct_particle}{Particle}}$\ast$ Init (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption})}
+
+
+
+Initiate the data structure as well as initial condition. 
+
+\begin{DoxyVerb}   Step 1: Memory allocation
+   Step 2: Assign tag, position, mass and velocity to every particles
+   Step 3: Establish the nearby relaiton 
+\end{DoxyVerb}
+
+
+\begin{DoxyReturn}{Returns}
+pointer to an array containing information of all the particles 
+\end{DoxyReturn}
+\mbox{\Hypertarget{time__update_8h_a2a8889b247a81f293d1be008ab339334}\label{time__update_8h_a2a8889b247a81f293d1be008ab339334}} 
+\index{time\_update.h@{time\_update.h}!TimeUpdate@{TimeUpdate}}
+\index{TimeUpdate@{TimeUpdate}!time\_update.h@{time\_update.h}}
+\doxysubsubsection{\texorpdfstring{TimeUpdate()}{TimeUpdate()}}
+{\footnotesize\ttfamily void Time\+Update (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{struct_particle}{Particle}} $\ast$\&}]{all\+\_\+particle,  }\item[{double}]{dt }\end{DoxyParamCaption})}
+
+
+
+Compute the new velocity and position of every interior particle. 
+
+\begin{DoxyVerb}   Meanwhile, update the nearby relation.
+   Choose suitable time step scheme.
+\end{DoxyVerb}
+
+
+
+\begin{DoxyParams}{Parameters}
+{\em all\+\_\+particle} & pointer to an array containing information of all the particles \\
+\hline
+{\em dt} & time step \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+no returns. Update the \mbox{[}velocity\mbox{]} \mbox{[}position\mbox{]} attributes in all\+\_\+particle 
+\end{DoxyReturn}
