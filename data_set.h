@@ -1,9 +1,15 @@
-
 //! @file data_set.h
+#ifndef DATA_SET_H
+#define DATA_SET_H
+
+#include <stdlib.h>
 
 typedef int index;
 
-typedef std::pair<double,double> vector;
+typedef struct{
+	double first;
+	double second;
+} vector;
 
 
 /**  
@@ -25,7 +31,7 @@ typedef struct {
 						         The sequence is corresponding to the sequence in ptc_nearby */
 	vector*  Wij_grad;      /*!< 2 x N matrix, N is the total number of nearby particles.  
 								 The sequence is corresponding to the sequence in ptc_nearby */
-	double   L              //!< used for kernel gradient correction : ▽W_new = L * ▽W
+	double   L;              //!< used for kernel gradient correction : ▽W_new = L * ▽W
 	
 								
 } Particle;
@@ -38,9 +44,11 @@ typedef struct {
 *    @param h searching radius (smoothing length)
 *    @return pointer to an array containing the index of nearby particles
 */
-index* SearchNearby (Particle*& all_particle, int par_idx, double h) {
+index* SearchNearby (Particle* all_particle, index par_idx, double h) {
 	
 }
+
+#endif DATA_SET_H
 
 
 	

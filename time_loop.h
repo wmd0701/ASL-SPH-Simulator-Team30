@@ -1,5 +1,9 @@
 //!     @file time_loop.h
+#ifndef TIME_LOOP_H
+#define TIME_LOOP_H
 
+#include "rate_of_change.h"
+#include "time_update.h"
 
 /** 	
 *		@brief Compute dt for the next iteration
@@ -10,7 +14,7 @@
 *		@param all_particle pointer to an array containing information of all the particles
 *		@return dt
 */
-double ComputeTimeStep (Particle*& all_particle) {
+double ComputeTimeStep (Particle* all_particle) {
 	
 }
 
@@ -19,21 +23,35 @@ double ComputeTimeStep (Particle*& all_particle) {
 *		@param all_particle pointer to an array containing information of all the particles
 *		@param t_end end time
 */
-void TimeLoop (Particle*& all_particle, double t_end) {
+void TimeLoop (double t_end) {
 	double dt, t = 0;
 	Particle* all_particle = Init();
 	
 	while (t < t_end) {
+		//----------------------------------
+		// Tianwei
+		ComputeGlobalKernelGradient(all_particle);
 		ComputeGlobalDensity  (all_particle);
 		DensityCorrection     (all_particle);
-		ComputeGlobalPressure (all_particle);
+		//----------------------------------
 		ComputeGhostVelocity  (all_particle);
+		//----------------------------------
+		// Valerie
 		ComputeInteriorLaminarAcceleration (all_particle);
 		AddTurbulentModel     (all_particle);
 		AddRepulsiveForce	  (all_particle);
+		//----------------------------------
+		// Silvia
+		ComputeGlobalPressure (all_particle);
+		//----------------------------------
 		dt = ComputeTimeStep  (all_particle);
+		//----------------------------------
+		// Mengdi
 		TimeUpdate			  (all_particle, dt);
 		t += dt;
+		//----------------------------------
 	}
 	
 }
+
+#endif // TIME_LOOP_H
