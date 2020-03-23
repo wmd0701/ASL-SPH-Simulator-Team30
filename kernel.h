@@ -1,4 +1,6 @@
 //!  @file kernel.h
+#ifndef KERNEL_H
+#define KERNEL_H
 
 #define M_PI 3.141592653579
 
@@ -64,4 +66,6 @@ vector ComputeGlobalKernelGradient (Particle* all_particle) {
 void KernelGradientCorrection (Particle* all_particle) {
 	
 }
+
+#endif // KERNEL_H
 
