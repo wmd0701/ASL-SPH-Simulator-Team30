@@ -11,6 +11,22 @@ typedef struct{
 	double second;
 } vector;
 
+/**  
+*	 @brief A struct containing some variables of a neighbor particle
+*/
+struct Neighbor{
+
+	index  idx;				//!< global index of this neighbor particle
+	double Wij;				//!< the value of kernel function
+	vector Wij_grad_i;		//!< the gradient of kernel function w.r.t. the position of [particle i]
+
+	struct Neighbor *next;			//!< pointer to the next neighbor particle.
+
+};
+
+typedef struct Neighbor *Neighbor_p;
+typedef Neighbor_p NeighborList;
+
 
 /**  
 *	 @brief A struct containing some variables of a particle
@@ -24,15 +40,12 @@ typedef struct {
 	double   pressure;      //!< the value of pressure field
 	double 	 accelerat;     //!< acceleration of the particle, namely dv/dt
 	
-	index    tag;           //!< whether it's an interior particle, repulsive particle or ghost particle
+	int    	 tag;           //!< whether it's an interior particle (0), repulsive particle (1) or ghost particle (2)
 		
-	index*   ptc_nearby;    //!< array containing the index array of nearby particles 
-	double*  Wij;           /*!< array containing the value of kernel function w.r.t. the nearby particles. 
-						         The sequence is corresponding to the sequence in ptc_nearby */
-	vector*  Wij_grad;      /*!< 2 x N matrix, N is the total number of nearby particles.  
-								 The sequence is corresponding to the sequence in ptc_nearby */
+	NeighborList   neighbors;    /*!< List containing the index array of nearby particles
+									  This is the pointer to the first neighbor. */
+
 	double   L;              //!< used for kernel gradient correction : ▽W_new = L * ▽W
-	
 								
 } Particle;
 
@@ -48,7 +61,7 @@ index* SearchNearby (Particle* all_particle, index par_idx, double h) {
 	
 }
 
-#endif DATA_SET_H
+#endif // DATA_SET_H
 
 
 	
