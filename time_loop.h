@@ -30,7 +30,7 @@ void TimeLoop (double t_end) {
 	while (t < t_end) {
 		//----------------------------------
 		// Tianwei
-		ComputeGlobalKernelGradient(all_particle);
+		ComputeGlobalKernel   (all_particle);
 		ComputeGlobalDensity  (all_particle);
 		DensityCorrection     (all_particle);
 		//----------------------------------
