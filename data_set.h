@@ -1,15 +1,24 @@
-//! @file data_set.h
+//!  @file data_set.h
 #ifndef DATA_SET_H
 #define DATA_SET_H
 
 #include <stdlib.h>
+#include <math.h>
 
-typedef int index;
+#include "kernel.h"
 
-typedef struct{
+// index for the particles
+typedef int index;  
+
+// struct for position, velocity, grad
+typedef struct vec{
 	double first;
 	double second;
 } vector;
+
+// tag used to tell different types of particles 
+enum Particle_Type {interior, repulsive, ghost};
+typedef enum Particle_Type ParticleType;
 
 /**  
 *	 @brief A struct containing some variables of a neighbor particle
@@ -20,12 +29,11 @@ struct Neighbor{
 	double Wij;				//!< the value of kernel function
 	vector Wij_grad_i;		//!< the gradient of kernel function w.r.t. the position of [particle i]
 
-	struct Neighbor *next;			//!< pointer to the next neighbor particle.
+	struct Neighbor *next;	//!< pointer to the next neighbor particle.
 
 };
-
 typedef struct Neighbor *Neighbor_p;
-typedef Neighbor_p NeighborList;
+typedef struct Neighbor *NeighborList;
 
 
 /**  
@@ -40,26 +48,98 @@ typedef struct {
 	double   pressure;      //!< the value of pressure field
 	double 	 accelerat;     //!< acceleration of the particle, namely dv/dt
 	
-	int    	 tag;           //!< whether it's an interior particle (0), repulsive particle (1) or ghost particle (2)
+	ParticleType   tag;          //!< whether it's an interior particle (0), repulsive particle (1) or ghost particle (2)
 		
 	NeighborList   neighbors;    /*!< List containing the index array of nearby particles
 									  This is the pointer to the first neighbor. */
-
-	double   L;              //!< used for kernel gradient correction : ▽W_new = L * ▽W
 								
 } Particle;
 
 
 /**  
-*    @brief search for the nearby particles 
+*    @brief search for the neighbor particles and  allocate memory for [neighbors]
 *    @param all_particle pointer to an array containing information of all the particles
-*    @param par_idx index of the particle that is being considered
-*    @param h searching radius (smoothing length)
-*    @return pointer to an array containing the index of nearby particles
+*    @param ptc_idx index of the particle that is being considered
+*	 @note   - search radius = 2h !!
+*			 - only be called at initiation step
+*			 - repulsive particles only need information of interior particles
+*			 - ghost particles need information of both interior and repulsive particles
 */
-index* SearchNearby (Particle* all_particle, index par_idx, double h) {
-	
+void SearchNeighbors (Particle* all_particle, index ptc_idx) {
+	vector xi = all_particle[ptc_idx].position;
+	double r2;   // distance of two particles
+	Neighbor_p p, tmp;
+	int N = sizeof(all_particle) / sizeof(all_particle[0]);
+
+	if (all_particle[ptc_idx].tag == interior) {
+		for (index j = 0; j < N; j++) {
+			if (j != ptc_idx) {   // check if itself
+				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
+						  pow((all_particle[j].position.second - xi.second), 2));
+				if (r2 < 2*H) {	  // check if neighbor
+					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
+						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
+						p->idx = j;
+						p->next = NULL;
+					}
+					else {	 // if it's not the first pointer of list
+						tmp = p;
+						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
+						p->idx = j;
+						p->next = NULL;
+						tmp->next = p;
+					}
+				}
+			}
+		}
+	}
+	else if (all_particle[ptc_idx].tag == repulsive) {
+		for (index j = 0; j < N; j++) {
+			if (all_particle[ptc_idx].tag = interior) {   // check it's interior particle
+				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
+						  pow((all_particle[j].position.second - xi.second), 2));
+				if (r2 < 2*H) {	  // check if neighbor
+					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
+						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
+						p->idx = j;
+						p->next = NULL;
+					}
+					else {	 // if it's not the first pointer of list
+						tmp = p;
+						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
+						p->idx = j;
+						p->next = NULL;
+						tmp->next = p;
+					}
+				}
+			}
+		}
+	}
+	else {	// it's a ghost particle
+		for (index j = 0; j < N; j++) {
+			if (all_particle[ptc_idx].tag != ghost) {   // check it's not ghost particle
+				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
+						  pow((all_particle[j].position.second - xi.second), 2));
+				if (r2 < 2*H) {	  // check if neighbor
+					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
+						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
+						p->idx = j;
+						p->next = NULL;
+					}
+					else {	 // if it's not the first pointer of list
+						tmp = p;
+						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
+						p->idx = j;
+						p->next = NULL;
+						tmp->next = p;
+					}
+				}
+			}
+		}
+	}
 }
+
+
 
 #endif // DATA_SET_H
 

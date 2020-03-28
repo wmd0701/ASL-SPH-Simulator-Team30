@@ -2,12 +2,10 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
-#define M_PI 3.141592653579
-
 #include "data_set.h"
-
 #include <math.h>
 
+#define M_PI 3.141592653579
 #define H 1   //!< smoothing length
 
 /**  
@@ -40,16 +38,20 @@ vector KernelGradient (const vector xi,const vector xj) {
 	double tmp = 1 / (M_PI * pow(H, 4) * r);
 	vector grad;
 	if (r <= 1) {
+
 		tmp *= (-3) * epsilon + 2.25 * epsilon * epsilon;
 		grad.first  = tmp * (xi.first  - xj.first);
 		grad.second = tmp * (xi.second - xj.second);
 		return grad;
+
 	}
 	else if (r <= 2) {
+
 		tmp *= (-0.75) * (2 - epsilon) * (2 - epsilon);
 		grad.first  = tmp * (xi.first  - xj.first);
 		grad.second = tmp * (xi.second - xj.second);
 		return grad;
+
 	}
 }
 
@@ -62,6 +64,7 @@ void ComputeGlobalKernel (Particle *all_particle) {
 	vector xi, xj;
 	int N = sizeof(all_particle) / sizeof(all_particle[0]);
 	for (index i = 0; i < N; i++) {
+
 		xi = all_particle[i].position;
 		for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {
 
@@ -71,8 +74,8 @@ void ComputeGlobalKernel (Particle *all_particle) {
 			p->Wij_grad_i = KernelGradient(xi, xj);
 
 		}
-	}
-	
+
+	}	
 }
 
 
@@ -81,8 +84,41 @@ void ComputeGlobalKernel (Particle *all_particle) {
 *	@param all_particle pointer to an array containing information of all the particles
 *   @return no returns. Update the L attribute in all_particle, then update the Wij_grad attribute.
 */   
-void KernelGradientCorrection (Particle* all_particle) {
-	
+void KernelGradientCorrection (Particle *all_particle) {
+	double a00, a01, a10, a11, V, xji, yji;
+	double determinant;
+	vector new_grad;
+	int N = sizeof(all_particle) / sizeof(all_particle[0]);
+
+	for (index i = 0; i < N; i++) {
+
+		a00 = 0;
+		a01 = 0;
+		a10 = 0;
+		a11 = 0;
+		for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {
+			
+			V = all_particle[p->idx].mass / all_particle[p->idx].density;
+			xji = all_particle[p->idx].position.first  - all_particle[i].position.first;
+			yji = all_particle[p->idx].position.second - all_particle[i].position.second;
+			a00 += xji * p->Wij_grad_i.first  * V;
+			a01 += yji * p->Wij_grad_i.first  * V;
+			a10 += xji * p->Wij_grad_i.second * V;
+			a11 += xji * p->Wij_grad_i.second * V;
+
+		}
+
+		determinant = a00 * a11 - a10 * a01;
+
+		for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {
+			
+			new_grad.first  = (  a00 * p->Wij_grad_i.first - a01 * p->Wij_grad_i.second) / determinant;
+			new_grad.second = (- a10 * p->Wij_grad_i.first + a11 * p->Wij_grad_i.second) / determinant;
+			p->Wij_grad_i = new_grad;
+			
+		}
+		
+	}
 }
 
 #endif // KERNEL_H
