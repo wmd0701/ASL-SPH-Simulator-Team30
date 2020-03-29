@@ -78,8 +78,8 @@ void ComputeGlobalKernel (Particle *all_particle) {
 
 /** 
 *   @brief Compute the "corrected" gradient of the kernel function
-*	@param all_particle pointer to an array containing information of all the particles
-*   @return no returns. Update the L attribute in all_particle, then update the Wij_grad attribute.
+*	@param all_particle all_particle pointer to an array containing information of all the particles
+*   @return no returns. Update the [Wij_grad_i] in [neighbors] of [all_particle]
 */   
 void KernelGradientCorrection (Particle *all_particle) {
 	double a00, a01, a10, a11, V, xji, yji;
