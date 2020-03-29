@@ -5,9 +5,6 @@
 #include "data_set.h"
 #include <math.h>
 
-#define M_PI 3.141592653579
-#define H 1   //!< smoothing length
-
 /**  
 *    @brief Compute the kernel function
 *    @param xi coordinate of the particle which is being considered now

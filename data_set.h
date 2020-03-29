@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#include "kernel.h"
+#define H 1   //!< smoothing length
 
 // index for the particles
 typedef int index;  
