@@ -30,21 +30,22 @@ void TimeLoop (double t_end) {
 	while (t < t_end) {
 		//----------------------------------
 		// Tianwei
-		ComputeGlobalKernel   (all_particle);
-		ComputeGlobalDensity  (all_particle);
-		DensityCorrection     (all_particle);
+		ComputeGlobalKernel      (all_particle);
+		ComputeGlobalDensity     (all_particle);
+		DensityCorrection        (all_particle);
+		KernelGradientCorrection (all_particle);
 		//----------------------------------
-		ComputeGhostVelocity  (all_particle);
+		ComputeGhostVelocity     (all_particle);
 		//----------------------------------
 		// Valerie
 		ComputeInteriorLaminarAcceleration (all_particle);
-		AddTurbulentModel     (all_particle);
-		AddRepulsiveForce	  (all_particle);
+		AddTurbulentModel        (all_particle);
+		AddRepulsiveForce	     (all_particle);
 		//----------------------------------
 		// Silvia
-		ComputeGlobalPressure (all_particle);
+		ComputeGlobalPressure    (all_particle);
 		//----------------------------------
-		dt = ComputeTimeStep  (all_particle);
+		dt = ComputeTimeStep     (all_particle);
 		//----------------------------------
 		// Mengdi
 		TimeUpdate			  (all_particle, dt);
