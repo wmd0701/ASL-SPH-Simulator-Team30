@@ -6,6 +6,7 @@
 #include <math.h>
 
 #define H 1   //!< smoothing length
+#define NUMBER_OF_PARTICLE 50  //!< number of particles
 
 // index for the particles
 typedef int index;  
@@ -15,6 +16,24 @@ typedef struct vec{
 	double first;
 	double second;
 } vector;
+
+// define mul for vector
+vector mul_vec(const vector v, const double d){
+	vector vv = {.first = v.first*d, .second = v.second*d};
+	return vv; 
+}
+
+// define div for vector
+vector div_vec(const vector v, const double d){
+	vector vv = {.first = v.first/d, .second = v.second/d};
+	return vv;
+}
+
+// define add for vector
+vector add_vec(const vector v1, const vector v2){
+	vector vv = {.first = v1.first+v2.first, .second = v1.second+v2.second};
+	return vv;
+}
 
 // tag used to tell different types of particles 
 enum Particle_Type {interior, repulsive, ghost};
@@ -46,7 +65,8 @@ typedef struct {
 	vector   velocity;      //!< 2d velocity
 	double   density;       //!< the value of density field 
 	double   pressure;      //!< the value of pressure field
-	double 	 accelerat;     //!< acceleration of the particle, namely dv/dt
+	vector	 pressure_force;//!< pressure force
+	vector 	 accelerat;     //!< acceleration of the particle, namely dv/dt
 	
 	ParticleType   tag;          //!< whether it's an interior particle (0), repulsive particle (1) or ghost particle (2)
 		
@@ -55,6 +75,20 @@ typedef struct {
 								
 } Particle;
 
+/**     
+*		@brief Initiate the data structure as well as initial condition
+*		
+*			   Step 1: Memory allocation
+*			   Step 2: Assign tag, position, mass and velocity to every particles
+*			   Step 3: Establish the nearby relaiton 
+*
+*		@return	pointer to an array containing information of all the particles
+*/
+Particle* Init(){
+	// TODO: initialization
+	Particle* particles = (Particle*)malloc(sizeof(Particle)*NUMBER_OF_PARTICLE);
+	return particles;
+}
 
 /**  
 *    @brief search for the neighbor particles and  allocate memory for [neighbors]

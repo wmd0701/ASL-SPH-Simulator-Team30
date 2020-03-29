@@ -3,7 +3,7 @@
 #define TIME_LOOP_H
 
 #include "rate_of_change.h"
-#include "time_update.h"
+#include "time_integration.h"
 
 /** 	
 *		@brief Compute dt for the next iteration
@@ -26,6 +26,9 @@ double ComputeTimeStep (Particle* all_particle) {
 void TimeLoop (double t_end) {
 	double dt, t = 0;
 	Particle* all_particle = Init();
+
+	// choose which time integration method to use, details in time_integration.h
+	Set_Integration_Method(EXPLICIT_EULER);
 	
 	while (t < t_end) {
 		//----------------------------------
@@ -48,10 +51,12 @@ void TimeLoop (double t_end) {
 		dt = ComputeTimeStep     (all_particle);
 		//----------------------------------
 		// Mengdi
-		TimeUpdate			  (all_particle, dt);
+		Time_Integration		(all_particle, dt);
 		t += dt;
 		//----------------------------------
 	}
+
+	free(all_particle);
 	
 }
 
