@@ -27,7 +27,7 @@ void Leap_Frog      (Particle* all_particle, double dt);
 *		@brief Choose the integration method that is going to be used
 *       @param m: of type enum Integration_Method, determines which integration method to use
 *
-*               This function should be called
+*               This function should be called by TimeLoop in time_loop.h at very beginning
 */
 void Set_Integration_Method(enum Integration_Method m){
     integration = m;
