@@ -103,8 +103,36 @@ void ComputeGhostVelocity (Particle *all_particle){
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
-void ComputeInteriorLaminarAcceleration (Particle *all_particle) {
-	
+void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
+  for (index i = 0; i < NUMBER_OF_PARTICLE; i++) {
+    Neighbor_p n = all_particle[i].neighbors;
+    Particle *pi = &all_particle[i];
+
+    while (n != NULL) {
+      Particle *pj = &all_particle[n->idx];
+      vector gradient = KernelGradient(pi->position, pj->position);
+      double constant1 =
+          pj->mass * (pi->pressure / (pi->density * pi->density) +
+                      pj->pressure / (pj->density * pj->density));
+      all_particle[i].accelerat.first -= constant1 * gradient.first;
+      all_particle[i].accelerat.second -= constant1 * gradient.second;
+
+      double xij = sqrt(pow((pj->position.first - pi->position.first), 2) +
+                        pow((pj->position.second - pi->position.second), 2));
+      double vij = sqrt(pow((pj->velocity.first - pi->velocity.first), 2) +
+                        pow((pj->velocity.second - pi->velocity.second), 2));
+
+      double constant2 =
+          (4.0 * pj->mass * (2.0 * dynamic_viscosity) * xij * vij) /
+          (pow((pi->density + pj->density), 2) *
+           (pow(xij, 2) + 0.01 * pow(H, 2)));
+
+      all_particle[i].accelerat.first += constant2 * gradient.first;
+      all_particle[i].accelerat.second += constant2 * gradient.second - gravity;
+
+      n = n->next;
+    }
+  }
 }
 
 /**   
@@ -113,7 +141,6 @@ void ComputeInteriorLaminarAcceleration (Particle *all_particle) {
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
 void AddTurbulentModel(Particle *all_particle){
-	
 }
 
 /**   
