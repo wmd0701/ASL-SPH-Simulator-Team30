@@ -18,19 +18,19 @@ typedef struct vec{
 } vector;
 
 // define mul for vector
-vector mul_vec(const vector v, const double d){
+vector vec_mul_scalar(const vector v, const double d){
 	vector vv = {.first = v.first*d, .second = v.second*d};
 	return vv; 
 }
 
 // define div for vector
-vector div_vec(const vector v, const double d){
+vector vec_div_scalar(const vector v, const double d){
 	vector vv = {.first = v.first/d, .second = v.second/d};
 	return vv;
 }
 
 // define add for vector
-vector add_vec(const vector v1, const vector v2){
+vector vec_add_vec(const vector v1, const vector v2){
 	vector vv = {.first = v1.first+v2.first, .second = v1.second+v2.second};
 	return vv;
 }
