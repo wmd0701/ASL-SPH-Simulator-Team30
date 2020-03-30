@@ -4,6 +4,7 @@
 
 #include "data_set.h"
 #include "kernel.h"
+#include "constants.h"
 
 /**   
 *     @brief Compute the value of density field at a certain particle, namely rho_i
@@ -50,14 +51,43 @@ void DensityCorrection (Particle *all_particle) {
 }
 
 /**   
+*     @brief Compute the velocity of sound
+*     @param all_particle pointer to an array containing information of all the particles
+*     @return sound speed value squared
+*/
+double ComputeSoundSpeedSquared(Particle *all_particle){
+	//Bulk velocity for a dam break
+    double v = 2*dam_height*gravity;
+    
+    //Computing delta
+    int N = sizeof(all_particle) / sizeof(all_particle[0]);
+    double delta = abs(all_particle[0].density - initial_density)/initial_density;
+    double temp = delta;
+	for (index i = 1; i < N; i++) {
+        temp = abs(all_particle[i].density - initial_density)/initial_density;
+        if (temp < delta){
+            delta = temp;
+        }
+    }
+    
+    //This is only the first term of the three shown in the paper
+    return v*v/delta;
+}
+
+/**   
 *     @brief Compute the value of pressure field at every particle
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [pressure] attribute in all_particle
 */
 void ComputeGlobalPressure (Particle *all_particle){
-	
+	double c2 = ComputeSoundSpeedSquared(all_particle);
+    
+    int N = sizeof(all_particle) / sizeof(all_particle[0]);
+	for (index i = 0; i < N; i++) {
+        all_particle[i].pressure = c2 * all_particle[i].density;
+    }
+    return;
 }
-
 
 /**   
 *     @brief Compute the velocity of every ghost particle
