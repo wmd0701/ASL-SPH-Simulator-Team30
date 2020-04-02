@@ -7,6 +7,7 @@
 #include "rate_of_change.h"
 #include "time_integration.h"
 #include "time_loop.h"
+#include "output.h"
 
 int main(int argc, char* argv[]){
 	
