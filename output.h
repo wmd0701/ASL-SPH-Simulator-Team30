@@ -6,6 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+/**
+ * @brief Write data to a .dat file
+ * @param all_particle 
+ * @param t_now time now
+ */
 void WriteData(Particle* all_particle, double t_now) {
     Particle this_p;
     char* time;
