@@ -5,9 +5,6 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define H 1   //!< smoothing length
-#define NUMBER_OF_PARTICLE 50  //!< number of particles
-
 // index for the particles
 typedef int index;  
 
