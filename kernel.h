@@ -3,6 +3,7 @@
 #define KERNEL_H
 
 #include "data_set.h"
+#include "constants.h"
 #include <math.h>
 
 /**  

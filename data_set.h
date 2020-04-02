@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <math.h>
+#include "constants.h"
 
 // index for the particles
 typedef int index;  
