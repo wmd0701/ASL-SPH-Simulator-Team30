@@ -2,6 +2,8 @@
 #ifndef KERNEL_H
 #define KERNEL_H
 
+#define _USE_MATH_DEFINES
+
 #include "data_set.h"
 #include "constants.h"
 #include <math.h>
