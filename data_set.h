@@ -7,7 +7,7 @@
 #include "constants.h"
 
 // index for the particles
-typedef int index;  
+typedef int Index;  
 
 // struct for position, velocity, grad
 typedef struct vec{
@@ -42,7 +42,7 @@ typedef enum Particle_Type ParticleType;
 */
 struct Neighbor{
 
-	index  idx;				//!< global index of this neighbor particle
+	Index  idx;				//!< global index of this neighbor particle
 	double Wij;				//!< the value of kernel function
 	vector Wij_grad_i;		//!< the gradient of kernel function w.r.t. the position of [particle i]
 
@@ -97,14 +97,14 @@ Particle* Init(){
 *			 - repulsive particles only need information of interior particles
 *			 - ghost particles need information of both interior and repulsive particles
 */
-void SearchNeighbors (Particle* all_particle, index ptc_idx) {
+void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 	vector xi = all_particle[ptc_idx].position;
 	double r2;   // distance of two particles
 	Neighbor_p p, tmp;
 	int N = NUMBER_OF_PARTICLE;
 
 	if (all_particle[ptc_idx].tag == interior) {
-		for (index j = 0; j < N; j++) {
+		for (Index j = 0; j < N; j++) {
 			if (j != ptc_idx) {   // check if itself
 				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
 						  pow((all_particle[j].position.second - xi.second), 2));
@@ -126,7 +126,7 @@ void SearchNeighbors (Particle* all_particle, index ptc_idx) {
 		}
 	}
 	else if (all_particle[ptc_idx].tag == repulsive) {
-		for (index j = 0; j < N; j++) {
+		for (Index j = 0; j < N; j++) {
 			if (all_particle[ptc_idx].tag = interior) {   // check it's interior particle
 				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
 						  pow((all_particle[j].position.second - xi.second), 2));
@@ -148,7 +148,7 @@ void SearchNeighbors (Particle* all_particle, index ptc_idx) {
 		}
 	}
 	else {	// it's a ghost particle
-		for (index j = 0; j < N; j++) {
+		for (Index j = 0; j < N; j++) {
 			if (all_particle[ptc_idx].tag != ghost) {   // check it's not ghost particle
 				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
 						  pow((all_particle[j].position.second - xi.second), 2));

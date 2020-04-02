@@ -12,7 +12,7 @@
 *	  @param ptc_idx index of the particle that is being considered
 *     @return density value
 */
-double ComputeLocalDensity (Particle *all_particle, index ptc_idx) {
+double ComputeLocalDensity (Particle *all_particle, Index ptc_idx) {
 	double sum = 0;
     for (Neighbor_p p = all_particle[ptc_idx].neighbors; p != NULL; p = p->next) {
         sum += p->Wij * all_particle[ptc_idx].mass;
@@ -28,7 +28,7 @@ double ComputeLocalDensity (Particle *all_particle, index ptc_idx) {
 */
 void ComputeGlobalDensity (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;
-    for (index i = 0; i < N; i++) {
+    for (Index i = 0; i < N; i++) {
         ComputeLocalDensity(all_particle, i);
     }
 }
@@ -41,7 +41,7 @@ void ComputeGlobalDensity (Particle *all_particle) {
 void DensityCorrection (Particle *all_particle) {
     double sum;
 	int N = NUMBER_OF_PARTICLE;   // get the number of particles
-    for (index i = 0; i < N; i++) {     // traverse particles
+    for (Index i = 0; i < N; i++) {     // traverse particles
         sum = 0;
         for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
             sum += p->Wij * all_particle[i].mass / all_particle[i].density;
@@ -63,7 +63,7 @@ double ComputeSoundSpeedSquared(Particle *all_particle){
     int N = NUMBER_OF_PARTICLE;
     double delta = abs(all_particle[0].density - initial_density)/initial_density;
     double temp = delta;
-	for (index i = 1; i < N; i++) {
+	for (Index i = 1; i < N; i++) {
         temp = abs(all_particle[i].density - initial_density)/initial_density;
         if (temp < delta){
             delta = temp;
@@ -83,7 +83,7 @@ void ComputeGlobalPressure (Particle *all_particle){
 	double c2 = ComputeSoundSpeedSquared(all_particle);
     
     int N = NUMBER_OF_PARTICLE;
-	for (index i = 0; i < N; i++) {
+	for (Index i = 0; i < N; i++) {
         all_particle[i].pressure = c2 * all_particle[i].density;
     }
     return;
@@ -104,7 +104,7 @@ void ComputeGhostVelocity (Particle *all_particle){
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
 void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
-  for (index i = 0; i < NUMBER_OF_PARTICLE; i++) {
+  for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
     Neighbor_p n = all_particle[i].neighbors;
     Particle *pi = &all_particle[i];
 
