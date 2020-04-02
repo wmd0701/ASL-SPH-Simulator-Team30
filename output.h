@@ -19,7 +19,7 @@ void WriteData(Particle* all_particle, double t_now) {
     strcat(time, ".dat");
     FILE *fp = NULL;
     fp = fopen(time,"w");
-    for (int i = 0; i < 100; i++) {
+    for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
         this_p = all_particle[i];
         fprintf(fp, "%lf %lf %lf %lf %lf %lf %lf\n",  
         this_p.position.first,
