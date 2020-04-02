@@ -3,7 +3,7 @@
 #define CONSTANTS_H
 
 const double H = 1;  //!< smoothing length
-const double NUMBER_OF_PARTICLE = 50;  //!< number of particles
+const int    NUMBER_OF_PARTICLE = 50;  //!< number of particles
 const double dam_height = 0.5;
 const double gravity = 9.81;
 const double initial_density = 997;
