@@ -62,7 +62,7 @@ vector KernelGradient (const vector xi,const vector xj) {
 */   
 void ComputeGlobalKernel (Particle *all_particle) {
 	vector xi, xj;
-	int N = sizeof(all_particle) / sizeof(all_particle[0]);
+	int N = NUMBER_OF_PARTICLE;
 	for (index i = 0; i < N; i++) {
 
 		xi = all_particle[i].position;
@@ -88,7 +88,7 @@ void KernelGradientCorrection (Particle *all_particle) {
 	double a00, a01, a10, a11, V, xji, yji;
 	double determinant;
 	vector new_grad;
-	int N = sizeof(all_particle) / sizeof(all_particle[0]);
+	int N = NUMBER_OF_PARTICLE;
 
 	for (index i = 0; i < N; i++) {
 

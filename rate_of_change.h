@@ -27,7 +27,7 @@ double ComputeLocalDensity (Particle *all_particle, index ptc_idx) {
 *     @return no returns. Update the [density] attribute in all_particle
 */
 void ComputeGlobalDensity (Particle *all_particle) {
-	int N = sizeof(all_particle) / sizeof(all_particle[0]);
+	int N = NUMBER_OF_PARTICLE;
     for (index i = 0; i < N; i++) {
         ComputeLocalDensity(all_particle, i);
     }
@@ -40,7 +40,7 @@ void ComputeGlobalDensity (Particle *all_particle) {
 */
 void DensityCorrection (Particle *all_particle) {
     double sum;
-	int N = sizeof(all_particle) / sizeof(all_particle[0]);   // get the number of particles
+	int N = NUMBER_OF_PARTICLE;   // get the number of particles
     for (index i = 0; i < N; i++) {     // traverse particles
         sum = 0;
         for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
@@ -60,7 +60,7 @@ double ComputeSoundSpeedSquared(Particle *all_particle){
     double v = 2*dam_height*gravity;
     
     //Computing delta
-    int N = sizeof(all_particle) / sizeof(all_particle[0]);
+    int N = NUMBER_OF_PARTICLE;
     double delta = abs(all_particle[0].density - initial_density)/initial_density;
     double temp = delta;
 	for (index i = 1; i < N; i++) {
@@ -82,7 +82,7 @@ double ComputeSoundSpeedSquared(Particle *all_particle){
 void ComputeGlobalPressure (Particle *all_particle){
 	double c2 = ComputeSoundSpeedSquared(all_particle);
     
-    int N = sizeof(all_particle) / sizeof(all_particle[0]);
+    int N = NUMBER_OF_PARTICLE;
 	for (index i = 0; i < N; i++) {
         all_particle[i].pressure = c2 * all_particle[i].density;
     }

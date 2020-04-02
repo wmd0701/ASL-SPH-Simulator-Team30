@@ -101,7 +101,7 @@ void SearchNeighbors (Particle* all_particle, index ptc_idx) {
 	vector xi = all_particle[ptc_idx].position;
 	double r2;   // distance of two particles
 	Neighbor_p p, tmp;
-	int N = sizeof(all_particle) / sizeof(all_particle[0]);
+	int N = NUMBER_OF_PARTICLE;
 
 	if (all_particle[ptc_idx].tag == interior) {
 		for (index j = 0; j < N; j++) {
