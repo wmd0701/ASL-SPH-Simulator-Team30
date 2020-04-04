@@ -131,6 +131,7 @@ void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
 						p->idx = j;
 						p->next = NULL;
+                        all_particle[ptc_idx].neighbors = p;
 					}
 					else {	 // if it's not the first pointer of list
 						tmp = p;
@@ -153,6 +154,7 @@ void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
 						p->idx = j;
 						p->next = NULL;
+                        all_particle[ptc_idx].neighbors = p;
 					}
 					else {	 // if it's not the first pointer of list
 						tmp = p;
@@ -175,6 +177,7 @@ void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
 						p->idx = j;
 						p->next = NULL;
+                        all_particle[ptc_idx].neighbors = p;
 					}
 					else {	 // if it's not the first pointer of list
 						tmp = p;
