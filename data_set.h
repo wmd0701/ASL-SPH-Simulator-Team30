@@ -73,39 +73,6 @@ typedef struct {
 								
 } Particle;
 
-/**     
-*		@brief Initiate the data structure as well as initial condition
-*		
-*			   Step 1: Memory allocation
-*			   Step 2: Assign tag, position, mass and velocity to every particles
-*			   Step 3: Establish the nearby relaiton 
-*
-*		@return	pointer to an array containing information of all the particles
-*/
-Particle* Init(){
-	// TODO: initialization
-	Particle* particles = (Particle*)malloc(sizeof(Particle)*NUMBER_OF_PARTICLE);
-    for(int i = 0; i < 10; ++i){
-        for(int j = 0; j < 10; ++j){
-            particles[i*10 + j].position.first = 0.1*i;
-            particles[i*10 + j].position.second = 0.1*j;
-        }
-    }
-    int N = NUMBER_OF_PARTICLE;   // get the number of particles
-    for (Index i = 0; i < N; i++) {     // traverse particles
-        particles[i].velocity.first = 0.;
-        particles[i].velocity.second = 0.;
-        particles[i].mass = 10.;
-        particles[i].density = initial_density;
-        particles[i].pressure = 1.;
-        particles[i].pressure_force.first = 0.;
-        particles[i].pressure_force.second = 0.;
-        particles[i].accelerat.first = 0.;
-        particles[i].accelerat.second = 0.;
-    }
-	return particles;
-}
-
 /**  
 *    @brief search for the neighbor particles and  allocate memory for [neighbors]
 *    @param all_particle pointer to an array containing information of all the particles
@@ -190,6 +157,41 @@ void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 			}
 		}
 	}
+}
+
+/**     
+*		@brief Initiate the data structure as well as initial condition
+*		
+*			   Step 1: Memory allocation
+*			   Step 2: Assign tag, position, mass and velocity to every particles
+*			   Step 3: Establish the nearby relaiton 
+*
+*		@return	pointer to an array containing information of all the particles
+*/
+Particle* Init(){
+	// TODO: initialization
+	Particle* particles = (Particle*)malloc(sizeof(Particle)*NUMBER_OF_PARTICLE);
+    for(int i = 0; i < 10; ++i){
+        for(int j = 0; j < 10; ++j){
+            particles[i*10 + j].position.first = 0.5*H*i;
+            particles[i*10 + j].position.second = 0.5*H*j;
+        }
+    }
+    int N = NUMBER_OF_PARTICLE;   // get the number of particles
+    for (Index i = 0; i < N; i++) {     // traverse particles
+        particles[i].velocity.first = 0.;
+        particles[i].velocity.second = 0.;
+        particles[i].mass = 10.;
+        particles[i].density = initial_density;
+        particles[i].pressure = 1.;
+        particles[i].pressure_force.first = 0.;
+        particles[i].pressure_force.second = 0.;
+        particles[i].accelerat.first = 0.;
+        particles[i].accelerat.second = 0.;
+        
+        SearchNeighbors(particles, i);
+    }
+	return particles;
 }
 
 

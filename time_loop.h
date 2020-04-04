@@ -30,13 +30,21 @@ void TimeLoop (double t_end) {
 
 	// choose which time integration method to use, details in time_integration.h
 	Set_Integration_Method(EXPLICIT_EULER);
+    
+    int N = NUMBER_OF_PARTICLE;   // get the number of particles
 	
-	while (t < t_end) {
+	while (t < dt) {
+        WriteData               (all_particle, t);
 		//----------------------------------
 		// Tianwei
 		ComputeGlobalKernel      (all_particle);
 		ComputeGlobalDensity     (all_particle);
+        
 		DensityCorrection        (all_particle);
+        for (Index i = 0; i < N; i++) {     // traverse particles
+            printf("%lf \n", all_particle[i].density);
+        }
+        
 		//KernelGradientCorrection (all_particle);
 		//----------------------------------
 		ComputeGhostAndRepulsiveVelocity     (all_particle);
@@ -53,7 +61,7 @@ void TimeLoop (double t_end) {
 		//----------------------------------
 		// Mengdi
 		Time_Integration		(all_particle, dt);
-        WriteData               (all_particle, t);
+        //WriteData               (all_particle, t);
 		t += dt;
 		//----------------------------------
 	}

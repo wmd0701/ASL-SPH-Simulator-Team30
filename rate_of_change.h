@@ -44,6 +44,7 @@ void DensityCorrection (Particle *all_particle) {
     for (Index i = 0; i < N; i++) {     // traverse particles
         sum = 0;
         for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
+            printf("%lf \n", 100.);
             sum += p->Wij * all_particle[i].mass / all_particle[i].density;
         }
         all_particle[i].density /= sum;
