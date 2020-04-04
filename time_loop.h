@@ -4,6 +4,7 @@
 
 #include "rate_of_change.h"
 #include "time_integration.h"
+#include "output.h"
 
 /** 	
 *		@brief Compute dt for the next iteration
@@ -15,7 +16,7 @@
 *		@return dt
 */
 double ComputeTimeStep (Particle* all_particle) {
-	
+	return 0.01;
 }
 
 /** 	
@@ -36,13 +37,13 @@ void TimeLoop (double t_end) {
 		ComputeGlobalKernel      (all_particle);
 		ComputeGlobalDensity     (all_particle);
 		DensityCorrection        (all_particle);
-		KernelGradientCorrection (all_particle);
+		//KernelGradientCorrection (all_particle);
 		//----------------------------------
-		ComputeGhostVelocity     (all_particle);
+		ComputeGhostAndRepulsiveVelocity     (all_particle);
 		//----------------------------------
 		// Valerie
 		ComputeInteriorLaminarAcceleration (all_particle);
-		AddTurbulentModel        (all_particle);
+		//AddTurbulentModel        (all_particle);
 		AddRepulsiveForce	     (all_particle);
 		//----------------------------------
 		// Silvia
@@ -52,6 +53,7 @@ void TimeLoop (double t_end) {
 		//----------------------------------
 		// Mengdi
 		Time_Integration		(all_particle, dt);
+        WriteData               (all_particle, t);
 		t += dt;
 		//----------------------------------
 	}

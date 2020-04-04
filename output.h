@@ -13,7 +13,7 @@
  */
 void WriteData(Particle* all_particle, double t_now) {
     Particle this_p;
-    char* time;
+    char time[15];
     t_now *= 1000;
     sprintf(time, "%08.0f", t_now);
     strcat(time, ".dat");

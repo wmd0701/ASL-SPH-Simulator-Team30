@@ -85,6 +85,24 @@ typedef struct {
 Particle* Init(){
 	// TODO: initialization
 	Particle* particles = (Particle*)malloc(sizeof(Particle)*NUMBER_OF_PARTICLE);
+    for(int i = 0; i < 10; ++i){
+        for(int j = 0; j < 10; ++j){
+            particles[i*10 + j].position.first = 0.1*i;
+            particles[i*10 + j].position.second = 0.1*j;
+        }
+    }
+    int N = NUMBER_OF_PARTICLE;   // get the number of particles
+    for (Index i = 0; i < N; i++) {     // traverse particles
+        particles[i].velocity.first = 0.;
+        particles[i].velocity.second = 0.;
+        particles[i].mass = 10.;
+        particles[i].density = initial_density;
+        particles[i].pressure = 1.;
+        particles[i].pressure_force.first = 0.;
+        particles[i].pressure_force.second = 0.;
+        particles[i].accelerat.first = 0.;
+        particles[i].accelerat.second = 0.;
+    }
 	return particles;
 }
 

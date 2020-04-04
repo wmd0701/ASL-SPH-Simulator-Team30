@@ -17,13 +17,24 @@
 double Kernel (const vector xi,const vector xj) {
 	
 	double r = sqrt(pow((xi.first - xj.first),2) + pow((xi.second - xj.second),2));
-	double epsilon = r / H;
-	if (r <= 1) {
-		return (1 - 3/2*epsilon*epsilon + 3/4*epsilon*epsilon*epsilon) / M_PI / (H*H*H);
-	}
-	else if(r <= 2) {
-		return 0.25 * (2 - epsilon) * (2 - epsilon) * (2 - epsilon) / M_PI / (H*H*H); 
-	}
+	double q = r / H;
+    double prefactor = 40./(7*M_PI*H*H);
+    if(q >= 0 && q <= 0.5){
+        return prefactor*6*(q*q*q - q*q) + 1.;
+    }
+    else if(q > 0.5 && q <= 1){
+        return prefactor*2*(1-q)*(1-q)*(1-q);
+    }
+    else{
+        return 0;
+    }
+    
+    //~ if (r <= 1) {
+		//~ return (1 - 3/2*epsilon*epsilon + 3/4*epsilon*epsilon*epsilon) / M_PI / (H*H*H);
+	//~ }
+	//~ else if(r <= 2) {
+		//~ return 0.25 * (2 - epsilon) * (2 - epsilon) * (2 - epsilon) / M_PI / (H*H*H); 
+	//~ }
 }
 
 /** 
@@ -34,25 +45,47 @@ double Kernel (const vector xi,const vector xj) {
 */   
 vector KernelGradient (const vector xi,const vector xj) {
 	double r = sqrt(pow((xi.first - xj.first),2) + pow((xi.second - xj.second),2));
-	double epsilon = r / H;
-	double tmp = 1 / (M_PI * pow(H, 4) * r);
-	vector grad;
-	if (r <= 1) {
+	double q = r / H;
+    double prefactor = 40./(7*M_PI*H*H);
+    
+    vector grad;
+    
+    if(q >= 0 && q <= 0.5){
+        double temp =  prefactor*6*(3*q*q - 2*q) + 1.;
+        grad.first = temp*(xi.first - xj.first)/(H * r);
+        grad.second = temp*(xi.second - xj.second)/(H * r);
+        
+    }
+    else if(q > 0.5 && q <= 1){
+        double temp = prefactor*(-6.)*(1-q)*(1-q);
+        grad.first = temp*(xi.first - xj.first)/(H * r);
+        grad.second = temp*(xi.second - xj.second)/(H * r);
+    }
+    else{
+        grad.first = 0.;
+        grad.second = 0.;
+    }
+    return grad;
+    
+	//~ double epsilon = r / H;
+	//~ double tmp = 1 / (M_PI * pow(H, 4) * r);
+	//~ vector grad;
+	//~ if (r <= 1) {
 
-		tmp *= (-3) * epsilon + 2.25 * epsilon * epsilon;
-		grad.first  = tmp * (xi.first  - xj.first);
-		grad.second = tmp * (xi.second - xj.second);
-		return grad;
+		//~ tmp *= (-3) * epsilon + 2.25 * epsilon * epsilon;
+		//~ grad.first  = tmp * (xi.first  - xj.first);
+		//~ grad.second = tmp * (xi.second - xj.second);
+		//~ return grad;
 
-	}
-	else if (r <= 2) {
+	//~ }
+	//~ else if (r <= 2) {
 
-		tmp *= (-0.75) * (2 - epsilon) * (2 - epsilon);
-		grad.first  = tmp * (xi.first  - xj.first);
-		grad.second = tmp * (xi.second - xj.second);
-		return grad;
+		//~ tmp *= (-0.75) * (2 - epsilon) * (2 - epsilon);
+		//~ grad.first  = tmp * (xi.first  - xj.first);
+		//~ grad.second = tmp * (xi.second - xj.second);
+		//~ return grad;
 
-	}
+	//~ }
 }
 
 /** 

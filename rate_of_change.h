@@ -94,8 +94,21 @@ void ComputeGlobalPressure (Particle *all_particle){
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [velocity] attribute in all_particle
 */
-void ComputeGhostVelocity (Particle *all_particle){
-	
+void ComputeGhostAndRepulsiveVelocity (Particle *all_particle){
+	int N = NUMBER_OF_PARTICLE;
+	for (Index i = 0; i < N; i++) {
+        if(all_particle[i].tag != 0){
+            vector sum;
+            sum.first = 0;
+            sum.second = 0;
+            for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
+                sum.first -= all_particle[p->idx].velocity.first * p->Wij * all_particle[p->idx].mass * all_particle[p->idx].density;
+                sum.second -= all_particle[p->idx].velocity.second * p->Wij * all_particle[p->idx].mass * all_particle[p->idx].density;
+            }
+            all_particle[i].velocity.first = sum.first;
+            all_particle[i].velocity.second = sum.second;
+        }
+    }
 }
 
 /**   
