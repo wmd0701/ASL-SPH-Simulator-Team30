@@ -42,7 +42,7 @@ void Set_Integration_Method(enum Integration_Method m){
 *			   Logically, this function is called by the TimeLoop function in time_loop.h
 */
 void Time_Integration(Particle* all_particle, double dt){
-    switch(integration){
+	switch(integration){
         case EXPLICIT_EULER:    Explicit_Euler  (all_particle, dt); break;
         case HEUN:              Heun            (all_particle, dt); break;
         case MIDPOINT:          Midpoint        (all_particle, dt); break;
@@ -52,9 +52,7 @@ void Time_Integration(Particle* all_particle, double dt){
 }
 
 void Explicit_Euler (Particle* all_particle, double dt){
-    int N = sizeof(all_particle) / sizeof(all_particle[0]);    
-
-    for(int i = 0 ; i < N ; i++){
+    for(int i = 0 ; i < NUMBER_OF_PARTICLE ; i++){
         // only for fluid particles
         if(all_particle[i].tag != interior)
             continue;
@@ -62,7 +60,6 @@ void Explicit_Euler (Particle* all_particle, double dt){
         // all_particle[i].accelerat = vec_div_scalar(all_particle[i].pressure_force, all_particle[i].mass);
 
         all_particle[i].position = vec_add_vec(all_particle[i].position, vec_mul_scalar(all_particle[i].velocity, dt));
-
         all_particle[i].velocity = vec_add_vec(all_particle[i].velocity, vec_mul_scalar(all_particle[i].accelerat, dt));
     }
 }
