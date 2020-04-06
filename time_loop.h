@@ -25,17 +25,20 @@ double ComputeTimeStep (Particle* all_particle) {
 *		@param t_end end time
 */
 void TimeLoop (double t_end) {
+	
 	double dt, t = 0;
+	
 	Particle* all_particle = Init();
+	WriteData               (all_particle, t);
 
 	// choose which time integration method to use, details in time_integration.h
 	Set_Integration_Method(EXPLICIT_EULER);
     
-    int N = NUMBER_OF_PARTICLE;   // get the number of particles
+  int N = NUMBER_OF_PARTICLE;   // get the number of particles
 	
 	while (t < t_end) {
-    printf("write at time t = %f\n",t);
-		WriteData               (all_particle, t);
+		dt = ComputeTimeStep     (all_particle);
+		
 		//----------------------------------
 		// Tianwei
 		ComputeGlobalKernel      (all_particle);
@@ -45,23 +48,31 @@ void TimeLoop (double t_end) {
         
 		//KernelGradientCorrection (all_particle);
 		//----------------------------------
+		
 		ComputeGhostAndRepulsiveVelocity     (all_particle);
+		
 		//----------------------------------
 		// Valerie
 		ComputeInteriorLaminarAcceleration (all_particle);
 		//AddTurbulentModel        (all_particle);
 		AddRepulsiveForce	     (all_particle);
 		//----------------------------------
+
+		//----------------------------------
 		// Silvia
 		ComputeGlobalPressure    (all_particle);
 		//----------------------------------
-		dt = ComputeTimeStep     (all_particle);
+		
 		//----------------------------------
 		// Mengdi
 		Time_Integration		(all_particle, dt);
-        //WriteData               (all_particle, t);
+    //----------------------------------
+		
 		t += dt;
-		//----------------------------------
+
+		//output data to file
+		printf("write at time t = %f\n",t);
+		WriteData               (all_particle, t);
 	}
 
 	free(all_particle);
