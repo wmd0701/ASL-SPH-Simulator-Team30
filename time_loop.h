@@ -33,17 +33,15 @@ void TimeLoop (double t_end) {
     
     int N = NUMBER_OF_PARTICLE;   // get the number of particles
 	
-	while (t < dt) {
-        WriteData               (all_particle, t);
+	while (t < t_end) {
+    printf("write at time t = %f\n",t);
+		WriteData               (all_particle, t);
 		//----------------------------------
 		// Tianwei
 		ComputeGlobalKernel      (all_particle);
 		ComputeGlobalDensity     (all_particle);
         
 		DensityCorrection        (all_particle);
-        for (Index i = 0; i < N; i++) {     // traverse particles
-            printf("%lf \n", all_particle[i].density);
-        }
         
 		//KernelGradientCorrection (all_particle);
 		//----------------------------------
