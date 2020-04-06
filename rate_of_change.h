@@ -127,23 +127,21 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
       double constant1 =
           pj->mass * (pi->pressure / (pi->density * pi->density) +
                       pj->pressure / (pj->density * pj->density));
-      all_particle[i].accelerat.first -= constant1 * gradient.first;
-      all_particle[i].accelerat.second -= constant1 * gradient.second;
+      pi->accelerat.first = -constant1 * gradient.first;
+      pi->accelerat.second = -constant1 * gradient.second;
 
-      double xij = sqrt(pow((pj->position.first - pi->position.first), 2) +
-                        pow((pj->position.second - pi->position.second), 2));
-      double vij = sqrt(pow((pj->velocity.first - pi->velocity.first), 2) +
-                        pow((pj->velocity.second - pi->velocity.second), 2));
+      vector xij = vec_sub_vec(pj->position, pi->position);
+      vector vij = vec_sub_vec(pj->velocity, pi->velocity);
 
       double constant2 =
-          (4.0 * pj->mass * (2.0 * dynamic_viscosity) * xij * vij) /
+          (4.0 * pj->mass * (2.0 * dynamic_viscosity) * vec_dot(xij, gradient)) /
           (pow((pi->density + pj->density), 2) *
-           (pow(xij, 2) + 0.01 * pow(H, 2)));
+           (vec_dot(xij, xij) + 0.01 * pow(H, 2)));
 
-      all_particle[i].accelerat.first += constant2 * gradient.first;
-      all_particle[i].accelerat.second += constant2 * gradient.second - gravity;
-
-      n = n->next;
+      pi->accelerat.first += constant2 * vij.first;
+      pi->accelerat.second += constant2 * vij.second - gravity;
+      
+			n = n->next;
     }
   }
 }
