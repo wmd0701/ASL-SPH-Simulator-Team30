@@ -21,6 +21,11 @@ vector vec_mul_scalar(const vector v, const double d){
 	return vv; 
 }
 
+// define mul for vector
+double vec_dot(const vector v1, const vector v2){
+	return v1.first * v2.first + v1.second * v2.second;
+}
+
 // define div for vector
 vector vec_div_scalar(const vector v, const double d){
 	vector vv = {.first = v.first/d, .second = v.second/d};
@@ -30,6 +35,12 @@ vector vec_div_scalar(const vector v, const double d){
 // define add for vector
 vector vec_add_vec(const vector v1, const vector v2){
 	vector vv = {.first = v1.first+v2.first, .second = v1.second+v2.second};
+	return vv;
+}
+
+// define sub for vector
+vector vec_sub_vec(const vector v1, const vector v2){
+	vector vv = {.first = v1.first-v2.first, .second = v1.second-v2.second};
 	return vv;
 }
 
