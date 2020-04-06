@@ -13,15 +13,15 @@
  */
 void WriteData(Particle* all_particle, double t_now) {
     Particle this_p;
-    char time[15];
+    char time[22];
     t_now *= 1000;
-    sprintf(time, "%08.0f", t_now);
-    strcat(time, ".dat");
+    sprintf(time, "data/data-%08.0f.csv", t_now);
     FILE *fp = NULL;
     fp = fopen(time,"w");
+    fprintf(fp, "x coord, y coord, u, v, m, rho, p\n"); 
     for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
         this_p = all_particle[i];
-        fprintf(fp, "%lf %lf %lf %lf %lf %lf %lf\n",  
+        fprintf(fp, "%lf, %lf, %lf, %lf, %lf, %lf, %lf\n",  
         this_p.position.first,
         this_p.position.second,
         this_p.velocity.first,
