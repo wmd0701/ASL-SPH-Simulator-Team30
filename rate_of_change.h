@@ -15,7 +15,7 @@
 double ComputeLocalDensity (Particle *all_particle, Index ptc_idx) {
 	double sum = 0;
     for (Neighbor_p p = all_particle[ptc_idx].neighbors; p != NULL; p = p->next) {
-        sum += p->Wij * all_particle[ptc_idx].mass;
+        sum += p->Wij * all_particle[p->idx].mass;
     }
     return sum;
 }
@@ -41,20 +41,14 @@ void ComputeGlobalDensity (Particle *all_particle) {
 void DensityCorrection (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;   // get the number of particles
     for (Index i = 0; i < N; i++) {     // traverse particles
-      double sum_Wij = 0;
-      for (Neighbor_p nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
-      		Particle * pk = &all_particle[nk->idx];
-					sum_Wij += nk->Wij * pk->mass / pk->density;
-					printf("Wij = %f \t mass = %f \t density = %f\n", nk->Wij, pk->mass, pk->density);
-			}
-			double sum = 0;
-      for (Neighbor_p nj = all_particle[i].neighbors; nj != NULL; nj = nj->next) {    // traverse neighbors
-      		Particle *pj = &all_particle[nj->idx];
-				sum += pj->mass * nj->Wij;
-			}
-			printf("sum = %f\t sum_Wij = %f\n", sum, sum_Wij);
-			all_particle[i].density = sum / sum_Wij;
-			printf("%u: density = %f\n", i, all_particle[i].density);
+        double sum_Wij = 0;
+        for (Neighbor_p nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
+                Particle * pk = &all_particle[nk->idx];
+                    sum_Wij += nk->Wij * pk->mass / pk->density;
+                    printf("Wij = %f \t mass = %f \t density = %f\n", nk->Wij, pk->mass, pk->density);
+        }
+        all_particle[i].density /= sum_Wij;
+        printf("%u: density = %f\n", i, all_particle[i].density);
     }
 }
 
