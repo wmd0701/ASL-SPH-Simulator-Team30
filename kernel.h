@@ -20,7 +20,7 @@ double Kernel (const vector xi,const vector xj) {
 	double q = r / H;
     double prefactor = 40./(7*M_PI*H*H);
     if(q >= 0 && q <= 0.5){
-        return prefactor*6*(q*q*q - q*q) + 1.;
+        return prefactor * (6 * (q*q*q - q*q) + 1.);
     }
     else if(q > 0.5 && q <= 1){
         return prefactor*2*(1-q)*(1-q)*(1-q);
