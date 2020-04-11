@@ -29,12 +29,6 @@ double Kernel (const vector xi,const vector xj) {
         return 0;
     }
     
-    //~ if (r <= 1) {
-		//~ return (1 - 3/2*epsilon*epsilon + 3/4*epsilon*epsilon*epsilon) / M_PI / (H*H*H);
-	//~ }
-	//~ else if(r <= 2) {
-		//~ return 0.25 * (2 - epsilon) * (2 - epsilon) * (2 - epsilon) / M_PI / (H*H*H); 
-	//~ }
 }
 
 /** 
@@ -51,7 +45,7 @@ vector KernelGradient (const vector xi,const vector xj) {
     vector grad;
     
     if(q >= 0 && q <= 0.5){
-        double temp =  prefactor*6*(3*q*q - 2*q) + 1.;
+        double temp =  prefactor*6*(3*q*q - 2*q);
         grad.first = temp*(xi.first - xj.first)/(H * r);
         grad.second = temp*(xi.second - xj.second)/(H * r);
         
@@ -67,25 +61,6 @@ vector KernelGradient (const vector xi,const vector xj) {
     }
     return grad;
     
-	//~ double epsilon = r / H;
-	//~ double tmp = 1 / (M_PI * pow(H, 4) * r);
-	//~ vector grad;
-	//~ if (r <= 1) {
-
-		//~ tmp *= (-3) * epsilon + 2.25 * epsilon * epsilon;
-		//~ grad.first  = tmp * (xi.first  - xj.first);
-		//~ grad.second = tmp * (xi.second - xj.second);
-		//~ return grad;
-
-	//~ }
-	//~ else if (r <= 2) {
-
-		//~ tmp *= (-0.75) * (2 - epsilon) * (2 - epsilon);
-		//~ grad.first  = tmp * (xi.first  - xj.first);
-		//~ grad.second = tmp * (xi.second - xj.second);
-		//~ return grad;
-
-	//~ }
 }
 
 /** 
