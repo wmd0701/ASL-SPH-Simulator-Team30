@@ -29,7 +29,7 @@ double ComputeLocalDensity (Particle *all_particle, Index ptc_idx) {
 void ComputeGlobalDensity (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;
     for (Index i = 0; i < N; i++) {
-        ComputeLocalDensity(all_particle, i);
+        all_particle[i].density = ComputeLocalDensity(all_particle, i);
     }
 }
 
@@ -148,7 +148,7 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
 
       pi->accelerat.first += constant2 * vij.first;
       pi->accelerat.second += constant2 * vij.second - gravity;
-      
+     	
 			n = n->next;
     }
   }
