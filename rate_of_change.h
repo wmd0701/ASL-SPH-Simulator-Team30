@@ -39,14 +39,22 @@ void ComputeGlobalDensity (Particle *all_particle) {
 *     @return no returns. Update the [density] attribute in all_particle
 */
 void DensityCorrection (Particle *all_particle) {
-    double sum;
 	int N = NUMBER_OF_PARTICLE;   // get the number of particles
     for (Index i = 0; i < N; i++) {     // traverse particles
-        sum = 0;
-        for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
-            sum += p->Wij * all_particle[i].mass / all_particle[i].density;
-        }
-        all_particle[i].density /= sum;
+      double sum_Wij = 0;
+      for (Neighbor_p nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
+      		Particle * pk = &all_particle[nk->idx];
+					sum_Wij += nk->Wij * pk->mass / pk->density;
+					printf("Wij = %f \t mass = %f \t density = %f\n", nk->Wij, pk->mass, pk->density);
+			}
+			double sum = 0;
+      for (Neighbor_p nj = all_particle[i].neighbors; nj != NULL; nj = nj->next) {    // traverse neighbors
+      		Particle *pj = &all_particle[nj->idx];
+				sum += pj->mass * nj->Wij;
+			}
+			printf("sum = %f\t sum_Wij = %f\n", sum, sum_Wij);
+			all_particle[i].density = sum / sum_Wij;
+			printf("%u: density = %f\n", i, all_particle[i].density);
     }
 }
 
@@ -123,7 +131,7 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
 
     while (n != NULL) {
       Particle *pj = &all_particle[n->idx];
-      vector gradient = KernelGradient(pi->position, pj->position);
+      vector gradient = n->Wij_grad_i;
       double constant1 =
           pj->mass * (pi->pressure / (pi->density * pi->density) +
                       pj->pressure / (pj->density * pj->density));
