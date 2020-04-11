@@ -40,6 +40,7 @@ void ComputeGlobalDensity (Particle *all_particle) {
 */
 void DensityCorrection (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;   // get the number of particles
+    double* sum = (double*)malloc(sizeof(double)*N);
     for (Index i = 0; i < N; i++) {     // traverse particles
         double sum_Wij = 0;
         for (Neighbor_p nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
@@ -47,7 +48,10 @@ void DensityCorrection (Particle *all_particle) {
                     sum_Wij += nk->Wij * pk->mass / pk->density;
                     printf("Wij = %f \t mass = %f \t density = %f\n", nk->Wij, pk->mass, pk->density);
         }
-        all_particle[i].density /= sum_Wij;
+        sum[i] = sum_Wij;
+    }
+    for (Index i = 0; i < N; i++) {
+        all_particle[i].density /= sum[i];
         printf("%u: density = %f\n", i, all_particle[i].density);
     }
 }
