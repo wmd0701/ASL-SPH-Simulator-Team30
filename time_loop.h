@@ -44,7 +44,7 @@ void TimeLoop (double t_end) {
 		ComputeGlobalKernel      (all_particle);
 		ComputeGlobalDensity     (all_particle);
         
-		DensityCorrection        (all_particle);
+		// DensityCorrection        (all_particle);
         
 		//KernelGradientCorrection (all_particle);
 		//----------------------------------
@@ -69,6 +69,9 @@ void TimeLoop (double t_end) {
     //----------------------------------
 		
 		t += dt;
+		
+		for(int i = 0; i < NUMBER_OF_PARTICLE; i++)
+			SearchNeighbors(all_particle, i);
 
 		//output data to file
 		printf("write at time t = %f\n",t);
