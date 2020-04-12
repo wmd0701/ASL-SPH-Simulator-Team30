@@ -124,7 +124,7 @@ void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 	}
 	else if (all_particle[ptc_idx].tag == repulsive) {
 		for (Index j = 0; j < N; j++) {
-			if (all_particle[ptc_idx].tag = interior) {   // check it's interior particle
+			if (all_particle[ptc_idx].tag == interior) {   // check it's interior particle
 				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
 						  pow((all_particle[j].position.second - xi.second), 2));
 				if (r2 < 2*H) {	  // check if neighbor
@@ -179,30 +179,39 @@ void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 *
 *		@return	pointer to an array containing information of all the particles
 */
-Particle* Init(){
-	// TODO: initialization
-	Particle* particles = (Particle*)malloc(sizeof(Particle)*NUMBER_OF_PARTICLE);
-    for(int i = 0; i < 10; ++i){
-        for(int j = 0; j < 10; ++j){
-            particles[i*10 + j].position.first = 0.5*H*i;
-            particles[i*10 + j].position.second = 0.5*H*j;
-        }
+Particle *Init() {
+  // TODO: initialization
+  Particle *particles =
+      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+  for (int i = 0; i < 16; ++i) {
+    for (int j = 0; j < 16; ++j) {
+      particles[i * 16 + j].position.first = 0.5 * H * i;
+      particles[i * 16 + j].position.second = 0.5 * H * j;
+
+      if ((i > 2 && i < 13) && (j > 2 && j < 13))
+        particles[i * 16 + j].tag = interior; // interior
+      else if (i < 2 || i > 13 || j < 2 || j > 13)
+        particles[i * 16 + j].tag = ghost; // ghost
+      else {
+        particles[i * 16 + j].tag = 1; // repulsive
+      }
     }
-    int N = NUMBER_OF_PARTICLE;   // get the number of particles
-    for (Index i = 0; i < N; i++) {     // traverse particles
-        particles[i].velocity.first = 0.;
-        particles[i].velocity.second = 0.;
-        particles[i].mass = 10.;
-        particles[i].density = initial_density;
-        particles[i].pressure = 1.;
-        particles[i].pressure_force.first = 0.;
-        particles[i].pressure_force.second = 0.;
-        particles[i].accelerat.first = 0.;
-        particles[i].accelerat.second = 0.;
-        
-        SearchNeighbors(particles, i);
-    }
-	return particles;
+  }
+  int N = NUMBER_OF_PARTICLE;     // get the number of particles
+  for (Index i = 0; i < N; i++) { // traverse particles
+    particles[i].velocity.first = 0.;
+    particles[i].velocity.second = 0.;
+    particles[i].mass = 10.;
+    particles[i].density = initial_density;
+    particles[i].pressure = 1.;
+    particles[i].pressure_force.first = 0.;
+    particles[i].pressure_force.second = 0.;
+    particles[i].accelerat.first = 0.;
+    particles[i].accelerat.second = 0.;
+
+    SearchNeighbors(particles, i);
+  }
+  return particles;
 }
 
 
