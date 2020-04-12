@@ -1,0 +1,15 @@
+# This makefile is specialized for gcc version 9.3 installed on linux subsystem on windows.
+# Linux subsystem on windows does not update gcc to the latest version automatically, thus one 
+# may have to compel this. For further details please have a look into 
+# https://solarianprogrammer.com/2017/05/04/building-gcc-wsl-windows-subsystem-linux/
+
+CFLAGS = -O3 -lm
+
+run: main.c time_loop.h time_integration.h kernel.h data_set.h constants.h
+	gcc-9.3 main.c -o simulation $(CFLAGS)
+
+clean:
+	- $(RM) simulation
+	- $(RM) -r *.dSYM
+	- $(RM) *.o
+	- $(RM) data/*.csv
