@@ -124,7 +124,7 @@ void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 	}
 	else if (all_particle[ptc_idx].tag == repulsive) {
 		for (Index j = 0; j < N; j++) {
-			if (all_particle[ptc_idx].tag == interior) {   // check it's interior particle
+			if (j != ptc_idx) {   // check if itself
 				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
 						  pow((all_particle[j].position.second - xi.second), 2));
 				if (r2 < 2*H) {	  // check if neighbor
@@ -147,7 +147,7 @@ void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 	}
 	else {	// it's a ghost particle
 		for (Index j = 0; j < N; j++) {
-			if (all_particle[ptc_idx].tag != ghost) {   // check it's not ghost particle
+			if (j != ptc_idx) {   // check if itself
 				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
 						  pow((all_particle[j].position.second - xi.second), 2));
 				if (r2 < 2*H) {	  // check if neighbor
