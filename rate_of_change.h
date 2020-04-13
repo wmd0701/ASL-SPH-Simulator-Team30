@@ -111,8 +111,8 @@ void ComputeGhostAndRepulsiveVelocity (Particle *all_particle){
                 sum.first -= all_particle[p->idx].velocity.first * p->Wij * all_particle[p->idx].mass * all_particle[p->idx].density;
                 sum.second -= all_particle[p->idx].velocity.second * p->Wij * all_particle[p->idx].mass * all_particle[p->idx].density;
             }
-            all_particle[i].velocity.first = sum.first;
-            all_particle[i].velocity.second = sum.second;
+            all_particle[i].velocity.first = 1.0;//sum.first;
+            all_particle[i].velocity.second = 1.0; //sum.second;
         }
     }
 }
