@@ -124,30 +124,34 @@ void ComputeGhostAndRepulsiveVelocity (Particle *all_particle){
 */
 void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
   for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
-    Neighbor_p n = all_particle[i].neighbors;
-    Particle *pi = &all_particle[i];
-
-    while (n != NULL) {
-      Particle *pj = &all_particle[n->idx];
-      vector gradient = n->Wij_grad_i;
-      double constant1 =
-          pj->mass * (pi->pressure / (pi->density * pi->density) +
-                      pj->pressure / (pj->density * pj->density));
-      pi->accelerat.first -= constant1 * gradient.first;
-      pi->accelerat.second -= constant1 * gradient.second;
-
-      vector xij = vec_sub_vec(pj->position, pi->position);
-      vector vij = vec_sub_vec(pj->velocity, pi->velocity);
-
-      double constant2 =
-          (4.0 * pj->mass * (2.0 * dynamic_viscosity) * vec_dot(xij, gradient)) /
-          (pow((pi->density + pj->density), 2) *
-           (vec_dot(xij, xij) + 0.01 * pow(H, 2)));
-
-      pi->accelerat.first += constant2 * vij.first;
-      pi->accelerat.second += constant2 * vij.second - gravity;
-     	
-			n = n->next;
+    if (all_particle[i].tag == interior) {
+        Neighbor_p n = all_particle[i].neighbors;
+        Particle *pi = &all_particle[i];
+    
+        while (n != NULL) {
+          Particle *pj = &all_particle[n->idx];
+          vector gradient = n->Wij_grad_i;
+          double constant1 =
+              pj->mass * (pi->pressure / (pi->density * pi->density) +
+                          pj->pressure / (pj->density * pj->density));
+          pi->accelerat.first -= constant1 * gradient.first;
+          pi->accelerat.second -= constant1 * gradient.second;
+    
+          vector xij = vec_sub_vec(pj->position, pi->position);
+          vector vij = vec_sub_vec(pj->velocity, pi->velocity);
+    
+          double constant2 =
+              (4.0 * pj->mass * (2.0 * dynamic_viscosity) * vec_dot(xij, gradient)) /
+              (pow((pi->density + pj->density), 2) *
+               (vec_dot(xij, xij) + 0.01 * pow(H, 2)));
+    
+          pi->accelerat.first += constant2 * vij.first;
+          pi->accelerat.second += constant2 * vij.second;
+         	
+    	  n = n->next;
+        }
+        
+        pi->accelerat.second -= gravity;
     }
   }
 }
