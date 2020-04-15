@@ -6,8 +6,6 @@
 #include <math.h>
 #include "constants.h"
 
-// index for the particles
-typedef int Index;  
 
 // struct for position, velocity, grad
 typedef struct vec{
@@ -21,8 +19,8 @@ vector vec_mul_scalar(const vector v, const double d){
 	return vv; 
 }
 
-// define mul for vector
-double vec_dot(const vector v1, const vector v2){
+// define inner product for vector
+double vec_dot_vec(const vector v1, const vector v2){
 	return v1.first * v2.first + v1.second * v2.second;
 }
 
@@ -44,6 +42,16 @@ vector vec_sub_vec(const vector v1, const vector v2){
 	return vv;
 }
 
+// define Euler L2 norm for vector
+double vec_distance_vec(const vector v1, const vector v2){
+	return sqrt(pow((v1.first  - v2.first ), 2) + pow((v1.second - v2.second), 2));
+}
+
+// define square Euler L2 norm for vector, should be used for optimization
+double vec_distance_vec_square(const vector v1, const vector v2){
+	return pow((v1.first  - v2.first ), 2) + pow((v1.second - v2.second), 2);
+}
+
 // tag used to tell different types of particles 
 enum Particle_Type {interior, repulsive, ghost};
 typedef enum Particle_Type ParticleType;
@@ -53,15 +61,14 @@ typedef enum Particle_Type ParticleType;
 */
 struct Neighbor{
 
-	Index  idx;				//!< global index of this neighbor particle
+	int  idx;				//!< global index of this neighbor particle
 	double Wij;				//!< the value of kernel function
 	vector Wij_grad_i;		//!< the gradient of kernel function w.r.t. the position of [particle i]
 
 	struct Neighbor *next;	//!< pointer to the next neighbor particle.
 
 };
-typedef struct Neighbor *Neighbor_p;
-typedef struct Neighbor *NeighborList;
+typedef struct Neighbor Neighbor_p;
 
 
 /**  
@@ -79,7 +86,7 @@ typedef struct {
 	
 	ParticleType   tag;          //!< whether it's an interior particle (0), repulsive particle (1) or ghost particle (2)
 		
-	NeighborList   neighbors;    /*!< List containing the index array of nearby particles
+	Neighbor_p   *neighbors;    /*!< List containing the index array of nearby particles
 									  This is the pointer to the first neighbor. */
 								
 } Particle;
@@ -93,76 +100,68 @@ typedef struct {
 *			 - repulsive particles only need information of interior particles
 *			 - ghost particles need information of both interior and repulsive particles
 */
-void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
+void SearchNeighbors (Particle* all_particle, int ptc_idx) {
 	vector xi = all_particle[ptc_idx].position;
-	double r2;   // distance of two particles
+	double r2;   // distance between two particles
+	// double H_square_4 = 4 * H * H;
 	Neighbor_p p, tmp;
 	int N = NUMBER_OF_PARTICLE;
 
 	if (all_particle[ptc_idx].tag == interior) {
-		for (Index j = 0; j < N; j++) {
-			if (j != ptc_idx) {   // check if itself
-				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
-						  pow((all_particle[j].position.second - xi.second), 2));
-				if (r2 < 2*H) {	  // check if neighbor
+		for (int j = 0; j < N; j++) {
+			if (j != ptc_idx) {   // the particle should not be neighbor of itself
+				r2 = vec_distance_vec(all_particle[j].position, xi);
+				if (r2 < 2*H) {
+				/* 
+					TODO: potential optimization:
+					r2 = vec_distance_vec_square(all_particle[j].position, xi);
+					if (r2 < H_square_4)
+					...
+				*/
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
-						p->idx = j;
-						p->next = NULL;
-                        all_particle[ptc_idx].neighbors = p;
+						p = {.idx = j, .next = NULL};
+                        all_particle[ptc_idx].neighbors = &p;
 					}
 					else {	 // if it's not the first pointer of list
 						tmp = p;
-						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
-						p->idx = j;
-						p->next = NULL;
-						tmp->next = p;
+						p = {.idx = j, .next = NULL};
+						tmp.next = &p;
 					}
 				}
 			}
 		}
 	}
 	else if (all_particle[ptc_idx].tag == repulsive) {
-		for (Index j = 0; j < N; j++) {
-			if (all_particle[ptc_idx].tag = interior) {   // check it's interior particle
-				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
-						  pow((all_particle[j].position.second - xi.second), 2));
+		for (int j = 0; j < N; j++) {
+			if (all_particle[ptc_idx].tag = interior) {
+				r2 = vec_distance_vec(all_particle[j].position, xi);
 				if (r2 < 2*H) {	  // check if neighbor
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
-						p->idx = j;
-						p->next = NULL;
-                        all_particle[ptc_idx].neighbors = p;
+						p = {.idx = j, .next = NULL};
+                        all_particle[ptc_idx].neighbors = &p;
 					}
 					else {	 // if it's not the first pointer of list
 						tmp = p;
-						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
-						p->idx = j;
-						p->next = NULL;
-						tmp->next = p;
+						p = {.idx = j, .next = NULL};
+						tmp.next = &p;
 					}
 				}
 			}
 		}
 	}
 	else {	// it's a ghost particle
-		for (Index j = 0; j < N; j++) {
+		for (int j = 0; j < N; j++) {
 			if (all_particle[ptc_idx].tag != ghost) {   // check it's not ghost particle
-				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
-						  pow((all_particle[j].position.second - xi.second), 2));
-				if (r2 < 2*H) {	  // check if neighbor
+				r2 = vec_distance_vec(all_particle[j].position, xi);
+				if (r2 < 2*H) {
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
-						p->idx = j;
-						p->next = NULL;
-                        all_particle[ptc_idx].neighbors = p;
+						p = {.idx = j, .next = NULL};
+                        all_particle[ptc_idx].neighbors = &p;
 					}
 					else {	 // if it's not the first pointer of list
 						tmp = p;
-						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
-						p->idx = j;
-						p->next = NULL;
-						tmp->next = p;
+						p = {.idx = j, .next = NULL};
+						tmp.next = &p;
 					}
 				}
 			}
@@ -189,7 +188,7 @@ Particle* Init(){
         }
     }
     int N = NUMBER_OF_PARTICLE;   // get the number of particles
-    for (Index i = 0; i < N; i++) {     // traverse particles
+    for (int i = 0; i < N; i++) {     // traverse particles
         particles[i].velocity.first = 0.;
         particles[i].velocity.second = 0.;
         particles[i].mass = 10.;
