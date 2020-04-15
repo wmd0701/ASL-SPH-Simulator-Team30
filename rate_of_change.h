@@ -133,8 +133,8 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
       double constant1 =
           pj->mass * (pi->pressure / (pi->density * pi->density) +
                       pj->pressure / (pj->density * pj->density));
-      pi->accelerat.first = -constant1 * gradient.first;
-      pi->accelerat.second = -constant1 * gradient.second;
+      pi->accelerat.first -= constant1 * gradient.first;
+      pi->accelerat.second -= constant1 * gradient.second;
 
       vector xij = vec_sub_vec(pj->position, pi->position);
       vector vij = vec_sub_vec(pj->velocity, pi->velocity);
