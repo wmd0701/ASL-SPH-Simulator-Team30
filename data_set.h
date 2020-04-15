@@ -93,11 +93,11 @@ typedef struct {
 *			 - repulsive particles only need information of interior particles
 *			 - ghost particles need information of both interior and repulsive particles
 */
-void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
+void SearchNeighbors (Particle* all_particle, Index ptc_idx, const int N) {
 	vector xi = all_particle[ptc_idx].position;
 	double r2;   // distance of two particles
 	Neighbor_p p, tmp;
-	int N = NUMBER_OF_PARTICLE;
+	all_particle[ptc_idx].neighbors = NULL;
 
 	if (all_particle[ptc_idx].tag == interior) {
 		for (Index j = 0; j < N; j++) {
@@ -207,7 +207,7 @@ Particle *Init() {
     particles[i].accelerat.first = 0.;
     particles[i].accelerat.second = 0.;
 
-    SearchNeighbors(particles, i);
+    SearchNeighbors(particles, i, N);
   }
   return particles;
 }
