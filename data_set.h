@@ -101,23 +101,21 @@ void SearchNeighbors (Particle* all_particle, Index ptc_idx) {
 
 	if (all_particle[ptc_idx].tag == interior) {
 		for (Index j = 0; j < N; j++) {
-			if (j != ptc_idx) {   // check if itself
-				r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
-						  pow((all_particle[j].position.second - xi.second), 2));
-				if (r2 < 2*H) {	  // check if neighbor
-					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
-						p->idx = j;
-						p->next = NULL;
-                        all_particle[ptc_idx].neighbors = p;
-					}
-					else {	 // if it's not the first pointer of list
-						tmp = p;
-						p = (Neighbor_p)malloc(sizeof(struct Neighbor));
-						p->idx = j;
-						p->next = NULL;
-						tmp->next = p;
-					}
+			r2 = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
+					  pow((all_particle[j].position.second - xi.second), 2));
+			if (r2 < 2*H) {	  // check if neighbor
+				if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
+					p = (Neighbor_p)malloc(sizeof(struct Neighbor));
+					p->idx = j;
+					p->next = NULL;
+                    all_particle[ptc_idx].neighbors = p;
+				}
+				else {	 // if it's not the first pointer of list
+					tmp = p;
+					p = (Neighbor_p)malloc(sizeof(struct Neighbor));
+					p->idx = j;
+					p->next = NULL;
+					tmp->next = p;
 				}
 			}
 		}
