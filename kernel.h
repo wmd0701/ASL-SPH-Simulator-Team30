@@ -44,7 +44,7 @@ vector KernelGradient (const vector xi,const vector xj) {
     
     vector grad;
     
-    if(q >= 0 && q <= 0.5){
+    if(q >= 1e-12 && q <= 0.5){
         double temp =  prefactor*6*(3*q*q - 2*q);
         grad.first = temp*(xi.first - xj.first)/(H * r);
         grad.second = temp*(xi.second - xj.second)/(H * r);
