@@ -127,6 +127,8 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
     if (all_particle[i].tag == interior) {
         Neighbor_p *n = all_particle[i].neighbors;
         Particle *pi = &all_particle[i];
+        pi->accelerat.first  = 0;
+        pi->accelerat.second = 0;
     
         while (n != NULL) {
           Particle *pj = &all_particle[n->idx];
