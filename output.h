@@ -18,12 +18,13 @@ void WriteData(Particle* all_particle, double t_now) {
     sprintf(time, "data/data-%08.0f.csv", t_now);
     FILE *fp = NULL;
     fp = fopen(time,"w");
-    fprintf(fp, "x coord, y coord, u, v, m, rho, p\n"); 
-    for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
+    fprintf(fp, "x coord, y coord, tag, u, v, m, rho, p\n"); 
+    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
         this_p = all_particle[i];
-        fprintf(fp, "%lf, %lf, %lf, %lf, %lf, %lf, %lf\n",  
+        fprintf(fp, "%lf, %lf, %i, %lf, %lf, %lf, %lf, %lf\n",  
         this_p.position.first,
         this_p.position.second,
+				this_p.tag,
         this_p.velocity.first,
         this_p.velocity.second,
         this_p.mass,

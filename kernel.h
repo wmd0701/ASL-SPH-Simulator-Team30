@@ -71,10 +71,10 @@ vector KernelGradient (const vector xi,const vector xj) {
 void ComputeGlobalKernel (Particle *all_particle) {
 	vector xi, xj;
 	int N = NUMBER_OF_PARTICLE;
-	for (Index i = 0; i < N; i++) {
+	for (int i = 0; i < N; i++) {
 
 		xi = all_particle[i].position;
-		for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {
+		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
 
 			xj = all_particle[p->idx].position;
 			
@@ -98,13 +98,13 @@ void KernelGradientCorrection (Particle *all_particle) {
 	vector new_grad;
 	int N = NUMBER_OF_PARTICLE;
 
-	for (Index i = 0; i < N; i++) {
+	for (int i = 0; i < N; i++) {
 
 		a00 = 0;
 		a01 = 0;
 		a10 = 0;
 		a11 = 0;
-		for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {
+		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
 			
 			V = all_particle[p->idx].mass / all_particle[p->idx].density;
 			xji = all_particle[p->idx].position.first  - all_particle[i].position.first;
@@ -118,7 +118,7 @@ void KernelGradientCorrection (Particle *all_particle) {
 
 		determinant = a00 * a11 - a10 * a01;
 
-		for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {
+		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
 			
 			new_grad.first  = (  a00 * p->Wij_grad_i.first - a01 * p->Wij_grad_i.second) / determinant;
 			new_grad.second = (- a10 * p->Wij_grad_i.first + a11 * p->Wij_grad_i.second) / determinant;

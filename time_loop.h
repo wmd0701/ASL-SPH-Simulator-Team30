@@ -70,8 +70,8 @@ void TimeLoop (double t_end) {
 		
 		t += dt;
 		
-		for(int i = 0; i < NUMBER_OF_PARTICLE; i++)
-			SearchNeighbors(all_particle, i);
+		for(int i = 0; i < N; i++)
+			SearchNeighbors(all_particle, i, N);
 
 		//output data to file
 		printf("write at time t = %f\n",t);

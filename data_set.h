@@ -100,12 +100,12 @@ typedef struct {
 *			 - repulsive particles only need information of interior particles
 *			 - ghost particles need information of both interior and repulsive particles
 */
-void SearchNeighbors (Particle* all_particle, int ptc_idx) {
+void SearchNeighbors (Particle* all_particle, int ptc_idx, const int N) {
 	vector xi = all_particle[ptc_idx].position;
 	double r2;   // distance between two particles
 	// double H_square_4 = 4 * H * H;
-	Neighbor_p p, tmp;
-	int N = NUMBER_OF_PARTICLE;
+	Neighbor_p *p;
+	all_particle[ptc_idx].neighbors = NULL;
 
 	if (all_particle[ptc_idx].tag == interior) {
 		for (int j = 0; j < N; j++) {
@@ -119,13 +119,14 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx) {
 					...
 				*/
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						p = {.idx = j, .next = NULL};
-                        all_particle[ptc_idx].neighbors = &p;
+						Neighbor_p new_p = {.idx = j, .next = NULL}; 
+						p = &new_p;
+                        all_particle[ptc_idx].neighbors = p;
 					}
 					else {	 // if it's not the first pointer of list
-						tmp = p;
-						p = {.idx = j, .next = NULL};
-						tmp.next = &p;
+						Neighbor_p new_p = {.idx = j, .next = NULL};
+						p->next = &new_p;
+						p = p->next;
 					}
 				}
 			}
@@ -137,13 +138,14 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx) {
 				r2 = vec_distance_vec(all_particle[j].position, xi);
 				if (r2 < 2*H) {	  // check if neighbor
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						p = {.idx = j, .next = NULL};
-                        all_particle[ptc_idx].neighbors = &p;
+						Neighbor_p new_p = {.idx = j, .next = NULL}; 
+						p = &new_p;
+                        all_particle[ptc_idx].neighbors = p;
 					}
 					else {	 // if it's not the first pointer of list
-						tmp = p;
-						p = {.idx = j, .next = NULL};
-						tmp.next = &p;
+						Neighbor_p new_p = {.idx = j, .next = NULL};
+						p->next = &new_p;
+						p = p->next;
 					}
 				}
 			}
@@ -155,13 +157,14 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx) {
 				r2 = vec_distance_vec(all_particle[j].position, xi);
 				if (r2 < 2*H) {
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						p = {.idx = j, .next = NULL};
-                        all_particle[ptc_idx].neighbors = &p;
+						Neighbor_p new_p = {.idx = j, .next = NULL}; 
+						p = &new_p;
+                        all_particle[ptc_idx].neighbors = p;
 					}
 					else {	 // if it's not the first pointer of list
-						tmp = p;
-						p = {.idx = j, .next = NULL};
-						tmp.next = &p;
+						Neighbor_p new_p = {.idx = j, .next = NULL};
+						p->next = &new_p;
+						p = p->next;
 					}
 				}
 			}
@@ -178,30 +181,39 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx) {
 *
 *		@return	pointer to an array containing information of all the particles
 */
-Particle* Init(){
-	// TODO: initialization
-	Particle* particles = (Particle*)malloc(sizeof(Particle)*NUMBER_OF_PARTICLE);
-    for(int i = 0; i < 10; ++i){
-        for(int j = 0; j < 10; ++j){
-            particles[i*10 + j].position.first = 0.5*H*i;
-            particles[i*10 + j].position.second = 0.5*H*j;
-        }
+Particle *Init() {
+  // TODO: initialization
+  Particle *particles =
+      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+  for (int i = 0; i < 16; ++i) {
+    for (int j = 0; j < 16; ++j) {
+      particles[i * 16 + j].position.first = 0.5 * H * i;
+      particles[i * 16 + j].position.second = 0.5 * H * j;
+
+      if ((i > 2 && i < 13) && (j > 2 && j < 13))
+        particles[i * 16 + j].tag = interior; // interior
+      else if (i < 2 || i > 13 || j < 2 || j > 13)
+        particles[i * 16 + j].tag = ghost; // ghost
+      else {
+        particles[i * 16 + j].tag = 1; // repulsive
+      }
     }
-    int N = NUMBER_OF_PARTICLE;   // get the number of particles
-    for (int i = 0; i < N; i++) {     // traverse particles
-        particles[i].velocity.first = 0.;
-        particles[i].velocity.second = 0.;
-        particles[i].mass = 10.;
-        particles[i].density = initial_density;
-        particles[i].pressure = 1.;
-        particles[i].pressure_force.first = 0.;
-        particles[i].pressure_force.second = 0.;
-        particles[i].accelerat.first = 0.;
-        particles[i].accelerat.second = 0.;
-        
-        SearchNeighbors(particles, i);
-    }
-	return particles;
+  }
+  int N = NUMBER_OF_PARTICLE;     // get the number of particles
+  for (int i = 0; i < N; i++) { // traverse particles
+    particles[i].velocity.first = 0.;
+    particles[i].velocity.second = 0.;
+    particles[i].mass = 10.;
+    particles[i].density = initial_density;
+    particles[i].pressure = 1.;
+    particles[i].pressure_force.first = 0.;
+    particles[i].pressure_force.second = 0.;
+    particles[i].accelerat.first = 0.;
+    particles[i].accelerat.second = 0.;
+
+    SearchNeighbors(particles, i, N);
+  }
+  return particles;
 }
 
 
