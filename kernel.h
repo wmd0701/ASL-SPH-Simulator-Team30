@@ -112,7 +112,7 @@ void KernelGradientCorrection (Particle *all_particle) {
 			a00 += xji * p->Wij_grad_i.first  * V;
 			a01 += yji * p->Wij_grad_i.first  * V;
 			a10 += xji * p->Wij_grad_i.second * V;
-			a11 += xji * p->Wij_grad_i.second * V;
+			a11 += yji * p->Wij_grad_i.second * V;
 
 		}
 
