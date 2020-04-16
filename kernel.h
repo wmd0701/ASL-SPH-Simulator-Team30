@@ -120,8 +120,8 @@ void KernelGradientCorrection (Particle *all_particle) {
 
 		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
 			
-			new_grad.first  = (  a00 * p->Wij_grad_i.first - a01 * p->Wij_grad_i.second) / determinant;
-			new_grad.second = (- a10 * p->Wij_grad_i.first + a11 * p->Wij_grad_i.second) / determinant;
+			new_grad.first  = (  a11 * p->Wij_grad_i.first - a01 * p->Wij_grad_i.second) / determinant;
+			new_grad.second = (- a10 * p->Wij_grad_i.first + a00 * p->Wij_grad_i.second) / determinant;
 			p->Wij_grad_i = new_grad;
 			
 		}
