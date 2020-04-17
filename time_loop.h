@@ -16,7 +16,7 @@
 *		@return dt
 */
 double ComputeTimeStep (Particle* all_particle) {
-	return 0.01;
+	return 0.01 * H / sqrt(2*gravity*dam_height);
 }
 
 /** 	
@@ -25,59 +25,49 @@ double ComputeTimeStep (Particle* all_particle) {
 *		@param t_end end time
 */
 void TimeLoop (double t_end) {
-	
 	double dt, t = 0;
 	
-	Particle* all_particle = Init();
-	WriteData               (all_particle, t);
-
+	Particle* all_particle = Init2();
+	printf("init completed.\n");
+	WriteData(all_particle, t);
 	// choose which time integration method to use, details in time_integration.h
 	Set_Integration_Method(EXPLICIT_EULER);
     
-  int N = NUMBER_OF_PARTICLE;   // get the number of particles
+  	int N = NUMBER_OF_PARTICLE;   // get the number of particles
 	
-	while (t < t_end) {
+	for (int step = 0; step < 10000; step ++) {
 		dt = ComputeTimeStep     (all_particle);
-		
-		//----------------------------------
-		// Tianwei
+
 		ComputeGlobalKernel      (all_particle);
 		ComputeGlobalDensity     (all_particle);
-        
-		// DensityCorrection        (all_particle);
-        
-		//KernelGradientCorrection (all_particle);
-		//----------------------------------
 		
-		ComputeGhostAndRepulsiveVelocity     (all_particle);
-		
-		//----------------------------------
-		// Valerie
+        ComputeGhostAndRepulsiveVelocity     (all_particle);
+		DensityAndBCVelocityCorrection       (all_particle);
+    	//KernelGradientCorrection (all_particle);
+		ComputeGlobalPressure    (all_particle);
 		ComputeInteriorLaminarAcceleration (all_particle);
 		//AddTurbulentModel        (all_particle);
 		AddRepulsiveForce	     (all_particle);
-		//----------------------------------
-
-		//----------------------------------
-		// Silvia
-		ComputeGlobalPressure    (all_particle);
-		//----------------------------------
 		
-		//----------------------------------
-		// Mengdi
-		Time_Integration		(all_particle, dt);
+		Time_Integration		 (all_particle, dt);
     //----------------------------------
 		
 		t += dt;
 		
-		for(int i = 0; i < N; i++)
-			SearchNeighbors(all_particle, i, N);
+		DeleteLists(all_particle);
+		for(int i = 0; i < NUMBER_OF_PARTICLE; i++){
+			SearchNeighbors(all_particle, i);
+		}
 
 		//output data to file
-		printf("write at time t = %f\n",t);
-		WriteData               (all_particle, t);
+		if (step % 1000 == 0) {
+			WriteData(all_particle, t);
+		}
+		printf("time t = %f\n",t);
+		
 	}
-
+	WriteData(all_particle, t);
+	DeleteLists(all_particle);
 	free(all_particle);
 	
 }

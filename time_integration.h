@@ -57,8 +57,6 @@ void Explicit_Euler (Particle* all_particle, double dt){
         if(all_particle[i].tag != interior)
             continue;
 
-        // all_particle[i].accelerat = vec_div_scalar(all_particle[i].pressure_force, all_particle[i].mass);
-
         all_particle[i].position = vec_add_vec(all_particle[i].position, vec_mul_scalar(all_particle[i].velocity, dt));
         all_particle[i].velocity = vec_add_vec(all_particle[i].velocity, vec_mul_scalar(all_particle[i].accelerat, dt));
     }

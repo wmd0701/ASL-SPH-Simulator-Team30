@@ -12,14 +12,13 @@
 *	  @param ptc_idx index of the particle that is being considered
 *     @return density value
 */
-double ComputeLocalDensity (Particle *all_particle, int ptc_idx) {
+double ComputeLocalDensity (Particle *all_particle, Index ptc_idx) {
 	double sum = 0;
-    for (Neighbor_p *p = all_particle[ptc_idx].neighbors; p != NULL; p = p->next) {
+    for (Neighbor_p p = all_particle[ptc_idx].neighbors; p != NULL; p = p->next) {
         sum += p->Wij * all_particle[p->idx].mass;
     }
     return sum;
 }
-
 
 /**!  
 *     @brief Compute the value of density field at every particle
@@ -28,8 +27,9 @@ double ComputeLocalDensity (Particle *all_particle, int ptc_idx) {
 */
 void ComputeGlobalDensity (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;
-    for (int i = 0; i < N; i++) {
+    for (Index i = 0; i < N; i++) {
         all_particle[i].density = ComputeLocalDensity(all_particle, i);
+        //printf("index = %i, density = %f\n", i, all_particle[i].density);
     }
 }
 
@@ -38,21 +38,25 @@ void ComputeGlobalDensity (Particle *all_particle) {
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [density] attribute in all_particle
 */
-void DensityCorrection (Particle *all_particle) {
+void DensityAndBCVelocityCorrection (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;   // get the number of particles
     double* sum = (double*)malloc(sizeof(double)*N);
-    for (int i = 0; i < N; i++) {     // traverse particles
+    for (Index i = 0; i < N; i++) {     // traverse particles
         double sum_Wij = 0;
-        for (Neighbor_p *nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
+        for (Neighbor_p nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
                 Particle * pk = &all_particle[nk->idx];
                     sum_Wij += nk->Wij * pk->mass / pk->density;
-                    printf("Wij = %f \t mass = %f \t density = %f\n", nk->Wij, pk->mass, pk->density);
+                    //printf("Wij = %f \t mass = %f \t density = %f\n", nk->Wij, pk->mass, pk->density);
         }
         sum[i] = sum_Wij;
     }
-    for (int i = 0; i < N; i++) {
+    for (Index i = 0; i < N; i++) {
         all_particle[i].density /= sum[i];
-        printf("%u: density = %f\n", i, all_particle[i].density);
+        //printf("%u: density = %f\n", i, all_particle[i].density);
+        if (all_particle[i].tag != interior) {
+            all_particle[i].velocity.first /= sum[i];
+            all_particle[i].velocity.second /= sum[i];
+        }
     }
 }
 
@@ -63,21 +67,23 @@ void DensityCorrection (Particle *all_particle) {
 */
 double ComputeSoundSpeedSquared(Particle *all_particle){
 	//Bulk velocity for a dam break
-    double v = 2*dam_height*gravity;
+    double v2 = 2*dam_height*gravity;
     
+    /*
     //Computing delta
     int N = NUMBER_OF_PARTICLE;
     double delta = abs(all_particle[0].density - initial_density)/initial_density;
     double temp = delta;
-	for (int i = 1; i < N; i++) {
+	for (Index i = 1; i < N; i++) {
         temp = abs(all_particle[i].density - initial_density)/initial_density;
         if (temp < delta){
             delta = temp;
         }
-    }
+    }*/
+    double delta = 0.1;
     
     //This is only the first term of the three shown in the paper
-    return v*v/delta;
+    return v2 / delta;
 }
 
 /**   
@@ -89,8 +95,11 @@ void ComputeGlobalPressure (Particle *all_particle){
 	double c2 = ComputeSoundSpeedSquared(all_particle);
     
     int N = NUMBER_OF_PARTICLE;
-	for (int i = 0; i < N; i++) {
-        all_particle[i].pressure = c2 * all_particle[i].density;
+	for (Index i = 0; i < N; i++) {
+        all_particle[i].pressure = c2 * (all_particle[i].density - 997);
+        if (all_particle[i].pressure < 0) {
+            all_particle[i].pressure = 0;
+        }
     }
     return;
 }
@@ -102,17 +111,17 @@ void ComputeGlobalPressure (Particle *all_particle){
 */
 void ComputeGhostAndRepulsiveVelocity (Particle *all_particle){
 	int N = NUMBER_OF_PARTICLE;
-	for (int i = 0; i < N; i++) {
+	for (Index i = 0; i < N; i++) {
         if(all_particle[i].tag != 0){
             vector sum;
             sum.first = 0;
             sum.second = 0;
-            for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
-                sum.first -= all_particle[p->idx].velocity.first * p->Wij * all_particle[p->idx].mass * all_particle[p->idx].density;
-                sum.second -= all_particle[p->idx].velocity.second * p->Wij * all_particle[p->idx].mass * all_particle[p->idx].density;
+            for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
+                sum.first -= all_particle[p->idx].velocity.first * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
+                sum.second -= all_particle[p->idx].velocity.second * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
             }
-            all_particle[i].velocity.first = 1.0;//sum.first;
-            all_particle[i].velocity.second = 1.0; //sum.second;
+            all_particle[i].velocity.first = sum.first;//sum.first;
+            all_particle[i].velocity.second = sum.second; //sum.second;
         }
     }
 }
@@ -123,39 +132,44 @@ void ComputeGhostAndRepulsiveVelocity (Particle *all_particle){
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
 void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
-  for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-    if (all_particle[i].tag == interior) {
-        Neighbor_p *n = all_particle[i].neighbors;
-        Particle *pi = &all_particle[i];
-        pi->accelerat.first  = 0;
-        pi->accelerat.second = 0;
-    
-        while (n != NULL) {
-          Particle *pj = &all_particle[n->idx];
-          vector gradient = n->Wij_grad_i;
-          double constant1 =
-              pj->mass * (pi->pressure / (pi->density * pi->density) +
-                          pj->pressure / (pj->density * pj->density));
-          pi->accelerat.first -= constant1 * gradient.first;
-          pi->accelerat.second -= constant1 * gradient.second;
-    
-          vector xij = vec_sub_vec(pj->position, pi->position);
-          vector vij = vec_sub_vec(pj->velocity, pi->velocity);
-    
-          double constant2 =
-              (4.0 * pj->mass * (2.0 * dynamic_viscosity) * vec_dot_vec(xij, gradient)) /
-              (pow((pi->density + pj->density), 2) *
-               (vec_dot_vec(xij, xij) + 0.01 * pow(H, 2)));
-    
-          pi->accelerat.first += constant2 * vij.first;
-          pi->accelerat.second += constant2 * vij.second;
-         	
-    	  n = n->next;
+    for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
+        if (all_particle[i].tag == interior) {
+            Neighbor_p n = all_particle[i].neighbors;
+            Particle *pi = &all_particle[i];
+            pi->accelerat.first  = 0;
+            pi->accelerat.second = 0;
+
+            
+            while (n != NULL) {
+                Particle *pj = &all_particle[n->idx];
+                vector gradient = n->Wij_grad_i;
+                double constant1 =
+                    pj->mass * (pi->pressure / (pi->density * pi->density) +
+                                pj->pressure / (pj->density * pj->density));
+
+                
+                pi->accelerat.first -= constant1 * gradient.first;
+                pi->accelerat.second -= constant1 * gradient.second;
+
+                vector xij = vec_sub_vec(pj->position, pi->position);
+                vector vij = vec_sub_vec(pj->velocity, pi->velocity);
+
+                
+                double constant2 =
+                    (4.0 * pj->mass * (2.0 * dynamic_viscosity) * vec_dot(xij, gradient)) /
+                    (pow((pi->density + pj->density), 2) *
+                    (vec_dot(xij, xij) + 0.01 * pow(H, 2)));
+
+                pi->accelerat.first += constant2 * vij.first;
+
+                pi->accelerat.second += constant2 * vij.second;
+                
+
+                n = n->next;
+            }
+            pi->accelerat.second -= gravity;
         }
-        
-        pi->accelerat.second -= gravity;
     }
-  }
 }
 
 /**   
@@ -172,7 +186,69 @@ void AddTurbulentModel(Particle *all_particle){
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
 void AddRepulsiveForce(Particle *all_particle){
-	
+    int N = NUMBER_OF_PARTICLE;
+    Index i;
+    Particle *pi;
+    double c2 = ComputeSoundSpeedSquared(all_particle);
+    double beta, q;
+    vector pos;
+    for (i = 0; i < N; i++) {
+        pi = &all_particle[i];
+        if (pi->tag == interior) {                     
+            pos = pi->position;
+
+            // for bottom boundary
+            q = pos.second / H;
+            if (q > 0) {
+                if (q <= 2 / 3) {
+                    beta = 0.02 * c2 / pos.second;
+                    pi->accelerat.second += 2 / 3 * beta / 2; 
+                }
+                else if (q <= 1) {
+                    beta = 0.02 * c2 / pos.second;
+                    pi->accelerat.second += beta * (2 * q - 3/2 * q * q) / 2;
+                }
+                else if (q <= 2) {
+                    beta = 0.02 * c2 / pos.second;
+                    pi->accelerat.second += 0.5 * beta * (2 - q) * (2 - q) / 2;
+                }
+            }
+
+            // for left boundary
+            q = pos.first / H;
+            if (q > 0) {
+                if (q <= 2 / 3) {
+                    beta = 0.02 * c2 / pos.first;
+                    pi->accelerat.first += 2 / 3 * beta / 2;
+                }
+                else if (q <= 1) {
+                    beta = 0.02 * c2 / pos.first;
+                    pi->accelerat.first += beta * (2 * q - 3/2 * q * q) / 2;
+                }
+                else if (q <= 2) {
+                    beta = 0.02 * c2 / pos.first;
+                    pi->accelerat.first += 0.5 * beta * (2 - q) * (2 - q) / 2;
+                }
+            }
+
+            // for right boundary
+            q = (80 * H - pos.first) / H;
+            if (q > 0) {
+                if (q <= 2 / 3) {
+                    beta = 0.02 * c2 / (80 * H - pos.first);
+                    pi->accelerat.first -= 2 / 3 * beta / 2;
+                }
+                else if (q <= 1) {
+                    beta = 0.02 * c2 / (80 * H - pos.first);
+                    pi->accelerat.first -= beta * (2 * q - 3/2 * q * q) / 2;
+                }
+                else if (q <= 2) {
+                    beta = 0.02 * c2 / (80 * H - pos.first);
+                    pi->accelerat.first -= 0.5 * beta * (2 - q) * (2 - q) / 2;
+                }
+            }
+        }
+    }	
 }
 
 #endif // RATE_OF_CHANGE_H
