@@ -54,6 +54,7 @@ void DensityCorrection (Particle *all_particle) {
         all_particle[i].density /= sum[i];
         printf("%u: density = %f\n", i, all_particle[i].density);
     }
+    free(sum);
 }
 
 /**   

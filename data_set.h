@@ -70,6 +70,15 @@ struct Neighbor{
 };
 typedef struct Neighbor Neighbor_p;
 
+// delete a whole linked list
+void deleteNeighbors(Neighbor_p **p){
+    Neighbor_p *prev = *p;
+    while(*p){
+        *p = (*p)->next;
+        free(prev);
+        prev = *p;
+    }
+}
 
 /**  
 *	 @brief A struct containing some variables of a particle
@@ -105,7 +114,8 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx, const int N) {
 	double r2;   // distance between two particles
 	// double H_square_4 = 4 * H * H;
 	Neighbor_p *p;
-	all_particle[ptc_idx].neighbors = NULL;
+	// all_particle[ptc_idx].neighbors = NULL;
+	deleteNeighbors(&(all_particle[ptc_idx].neighbors));
 
 	if (all_particle[ptc_idx].tag == interior) {
 		for (int j = 0; j < N; j++) {
@@ -119,14 +129,18 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx, const int N) {
 					...
 				*/
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						Neighbor_p new_p = {.idx = j, .next = NULL}; 
-						p = &new_p;
-                        all_particle[ptc_idx].neighbors = p;
+						Neighbor_p *new_p = (Neighbor_p*)malloc(sizeof(Neighbor_p));
+						new_p->idx = j;
+						new_p->next = NULL;
+                        all_particle[ptc_idx].neighbors = new_p;
+                        p = new_p;
 					}
 					else {	 // if it's not the first pointer of list
-						Neighbor_p new_p = {.idx = j, .next = NULL};
-						p->next = &new_p;
-						p = p->next;
+						Neighbor_p *new_p = (Neighbor_p*)malloc(sizeof(Neighbor_p));
+						new_p->idx = j;
+						new_p->next = NULL;
+						p->next = new_p;
+                        p = p->next;
 					}
 				}
 			}
@@ -138,14 +152,18 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx, const int N) {
 				r2 = vec_distance_vec(all_particle[j].position, xi);
 				if (r2 < 2*H) {	  // check if neighbor
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						Neighbor_p new_p = {.idx = j, .next = NULL}; 
-						p = &new_p;
-                        all_particle[ptc_idx].neighbors = p;
+						Neighbor_p *new_p = (Neighbor_p*)malloc(sizeof(Neighbor_p));
+						new_p->idx = j;
+						new_p->next = NULL;
+                        all_particle[ptc_idx].neighbors = new_p;
+                        p = new_p;
 					}
 					else {	 // if it's not the first pointer of list
-						Neighbor_p new_p = {.idx = j, .next = NULL};
-						p->next = &new_p;
-						p = p->next;
+						Neighbor_p *new_p = (Neighbor_p*)malloc(sizeof(Neighbor_p));
+						new_p->idx = j;
+						new_p->next = NULL;
+						p->next = new_p;
+                        p = p->next;
 					}
 				}
 			}
@@ -157,14 +175,18 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx, const int N) {
 				r2 = vec_distance_vec(all_particle[j].position, xi);
 				if (r2 < 2*H) {
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
-						Neighbor_p new_p = {.idx = j, .next = NULL}; 
-						p = &new_p;
-                        all_particle[ptc_idx].neighbors = p;
+						Neighbor_p *new_p = (Neighbor_p*)malloc(sizeof(Neighbor_p));
+						new_p->idx = j;
+						new_p->next = NULL;
+                        all_particle[ptc_idx].neighbors = new_p;
+                        p = new_p;
 					}
 					else {	 // if it's not the first pointer of list
-						Neighbor_p new_p = {.idx = j, .next = NULL};
-						p->next = &new_p;
-						p = p->next;
+						Neighbor_p *new_p = (Neighbor_p*)malloc(sizeof(Neighbor_p));
+						new_p->idx = j;
+						new_p->next = NULL;
+						p->next = new_p;
+                        p = p->next;
 					}
 				}
 			}
