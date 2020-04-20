@@ -64,16 +64,6 @@ struct Neighbor{
 typedef struct Neighbor *Neighbor_p;
 typedef struct Neighbor *NeighborList;
 
-// delete a whole linked list
-void deleteNeighbors(Neighbor_p **p){
-    Neighbor_p *prev = *p;
-    while(*p){
-        *p = (*p)->next;
-        free(prev);
-        prev = *p;
-    }
-}
-
 /**  
 *	 @brief A struct containing some variables of a particle
 */
@@ -97,7 +87,7 @@ typedef struct {
 *    @brief search for the neighbor particles and  allocate memory for [neighbors]
 *    @param all_particle pointer to an array containing information of all the particles
 *    @param ptc_idx index of the particle that is being considered
-*	 @note   - search radius = H
+*	 @note   - search radius = 2H
 *			 - only be called at initiation step
 *			 - repulsive particles only need information of interior particles
 *			 - ghost particles need information of both interior and repulsive particles
