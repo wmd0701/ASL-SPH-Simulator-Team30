@@ -64,6 +64,15 @@ struct Neighbor{
 typedef struct Neighbor *Neighbor_p;
 typedef struct Neighbor *NeighborList;
 
+// delete a whole linked list
+void deleteNeighbors(Neighbor_p **p){
+    Neighbor_p *prev = *p;
+    while(*p){
+        *p = (*p)->next;
+        free(prev);
+        prev = *p;
+    }
+}
 
 /**  
 *	 @brief A struct containing some variables of a particle
