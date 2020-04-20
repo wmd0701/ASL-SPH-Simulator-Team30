@@ -9,14 +9,20 @@
 /** 	
 *		@brief Compute dt for the next iteration
 *	
-*			   Compute the maximum dt that won't cause every particle to move more than range of a certain radius.
-*			   This is needed to validly update the nearby relation in all_particle
 *
 *		@param all_particle pointer to an array containing information of all the particles
 *		@return dt
 */
 double ComputeTimeStep (Particle* all_particle) {
-	return 0.01 * H / sqrt(2*gravity*dam_height);
+	double max = 40 * sqrt(2*gravity*dam_height);
+	double v;
+	for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
+		if (all_particle[i].tag == interior) {
+			v = sqrt(pow(all_particle[i].velocity.first, 2) + pow(all_particle[i].velocity.second, 2));
+			max = (v > max) ? v : max;
+		}
+	}
+	return 0.4 * H / max;
 }
 
 /** 	
@@ -24,33 +30,34 @@ double ComputeTimeStep (Particle* all_particle) {
 *		@param all_particle pointer to an array containing information of all the particles
 *		@param t_end end time
 */
-void TimeLoop (double t_end) {
+double TimeLoop () {
 	double dt, t = 0;
 	
-	Particle* all_particle = Init2();
+	Particle* all_particle = Init_dam_break();
 	printf("init completed.\n");
 	WriteData(all_particle, t);
+
 	// choose which time integration method to use, details in time_integration.h
 	Set_Integration_Method(EXPLICIT_EULER);
     
   	int N = NUMBER_OF_PARTICLE;   // get the number of particles
 	
-	for (int step = 0; step < 10000; step ++) {
-		dt = ComputeTimeStep     (all_particle);
+	for (int step = 0; step < 20000; step ++) {
+		dt = ComputeTimeStep                 (all_particle);
 
-		ComputeGlobalKernel      (all_particle);
-		ComputeGlobalDensity     (all_particle);
+		ComputeGlobalKernel                  (all_particle);
+		ComputeGlobalDensity                 (all_particle);
 		
         ComputeGhostAndRepulsiveVelocity     (all_particle);
 		DensityAndBCVelocityCorrection       (all_particle);
-    	//KernelGradientCorrection (all_particle);
-		ComputeGlobalPressure    (all_particle);
-		ComputeInteriorLaminarAcceleration (all_particle);
-		//AddTurbulentModel        (all_particle);
-		AddRepulsiveForce	     (all_particle);
+    	//KernelGradientCorrection           (all_particle);
+		ComputeGlobalPressure2               (all_particle);
+		ComputeInteriorLaminarAcceleration   (all_particle);
+		//AddTurbulentModel                  (all_particle);
+		AddRepulsiveForce	                 (all_particle);
+		//AddInertialForce		             (all_particle, t);   
 		
-		Time_Integration		 (all_particle, dt);
-    //----------------------------------
+		Time_Integration		             (all_particle, dt);
 		
 		t += dt;
 		
@@ -60,15 +67,18 @@ void TimeLoop (double t_end) {
 		}
 
 		//output data to file
-		if (step % 1000 == 0) {
+		if (step % 100 == 0) {
 			WriteData(all_particle, t);
 		}
 		printf("time t = %f\n",t);
-		
+	
 	}
+
 	WriteData(all_particle, t);
 	DeleteLists(all_particle);
 	free(all_particle);
+
+	return t;
 	
 }
 

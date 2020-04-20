@@ -3,6 +3,7 @@
 #define DATA_SET_H
 
 #include <stdlib.h>
+#include <stdio.h>
 #include <math.h>
 #include "constants.h"
 
@@ -211,10 +212,16 @@ Particle *Init() {
 
 /**
  * 		@brief initialize a dam break problem
+ * 				
+ * 				|				  |
+ * 				|				  |
+ * 				|■ ■ 			  |
+ * 				|■_■______________|
+ * 
  * 		@note  number of paricles = 2255
  *		@return pointer to an array containing information of all the particles
  */
-Particle *Init2() {
+Particle *Init_dam_break() {
   // TODO: initialization
   Particle *particles =
       (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
@@ -290,6 +297,106 @@ Particle *Init2() {
   for (Index i = 0; i < N; i++) { // traverse particles
     particles[i].velocity.first = 0.;
     particles[i].velocity.second = 0.;
+    particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997;  /* determined after the first iteration 
+																				 to make density to be 997 */
+    particles[i].density = initial_density;
+    particles[i].pressure = 1.;
+    particles[i].accelerat.first = 0.;
+    particles[i].accelerat.second = 0.;
+	particles[i].neighbors = NULL;
+
+    SearchNeighbors(particles, i);
+  }
+  return particles;
+}
+
+/**
+ * 		@brief initialize a tank with water
+ * 			   to see how it gets balanced
+ * 
+ * 				|	|
+ * 				|	|
+ * 				|■ ■|
+ * 				|■_■|
+ * 		@note  number of paricles = 1901
+ *		@return pointer to an array containing information of all the particles
+ */
+Particle *Init3() {
+  // TODO: initialization
+  Particle *particles =
+      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+  Index now = 0;
+
+  // Set interior particles
+  for (int i = 1; i <= 20; ++i) {
+    for (int j = 1; j <= 40; ++j) {
+		particles[now].position.first  = i * H;
+		particles[now].position.second = j * H;
+		particles[now].tag = interior;
+		now++;
+	}
+  }
+
+  // Set repulsive particles
+  for (int i = 1; i <= 42; i++) {
+	  particles[now].position.first  = i * H / 2;
+	  particles[now].position.second = 0;
+	  particles[now].tag = repulsive;
+	  now++;
+  }
+  for (int j = 0; j <= 160; j++) {
+	  particles[now].position.first  = 0;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = repulsive;
+	  now++;
+  }
+  for (int j = 1; j <= 160; j++) {
+	  particles[now].position.first  = 21 * H;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = repulsive;
+	  now++;
+  }
+
+  // Set ghost particles
+  for (int i = -2; i <= 44; i++) {
+	  particles[now].position.first  = i * H / 2;
+	  particles[now].position.second = - H / 2;
+	  particles[now].tag = ghost;
+	  now++;
+
+	  particles[now].position.first  = i * H / 2;
+	  particles[now].position.second = - H ;
+	  particles[now].tag = ghost;
+	  now++;
+  }
+
+  for (int j = 0; j <= 160; j++) {
+	  particles[now].position.first  = - H;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = ghost;
+	  now++;
+
+	  particles[now].position.first  = - H / 2;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = ghost;
+	  now++;
+
+	  particles[now].position.first  = 21 * H + H / 2;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = ghost;
+	  now++;
+
+	  particles[now].position.first  = 21 * H + H;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = ghost;
+	  now++;
+  }
+  if(NUMBER_OF_PARTICLE != now) printf("number of particles doesn't match with init,\n"); 
+
+  int N = NUMBER_OF_PARTICLE;     // get the number of particles
+  for (Index i = 0; i < N; i++) { // traverse particles
+    particles[i].velocity.first = 0.;
+    particles[i].velocity.second = 0.;
     particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997; 
     particles[i].density = initial_density;
     particles[i].pressure = 1.;
@@ -302,6 +409,38 @@ Particle *Init2() {
   return particles;
 }
 
+
+/**
+ * 		@brief initialize from existing data file
+ * 		@return pointer to all particles
+ */
+Particle* Read_Init(char filename[]) {
+	FILE *fp = fopen(filename, "r");
+	if(!fp)  printf("fail to read the file.\n");
+	Particle* all_particle = (Particle*)malloc(sizeof(Particle)*NUMBER_OF_PARTICLE);
+	char* str;
+	double x1, x2, v1, v2, m;
+	int t;
+	fgets(str, 99, fp);
+	for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
+		fgets(str, 99, fp);
+		sscanf(str, "%lf,%lf,%d,%lf,%lf,%lf", &x1, &x2, &t, &v1, &v2, &m);
+		all_particle[i].position.first  = x1;
+		all_particle[i].position.second = x2;
+		all_particle[i].tag = t;
+		all_particle[i].velocity.first  = v1;
+		all_particle[i].velocity.second = v2;
+		all_particle[i].mass = m;
+		all_particle[i].neighbors = NULL;
+	}
+	for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
+		SearchNeighbors(all_particle, i);
+	}
+	return all_particle;
+}
+
+/**		@brief free the linked lists of every paricles
+ */
 void DeleteLists(Particle* all_particle) {
 	Neighbor_p p, tmp;
 	for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {

@@ -30,19 +30,6 @@ double Kernel (const vector xi,const vector xj) {
 		printf("something wrong with searchneibors.");
 		return 0;
 	}
-
-	/*
-    double prefactor = 40./(7*M_PI*H*H);
-    if(q <= 0.5){
-        return prefactor * (6 * (q*q*q - q*q) + 1.);
-    }
-    else if(q <= 1){
-        return prefactor*2*(1-q)*(1-q)*(1-q);
-    }
-    else{
-        return 0;
-    }
-	*/
     
 }
 
@@ -73,23 +60,6 @@ vector KernelGradient (const vector xi,const vector xj) {
 		grad.first = 0;
 		grad.second = 0;
 	}
-
-	/*
-	if(1e-12 <= q && q <= 0.5){
-        double temp =  prefactor*6*(3*q*q - 2*q);
-        grad.first = temp*(xi.first - xj.first)/(H * r);
-        grad.second = temp*(xi.second - xj.second)/(H * r);
-        
-    }
-    else if(0.5 < q && q <= 1){
-        double temp = prefactor*(-6.)*(1-q)*(1-q);
-        grad.first = temp*(xi.first - xj.first)/(H * r);
-        grad.second = temp*(xi.second - xj.second)/(H * r);
-    }
-    else{
-        grad.first = 0.;
-        grad.second = 0.;
-    }*/
 
     return grad;
     
@@ -155,8 +125,7 @@ void KernelGradientCorrection (Particle *all_particle) {
 			new_grad.second = (- a10 * p->Wij_grad_i.first + a00 * p->Wij_grad_i.second) / determinant;
 			p->Wij_grad_i = new_grad;
 			
-		}
-		
+		}		
 	}
 }
 

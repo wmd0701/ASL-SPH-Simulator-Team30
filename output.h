@@ -21,7 +21,7 @@ void WriteData(Particle* all_particle, double t_now) {
     fprintf(fp, "x coord, y coord, tag, u, v, m, rho, p, a1, a2\n"); 
     for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
         this_p = all_particle[i];
-        fprintf(fp, "%lf,%lf,%i,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",  
+        fprintf(fp, "%lf,%lf,%d,%lf,%lf,%lf,%lf,%lf,%lf,%lf\n",  
         this_p.position.first,
         this_p.position.second,
 				this_p.tag,
