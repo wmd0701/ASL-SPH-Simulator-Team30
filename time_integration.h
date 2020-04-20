@@ -52,14 +52,20 @@ void Time_Integration(Particle* all_particle, double dt){
 }
 
 void Explicit_Euler (Particle* all_particle, double dt){
+    Neighbor_p p;
     for(int i = 0 ; i < NUMBER_OF_PARTICLE ; i++){
         // only for fluid particles
         if(all_particle[i].tag != interior)
             continue;
 
-        // all_particle[i].accelerat = vec_div_scalar(all_particle[i].pressure_force, all_particle[i].mass);
-
         all_particle[i].position = vec_add_vec(all_particle[i].position, vec_mul_scalar(all_particle[i].velocity, dt));
+        // =================== XSPH correction ======================
+        /*
+        for (p = all_particle[i].neighbors; p != NULL; p = p->next) {
+            all_particle[i].position.first  += 0.5 * dt * all_particle[p->idx].mass / all_particle[p->idx].density * p->Wij * (all_particle[p->idx].velocity.first  - all_particle[i].velocity.first);
+            all_particle[i].position.second += 0.5 * dt * all_particle[p->idx].mass / all_particle[p->idx].density * p->Wij * (all_particle[p->idx].velocity.second - all_particle[i].velocity.second);
+        }*/
+        // ==========================================================
         all_particle[i].velocity = vec_add_vec(all_particle[i].velocity, vec_mul_scalar(all_particle[i].accelerat, dt));
     }
 }

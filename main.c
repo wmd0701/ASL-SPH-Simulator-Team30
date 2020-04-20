@@ -10,11 +10,10 @@
 #include "output.h"
 
 int main(int argc, char* argv[]){
-	
-	double endtime = 0.01;
-	TimeLoop(endtime);	
 
-	printf("Finish.\nEnd time is: %f\n", endtime);	
+	double t_end = TimeLoop();	
+
+	printf("Finish.\nEnd time is: %f\n", t_end);	
 	
 	return 0;
 }

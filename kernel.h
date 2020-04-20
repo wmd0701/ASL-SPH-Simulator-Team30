@@ -18,16 +18,18 @@ double Kernel (const vector xi,const vector xj) {
 	
 	double r = sqrt(pow((xi.first - xj.first),2) + pow((xi.second - xj.second),2));
 	double q = r / H;
-    double prefactor = 40./(7*M_PI*H*H);
-    if(q >= 0 && q <= 0.5){
-        return prefactor * (6 * (q*q*q - q*q) + 1.);
-    }
-    else if(q > 0.5 && q <= 1){
-        return prefactor*2*(1-q)*(1-q)*(1-q);
-    }
-    else{
-        return 0;
-    }
+
+	double factor = 10 / 7 / M_PI / H / H;
+	if (q <= 1) {
+		return factor * ( 1 - 1.5 * q * q * (1 - 0.5*q));
+	}
+	else if (q <= 2) {
+		return factor * 0.25 * pow((2 - q), 3);
+	}
+	else{
+		printf("something wrong with searchneibors.");
+		return 0;
+	}
     
 }
 
@@ -40,25 +42,25 @@ double Kernel (const vector xi,const vector xj) {
 vector KernelGradient (const vector xi,const vector xj) {
 	double r = sqrt(pow((xi.first - xj.first),2) + pow((xi.second - xj.second),2));
 	double q = r / H;
-    double prefactor = 40./(7*M_PI*H*H);
-    
+    //double prefactor = 40./(7*M_PI*H*H);
+    double factor = 10 / 7 / M_PI / H / H;
     vector grad;
     
-    if(q >= 1e-12 && q <= 0.5){
-        double temp =  prefactor*6*(3*q*q - 2*q);
-        grad.first = temp*(xi.first - xj.first)/(H * r);
+	if(1e-12 <= q && q <= 1){
+		double temp = factor * (-3 * q + 9/4 * q * q);
+		grad.first = temp*(xi.first - xj.first)/(H * r);
         grad.second = temp*(xi.second - xj.second)/(H * r);
-        
-    }
-    else if(q > 0.5 && q <= 1){
-        double temp = prefactor*(-6.)*(1-q)*(1-q);
-        grad.first = temp*(xi.first - xj.first)/(H * r);
-        grad.second = temp*(xi.second - xj.second)/(H * r);
-    }
-    else{
-        grad.first = 0.;
-        grad.second = 0.;
-    }
+	}
+	else if(1 <= q && q <= 2){
+		double temp = - factor * 3 / 4 * (2 - q) * (2 - q);
+		grad.first = temp*(xi.first - xj.first)/(H * r);
+        grad.second = temp*(xi.second - xj.second)/(H * r); 
+	}
+	else{
+		grad.first = 0;
+		grad.second = 0;
+	}
+
     return grad;
     
 }
@@ -71,10 +73,10 @@ vector KernelGradient (const vector xi,const vector xj) {
 void ComputeGlobalKernel (Particle *all_particle) {
 	vector xi, xj;
 	int N = NUMBER_OF_PARTICLE;
-	for (int i = 0; i < N; i++) {
+	for (Index i = 0; i < N; i++) {
 
 		xi = all_particle[i].position;
-		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
+		for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {
 
 			xj = all_particle[p->idx].position;
 			
@@ -82,7 +84,6 @@ void ComputeGlobalKernel (Particle *all_particle) {
 			p->Wij_grad_i = KernelGradient(xi, xj);
 
 		}
-
 	}	
 }
 
@@ -98,13 +99,13 @@ void KernelGradientCorrection (Particle *all_particle) {
 	vector new_grad;
 	int N = NUMBER_OF_PARTICLE;
 
-	for (int i = 0; i < N; i++) {
+	for (Index i = 0; i < N; i++) {
 
 		a00 = 0;
 		a01 = 0;
 		a10 = 0;
 		a11 = 0;
-		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
+		for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {
 			
 			V = all_particle[p->idx].mass / all_particle[p->idx].density;
 			xji = all_particle[p->idx].position.first  - all_particle[i].position.first;
@@ -118,14 +119,13 @@ void KernelGradientCorrection (Particle *all_particle) {
 
 		determinant = a00 * a11 - a10 * a01;
 
-		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
+		for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {
 			
 			new_grad.first  = (  a11 * p->Wij_grad_i.first - a01 * p->Wij_grad_i.second) / determinant;
 			new_grad.second = (- a10 * p->Wij_grad_i.first + a00 * p->Wij_grad_i.second) / determinant;
 			p->Wij_grad_i = new_grad;
 			
-		}
-		
+		}		
 	}
 }
 
