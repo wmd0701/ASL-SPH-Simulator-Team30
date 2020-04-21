@@ -16,7 +16,7 @@
 double ComputeTimeStep (Particle* all_particle) {
 	double max = 40 * sqrt(2*gravity*dam_height);
 	double v;
-	for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
+	for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
 		if (all_particle[i].tag == interior) {
 			v = sqrt(pow(all_particle[i].velocity.first, 2) + pow(all_particle[i].velocity.second, 2));
 			max = (v > max) ? v : max;
@@ -61,7 +61,6 @@ double TimeLoop () {
 		
 		t += dt;
 		
-		DeleteLists(all_particle);
 		for(int i = 0; i < NUMBER_OF_PARTICLE; i++){
 			SearchNeighbors(all_particle, i);
 		}
@@ -75,7 +74,6 @@ double TimeLoop () {
 	}
 
 	WriteData(all_particle, t);
-	DeleteLists(all_particle);
 	free(all_particle);
 
 	return t;

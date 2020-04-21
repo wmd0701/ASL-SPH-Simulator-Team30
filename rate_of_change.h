@@ -12,9 +12,9 @@
 *	  @param ptc_idx index of the particle that is being considered
 *     @return density value
 */
-double ComputeLocalDensity (Particle *all_particle, Index ptc_idx) {
+double ComputeLocalDensity (Particle *all_particle, int ptc_idx) {
 	double sum = 0;
-    for (Neighbor_p p = all_particle[ptc_idx].neighbors; p != NULL; p = p->next) {
+    for (Neighbor_p *p = all_particle[ptc_idx].neighbors; p != NULL; p = p->next) {
         sum += p->Wij * all_particle[p->idx].mass;
     }
     return sum;
@@ -27,7 +27,7 @@ double ComputeLocalDensity (Particle *all_particle, Index ptc_idx) {
 */
 void ComputeGlobalDensity (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;
-    for (Index i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) {
         all_particle[i].density = ComputeLocalDensity(all_particle, i);
     }
 }
@@ -41,15 +41,15 @@ void ComputeGlobalDensity (Particle *all_particle) {
 void DensityAndBCVelocityCorrection (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;   // get the number of particles
     double* sum = (double*)malloc(sizeof(double)*N);
-    for (Index i = 0; i < N; i++) {     // traverse particles
+    for (int i = 0; i < N; i++) {     // traverse particles
         double sum_Wij = 0;
-        for (Neighbor_p nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
+        for (Neighbor_p *nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
                 Particle * pk = &all_particle[nk->idx];
                     sum_Wij += nk->Wij * pk->mass / pk->density;
         }
         sum[i] = sum_Wij;
     }
-    for (Index i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) {
         all_particle[i].density /= sum[i];
         if (all_particle[i].tag != interior) {
             all_particle[i].velocity.first /= sum[i];
@@ -86,7 +86,7 @@ void ComputeGlobalPressure (Particle *all_particle){
 	double c2 = ComputeSoundSpeedSquared(all_particle);
     
     int N = NUMBER_OF_PARTICLE;
-	for (Index i = 0; i < N; i++) {
+	for (int i = 0; i < N; i++) {
         all_particle[i].pressure = c2 * (all_particle[i].density - 997);
         if (all_particle[i].pressure < 0) {
             all_particle[i].pressure = 0;
@@ -108,7 +108,7 @@ void ComputeGlobalPressure2 (Particle *all_particle){
 	double c2 = ComputeSoundSpeedSquared(all_particle);
     
     int N = NUMBER_OF_PARTICLE;
-	for (Index i = 0; i < N; i++) {
+	for (int i = 0; i < N; i++) {
         all_particle[i].pressure = c2 * initial_density / 7 * (pow(all_particle[i].density / initial_density, 7) - 1);
         if (all_particle[i].pressure < 0) {
             all_particle[i].pressure = 0;
@@ -124,12 +124,12 @@ void ComputeGlobalPressure2 (Particle *all_particle){
 */
 void ComputeGhostAndRepulsiveVelocity (Particle *all_particle){
 	int N = NUMBER_OF_PARTICLE;
-	for (Index i = 0; i < N; i++) {
+	for (int i = 0; i < N; i++) {
         if(all_particle[i].tag != 0){
             vector sum;
             sum.first = 0;
             sum.second = 0;
-            for (Neighbor_p p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
+            for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
 
                 sum.first  -= all_particle[p->idx].velocity.first  * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
                 sum.second -= all_particle[p->idx].velocity.second * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
@@ -151,9 +151,9 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
     double alpha = 0.2;
     double mu_ij, PI_ij;
 
-    for (Index i = 0; i < NUMBER_OF_PARTICLE; i++) {
+    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
         if (all_particle[i].tag == interior) {
-            Neighbor_p n = all_particle[i].neighbors;
+            Neighbor_p *n = all_particle[i].neighbors;
             Particle *pi = &all_particle[i];
             pi->accelerat.first  = 0;
             pi->accelerat.second = 0;
@@ -175,8 +175,8 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
                 vector xij = vec_sub_vec(pj->position, pi->position);
                 vector vij = vec_sub_vec(pj->velocity, pi->velocity);
              
-                if (vec_dot(xij, vij) < 0) {
-                    mu_ij = H * vec_dot(xij, vij) / (vec_dot(xij, xij) + 0.01 * H * H);
+                if (vec_dot_vec(xij, vij) < 0) {
+                    mu_ij = H * vec_dot_vec(xij, vij) / (vec_dot_vec(xij, xij) + 0.01 * H * H);
                     PI_ij = - alpha * c * mu_ij / (pi->density + pj->density);
                     pi->accelerat.first  -= pj->mass * PI_ij * gradient.first;
                     pi->accelerat.second -= pj->mass * PI_ij * gradient.second;
@@ -209,7 +209,7 @@ void AddTurbulentModel(Particle *all_particle){
 */
 void AddRepulsiveForce(Particle *all_particle){
     int N = NUMBER_OF_PARTICLE;
-    Index i;
+    int i;
     Particle *pi;
     double c2 = ComputeSoundSpeedSquared(all_particle);
     double beta, q;
@@ -280,7 +280,7 @@ void AddInertialForce (Particle* all_particle, double t_now) {
     int N = NUMBER_OF_PARTICLE;
     double amplitude = 1, T = 0.5;
     
-    for (Index i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++) {
         if (all_particle[i].tag == interior) {
 
             all_particle[i].accelerat.first += amplitude * 2 * M_PI / T * sin(2 * M_PI * t_now / T);
