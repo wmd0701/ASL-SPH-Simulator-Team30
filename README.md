@@ -1,6 +1,6 @@
 # SPH Simulator
 
-This is the project for Advanced System Lab. The algorithm that has been chosen for optimization is an improved SPH simulator. For details of the algorithm please have a look into https://www.sciencedirect.com/science/article/abs/pii/S0045794912000429?via%3Dihub.
+This is the project for the course Advanced System Lab. The algorithm that we choose is an improved SPH simulator. For details of the algorithm please have a look into https://www.sciencedirect.com/science/article/abs/pii/S0045794912000429?via%3Dihub.
 
 According to the requirement of the course, the project is fully implemented in C. Target platform should be Intel processor with turbo boost disabled.
 
@@ -16,8 +16,8 @@ According to the requirement of the course, the project is fully implemented in 
 - time_loop:            main loop
 - main.c:               main function
 
-## other folders
-- data:                 store values which are outputted by output.h
+## Directories
+- data:                 output files
 
 ### Compile
 ```sh
