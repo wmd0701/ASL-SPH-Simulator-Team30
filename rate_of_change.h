@@ -341,6 +341,16 @@ void AddInertialForce (Particle* all_particle, double t_now) {
     return;
 }
 
+void DisplaceBoundaries(Particle* all_particle, double t){
+    double A = 0.0001;
+    double T = 0.1;
+    for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
+        if(all_particle[i].tag != interior){
+            all_particle[i].position.first += A*cos(2*M_PI*t/T); 
+        }
+    }
+}
+
 #endif // RATE_OF_CHANGE_H
 
 
