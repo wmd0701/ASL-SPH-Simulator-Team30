@@ -13,7 +13,7 @@
  */
 void WriteData(Particle* all_particle, double t_now) {
     Particle this_p;
-    char time[22];
+    char time[23];
     t_now *= 1000000;
     sprintf(time, "data/data-%08.0f.csv", t_now);
     FILE *fp = NULL;

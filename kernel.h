@@ -42,7 +42,6 @@ double Kernel (const vector xi,const vector xj) {
 vector KernelGradient (const vector xi,const vector xj) {
 	double r = sqrt(pow((xi.first - xj.first),2) + pow((xi.second - xj.second),2));
 	double q = r / H;
-    //double prefactor = 40./(7*M_PI*H*H);
     double factor = 10 / 7 / M_PI / H / H;
     vector grad;
     
@@ -74,12 +73,9 @@ void ComputeGlobalKernel (Particle *all_particle) {
 	vector xi, xj;
 	int N = NUMBER_OF_PARTICLE;
 	for (int i = 0; i < N; i++) {
-
 		xi = all_particle[i].position;
 		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
-
 			xj = all_particle[p->idx].position;
-			
 			p->Wij 		  = Kernel(xi, xj);
 			p->Wij_grad_i = KernelGradient(xi, xj);
 

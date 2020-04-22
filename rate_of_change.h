@@ -87,7 +87,7 @@ void ComputeGlobalPressure (Particle *all_particle){
     
     int N = NUMBER_OF_PARTICLE;
 	for (int i = 0; i < N; i++) {
-        all_particle[i].pressure = c2 * (all_particle[i].density - 997);
+        all_particle[i].pressure = c2 * (all_particle[i].density - initial_density);
         if (all_particle[i].pressure < 0) {
             all_particle[i].pressure = 0;
         }
@@ -271,6 +271,57 @@ void AddRepulsiveForce(Particle *all_particle){
             }
         }
     }	
+}
+
+
+/**   
+*     @brief Add the repulsive force into the acceleration of involved particle
+*
+*     @note  This is dependent on concrete cases.
+*
+*     @param all_particle pointer to an array containing information of all the particles
+*     @return no returns. Update the [accelerat] attribute in all_particle
+*/
+double f(double eta){
+	const double c = 2.0 / 3.0;
+	if(0.0 < eta && eta <= c)
+		return c;
+	else if(c < eta && eta <= 1.0)
+		return 2.0 * eta - 1.5 * eta * eta;
+	else if(1.0 < eta && eta < 2.0)
+		return 0.5 * (2.0 - eta) * (2.0 - eta);
+	else
+		return 0.0;
+}
+
+void AddRepulsiveForce2(Particle *all_particle){
+    double d = H;
+    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
+        // interior particles
+        Neighbor_p *n = all_particle[i].neighbors;
+        Particle *pi = &all_particle[i];
+        
+        if (pi->tag == interior) {
+            while (n != NULL) {
+                Particle *pj = &all_particle[n->idx];
+                if (pj->tag == repulsive) {
+                    vector xij = vec_sub_vec(pj->position, pi->position);
+                    double r2 = vec_dot_vec(xij, xij);
+                    double r = sqrt(r2);
+                    double c2 = ComputeSoundSpeedSquared(all_particle);
+                    double eta = r / (0.75 * H);
+                    if (0 < r && r < d) {
+                        double chi = 1 - r / d;
+                        double constant = 0.01 * c2 * chi * f(eta) / r2;
+                        
+                        pi->accelerat.first -= constant * xij.first;
+                        pi->accelerat.second -= constant * xij.second;
+                    }
+                }
+                n = n->next;
+            }
+        }
+    }
 }
 
 /**     @brief use an extra inertial force to deal with moving boundary
