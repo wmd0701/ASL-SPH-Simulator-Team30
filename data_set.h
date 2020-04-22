@@ -261,7 +261,7 @@ Particle *Init_dam_break() {
 		particles[now].position.first  = i * H;
 		particles[now].position.second = j * H;
 		particles[now].tag = interior;
-		now++;
+		++now;
 	}
   }
 
@@ -270,19 +270,19 @@ Particle *Init_dam_break() {
 	  particles[now].position.first  = i * H / 2;
 	  particles[now].position.second = 0;
 	  particles[now].tag = repulsive;
-	  now++;
+	  ++now;
   }
   for (int j = 0; j <= 160; j++) {
 	  particles[now].position.first  = 0;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = repulsive;
-	  now++;
+	  ++now;
   }
   for (int j = 1; j <= 160; j++) {
 	  particles[now].position.first  = 80 * H;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = repulsive;
-	  now++;
+	  ++now;
   }
 
   // Set ghost particles
@@ -290,34 +290,34 @@ Particle *Init_dam_break() {
 	  particles[now].position.first  = i * H / 2;
 	  particles[now].position.second = - H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
 
 	  particles[now].position.first  = i * H / 2;
 	  particles[now].position.second = - H ;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
   }
 
   for (int j = 0; j <= 160; j++) {
 	  particles[now].position.first  = - H;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
 
 	  particles[now].position.first  = - H / 2;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
 
 	  particles[now].position.first  = 80 * H + H / 2;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
 
 	  particles[now].position.first  = 80 * H + H;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
   }
   if(NUMBER_OF_PARTICLE != now) printf("number of particles doesn't match with init,\n"); 
 
@@ -361,7 +361,7 @@ Particle *Init3() {
 		particles[now].position.first  = i * H;
 		particles[now].position.second = j * H;
 		particles[now].tag = interior;
-		now++;
+		++now;
 	}
   }
 
@@ -370,19 +370,19 @@ Particle *Init3() {
 	  particles[now].position.first  = i * H / 2;
 	  particles[now].position.second = 0;
 	  particles[now].tag = repulsive;
-	  now++;
+	  ++now;
   }
   for (int j = 0; j <= 160; j++) {
 	  particles[now].position.first  = 0;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = repulsive;
-	  now++;
+	  ++now;
   }
   for (int j = 1; j <= 160; j++) {
 	  particles[now].position.first  = 21 * H;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = repulsive;
-	  now++;
+	  ++now;
   }
 
   // Set ghost particles
@@ -390,35 +390,136 @@ Particle *Init3() {
 	  particles[now].position.first  = i * H / 2;
 	  particles[now].position.second = - H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
 
 	  particles[now].position.first  = i * H / 2;
 	  particles[now].position.second = - H ;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
   }
 
   for (int j = 0; j <= 160; j++) {
 	  particles[now].position.first  = - H;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
 
 	  particles[now].position.first  = - H / 2;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
 
 	  particles[now].position.first  = 21 * H + H / 2;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
 
 	  particles[now].position.first  = 21 * H + H;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
-	  now++;
+	  ++now;
   }
+  if(NUMBER_OF_PARTICLE != now) printf("number of particles doesn't match with init,\n"); 
+
+  int N = NUMBER_OF_PARTICLE;     // get the number of particles
+  for (int i = 0; i < N; i++) { // traverse particles
+    particles[i].velocity.first = 0.;
+    particles[i].velocity.second = 0.;
+    particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997; 
+    particles[i].density = initial_density;
+    particles[i].pressure = 1.;
+    particles[i].accelerat.first = 0.;
+    particles[i].accelerat.second = 0.;
+	particles[i].neighbors = NULL;
+
+    SearchNeighbors(particles, i);
+  }
+  return particles;
+}
+
+
+/**
+ * 		@brief initialize a tank with water
+ * 			   to see how it gets balanced
+ * 
+ * 				|	      |
+ * 				|	      |
+ * 				|■ ■ ■ ■ ■|
+ * 				|■_■ ■ ■ ■|
+ * 		@note  number of paricles = 1071
+ *		@return pointer to an array containing information of all the particles
+ */
+Particle *Init4() {
+  // TODO: initialization
+  Particle *particles =
+      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+  int now = 0;
+
+  // Set interior particles
+  for (int i = 1; i <= 35; ++i) {
+    for (int j = 1; j <= 12; ++j) {
+		particles[now].position.first  = i * H;
+		particles[now].position.second = j * H;
+		particles[now].tag = interior;
+		++now;
+	}
+  }
+
+  // Set repulsive particles
+  for (int i = 1; i <= 72; i++) {
+	  particles[now].position.first  = i * H / 2;
+	  particles[now].position.second = 0;
+	  particles[now].tag = repulsive;
+	  ++now;
+  }
+  for (int j = 0; j <= 70; j++) {
+	  particles[now].position.first  = 0;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = repulsive;
+	  ++now;
+  }
+  for (int j = 1; j <= 70; j++) {
+	  particles[now].position.first  = 36 * H;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = repulsive;
+	  ++now;
+  }
+
+  // Set ghost particles
+  for (int i = -2; i <= 74; i++) {
+	  particles[now].position.first  = i * H / 2;
+	  particles[now].position.second = - H / 2;
+	  particles[now].tag = ghost;
+	  ++now;
+
+	  particles[now].position.first  = i * H / 2;
+	  particles[now].position.second = - H ;
+	  particles[now].tag = ghost;
+	  ++now;
+  }
+
+  for (int j = 0; j <= 70; j++) {
+	  particles[now].position.first  = - H;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = ghost;
+	  ++now;
+
+	  particles[now].position.first  = - H / 2;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = ghost;
+	  ++now;
+
+	  particles[now].position.first  = 36 * H + H / 2;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = ghost;
+	  ++now;
+
+	  particles[now].position.first  = 36 * H + H;
+	  particles[now].position.second = j * H / 2;
+	  particles[now].tag = ghost;
+	  ++now;
+  }
+  printf("%i \n", now);
   if(NUMBER_OF_PARTICLE != now) printf("number of particles doesn't match with init,\n"); 
 
   int N = NUMBER_OF_PARTICLE;     // get the number of particles
