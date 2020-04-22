@@ -71,7 +71,7 @@ void DensityAndBCVelocityCorrection (Particle *all_particle) {
 double ComputeSoundSpeedSquared(Particle *all_particle){
 	//Bulk velocity for a dam break
     double v2 = 2*dam_height*gravity;
-    return v2 * 100;
+    return v2 * 10;
 }
 
 /**   
@@ -324,17 +324,17 @@ void AddRepulsiveForce2(Particle *all_particle){
     }
 }
 
-/**     @brief use an extra inertial force to deal with moving boundary
- * 
+/**     
+ *      @brief use an extra inertial force to deal with moving boundary
  */
 void AddInertialForce (Particle* all_particle, double t_now) {
     int N = NUMBER_OF_PARTICLE;
-    double amplitude = 1, T = 0.5;
+    double amplitude = 0.32, T = 1.5;
     
     for (int i = 0; i < N; i++) {
         if (all_particle[i].tag == interior) {
 
-            all_particle[i].accelerat.first += amplitude * 2 * M_PI / T * sin(2 * M_PI * t_now / T);
+            all_particle[i].accelerat.first += - amplitude * 2 * M_PI / T * sin(2 * M_PI * t_now / T);
 
         }
     }

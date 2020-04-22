@@ -7,9 +7,8 @@
 #include "output.h"
 
 /** 	
-*		@brief Compute dt for the next iteration
+*		@brief Compute dt for the next iteration using CFL criterion
 *	
-*
 *		@param all_particle pointer to an array containing information of all the particles
 *		@return dt
 */
@@ -26,14 +25,13 @@ double ComputeTimeStep (Particle* all_particle) {
 }
 
 /** 	
-*		@brief Iterate until t = t_end
-*		@param all_particle pointer to an array containing information of all the particles
-*		@param t_end end time
+*		@brief Iterate the simulation
+*
 */
 double TimeLoop () {
 	double dt, t = 0;
 	
-	Particle* all_particle = Init_dam_break();
+	Particle* all_particle = Init4();
 	printf("init completed.\n");
 	WriteData(all_particle, t);
 
@@ -55,7 +53,7 @@ double TimeLoop () {
 		ComputeInteriorLaminarAcceleration   (all_particle);
 		//AddTurbulentModel                  (all_particle);
 		AddRepulsiveForce	                 (all_particle);
-		//AddInertialForce		             (all_particle, t);   
+		AddInertialForce		             (all_particle, t);   
 		
 		Time_Integration		             (all_particle, dt);
 		

@@ -346,6 +346,7 @@ Particle *Init_dam_break() {
  * 				|	|
  * 				|■ ■|
  * 				|■_■|
+ * 
  * 		@note  number of paricles = 1901
  *		@return pointer to an array containing information of all the particles
  */
@@ -440,12 +441,13 @@ Particle *Init3() {
 
 /**
  * 		@brief initialize a tank with water
- * 			   to see how it gets balanced
+ * 			   This case is corresponding to that in SHAO_2012
  * 
  * 				|	      |
  * 				|	      |
  * 				|■ ■ ■ ■ ■|
- * 				|■_■ ■ ■ ■|
+ * 				|■_■_■_■_■|
+ * 
  * 		@note  number of paricles = 1071
  *		@return pointer to an array containing information of all the particles
  */
