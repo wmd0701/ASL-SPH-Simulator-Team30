@@ -99,6 +99,9 @@ typedef struct {
 	double   density;       //!< the value of density field 
 	double   pressure;      //!< the value of pressure field
 	vector 	 accelerat;     //!< acceleration of the particle, namely dv/dt
+
+	vector	position_help;	//!< help variable for Heun and Midpoint methods
+	vector	accelerat_help;	//!< help variable for Heun and Midpoint methods
 	
 	ParticleType   tag;          //!< whether it's an interior particle (0), repulsive particle (1) or ghost particle (2)
 		

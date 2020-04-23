@@ -38,13 +38,17 @@ double TimeLoop () {
 	FILE *fp = fopen("data/wave_height.csv", "w");
 	fprintf(fp, "t, height\n");
 
-	// choose which time integration method to use, details in time_integration.h
+	// choose which time integration method to use. By default using Explicit Euler
 	Set_Integration_Method(EXPLICIT_EULER);
     
   	int N = NUMBER_OF_PARTICLE;   // get the number of particles
 	
 	for (int step = 0; step < 80000; step ++) {
 		dt = ComputeTimeStep                 (all_particle);
+
+		// if using Heun or Midpoint method
+		if(integration == HEUN || integration == MIDPOINT)
+			Time_Integration_Half(all_particle, dt);
 
 		ComputeGlobalKernel                  (all_particle);
 		ComputeGlobalDensity                 (all_particle);
@@ -75,7 +79,6 @@ double TimeLoop () {
 	
 	}
 
-	WriteData(all_particle, t);
 	RecordWaveHeight(all_particle, fp, t);
 	fclose(fp);
 	free(all_particle);
