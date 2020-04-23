@@ -9,5 +9,7 @@ const double dam_height = 0.6;
 const double gravity = 9.81;
 const double initial_density = 997;
 const double dynamic_viscosity = 0.8926e-3;
+const double amplitude = 0.032;
+const double period = 1.5;
 
 #endif // CONSTANTS_H

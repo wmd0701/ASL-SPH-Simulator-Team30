@@ -526,6 +526,7 @@ Particle *Init4() {
 
   int N = NUMBER_OF_PARTICLE;     // get the number of particles
   for (int i = 0; i < N; i++) { // traverse particles
+    particles[i].position.first += amplitude;
     particles[i].velocity.first = 0.;
     particles[i].velocity.second = 0.;
     particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997; 
@@ -534,8 +535,9 @@ Particle *Init4() {
     particles[i].accelerat.first = 0.;
     particles[i].accelerat.second = 0.;
 	particles[i].neighbors = NULL;
-
-    SearchNeighbors(particles, i);
+  }
+  for (int i = 0; i < N; i++) {
+      SearchNeighbors(particles, i);
   }
   return particles;
 }
