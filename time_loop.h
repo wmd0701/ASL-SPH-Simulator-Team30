@@ -35,12 +35,15 @@ double TimeLoop () {
 	printf("init completed.\n");
 	WriteData(all_particle, t);
 
+	FILE *fp = fopen("data/wave_height.csv", "w");
+	fprintf(fp, "t, height\n");
+
 	// choose which time integration method to use, details in time_integration.h
 	Set_Integration_Method(EXPLICIT_EULER);
     
   	int N = NUMBER_OF_PARTICLE;   // get the number of particles
 	
-	for (int step = 0; step < 20000; step ++) {
+	for (int step = 0; step < 80000; step ++) {
 		dt = ComputeTimeStep                 (all_particle);
 
 		ComputeGlobalKernel                  (all_particle);
@@ -64,18 +67,20 @@ double TimeLoop () {
 		}
 
 		//output data to file
-		if (step % 100 == 0) {
+		if (step % 200 == 0) {
 			WriteData(all_particle, t);
+			RecordWaveHeight(all_particle, fp, t);
 		}
 		printf("time t = %f\n",t);
 	
 	}
 
 	WriteData(all_particle, t);
+	RecordWaveHeight(all_particle, fp, t);
+	fclose(fp);
 	free(all_particle);
 
 	return t;
-	
 }
 
 #endif // TIME_LOOP_H
