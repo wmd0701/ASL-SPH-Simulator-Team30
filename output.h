@@ -6,6 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+char folder_name[40];
+
+void set_output_path(char* output_path){
+    strcpy(folder_name, output_path);
+}
+
 /**
  * @brief Write data to a .dat file
  * @param all_particle 
@@ -13,11 +19,14 @@
  */
 void WriteData(Particle* all_particle, double t_now) {
     Particle this_p;
-    char time[23];
+    char file_name[23];
+    char output_path[40];
     t_now *= 1000000;
-    sprintf(time, "data/data-%08.0f.csv", t_now);
+    sprintf(file_name, "/data-%08.0f.csv", t_now);
+    strcpy(output_path, folder_name);
+    strcat(output_path, file_name);
     FILE *fp = NULL;
-    fp = fopen(time,"w");
+    fp = fopen(output_path,"w");
     fprintf(fp, "x coord, y coord, tag, u, v, m, rho, p, a1, a2\n"); 
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
         this_p = all_particle[i];

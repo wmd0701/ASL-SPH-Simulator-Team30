@@ -35,7 +35,10 @@ double TimeLoop () {
 	printf("init completed.\n");
 	WriteData(all_particle, t);
 
-	FILE *fp = fopen("data/wave_height.csv", "w");
+	char output_path_wave[40];
+	strcpy(output_path_wave, folder_name);
+	strcat(output_path_wave, "/wave_height.csv");
+	FILE *fp = fopen(output_path_wave, "w");
 	fprintf(fp, "t, height\n");
 
 	// choose which time integration method to use. By default using Explicit Euler
@@ -75,7 +78,7 @@ double TimeLoop () {
 			WriteData(all_particle, t);
 			RecordWaveHeight(all_particle, fp, t);
 		}
-		printf("time t = %f\n",t);
+		// printf("time t = %f\n",t);
 	
 	}
 
