@@ -60,7 +60,7 @@ double TimeLoop () {
 		ComputeInteriorLaminarAcceleration   (all_particle);
 		//AddTurbulentModel                  (all_particle);
 		AddRepulsiveForce	                 (all_particle);
-		AddInertialForce		             (all_particle, t);   
+		// AddInertialForce		             (all_particle, t);   
 		
 		Time_Integration		             (all_particle, dt);
 		
