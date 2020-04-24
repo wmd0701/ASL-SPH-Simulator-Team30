@@ -24,7 +24,6 @@ int main(int argc, char* argv[]){
 	}
 
 	double smoothing_length = atof(argv[1]);
-	printf("the string is: %s\n", argv[1]);
 	printf("smoothing length: %lf\n", smoothing_length);
 	set_smoothing_length(smoothing_length);
 
