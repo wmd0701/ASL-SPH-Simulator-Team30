@@ -25,7 +25,7 @@ make (or make -f Makefile_gcc_9, depending on platform and gcc version)
 ```
 ### Usage
 ```sh
-./simulation
+bash simulation_bash.sh (or ./simulation $smoothing_length $output_path)
 ```
 
 ### Parameters
