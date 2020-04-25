@@ -68,10 +68,8 @@ void DensityAndBCVelocityCorrection (Particle *all_particle) {
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return sound speed value squared
 */
-double ComputeSoundSpeedSquared(Particle *all_particle){
-	//Bulk velocity for a dam break
-    double v2 = 2*dam_height*gravity;
-    return v2*10;
+double ComputeSoundSpeedSquared(Particle *all_particle, double t){
+    return 2*dam_height*gravity*100;
 }
 
 /**   
@@ -82,8 +80,8 @@ double ComputeSoundSpeedSquared(Particle *all_particle){
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [pressure] attribute in all_particle
 */
-void ComputeGlobalPressure (Particle *all_particle){
-	double c2 = ComputeSoundSpeedSquared(all_particle);
+void ComputeGlobalPressure (Particle *all_particle, double t){
+	double c2 = ComputeSoundSpeedSquared(all_particle, t);
     
     int N = NUMBER_OF_PARTICLE;
 	for (int i = 0; i < N; i++) {
@@ -104,8 +102,8 @@ void ComputeGlobalPressure (Particle *all_particle){
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [pressure] attribute in all_particle
 */
-void ComputeGlobalPressure2 (Particle *all_particle){
-	double c2 = ComputeSoundSpeedSquared(all_particle);
+void ComputeGlobalPressure2 (Particle *all_particle, double t){
+	double c2 = ComputeSoundSpeedSquared(all_particle, t);
     
     int N = NUMBER_OF_PARTICLE;
 	for (int i = 0; i < N; i++) {
@@ -146,8 +144,8 @@ void ComputeGhostAndRepulsiveVelocity (Particle *all_particle){
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
-void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
-    double c = sqrt(ComputeSoundSpeedSquared(all_particle));
+void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
+    double c = sqrt(ComputeSoundSpeedSquared(all_particle, t));
     double alpha = 0.2;
     double mu_ij, PI_ij;
 
@@ -155,7 +153,8 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
         if (all_particle[i].tag == interior) {
             Neighbor_p *n = all_particle[i].neighbors;
             Particle *pi = &all_particle[i];
-            pi->accelerat.first  = 0;
+            
+            pi->accelerat.first = 0;
             pi->accelerat.second = 0;
             
             while (n != NULL) {
@@ -191,6 +190,48 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle) {
     }
 }
 
+void ComputeInteriorLaminarAcceleration2(Particle *all_particle, double t) {
+    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
+        if (all_particle[i].tag == interior) {
+            Neighbor_p *n = all_particle[i].neighbors;
+            Particle *pi = &all_particle[i];
+            pi->accelerat.first  = 0;
+            pi->accelerat.second = 0;
+            
+            while (n != NULL) {
+                Particle *pj = &all_particle[n->idx];
+                vector gradient = n->Wij_grad_i;
+                
+                // Pressure force
+                double constant1 =
+                    pj->mass * (pi->pressure / (pi->density * pi->density) +
+                                pj->pressure / (pj->density * pj->density));
+
+                
+                pi->accelerat.first -= constant1 * gradient.first;
+                pi->accelerat.second -= constant1 * gradient.second;
+
+                // Viscosity force
+                if(pj->tag == interior){
+                    vector xij = vec_sub_vec(pi->position, pj->position);
+                    vector vij = vec_sub_vec(pi->velocity, pj->velocity);
+                    
+                    double constant2 = (4.0 * pj->mass * (2.0 * dynamic_viscosity) * vec_dot_vec(xij, vij)) /(pow((pi->density + pj->density), 2) *(vec_dot_vec(xij, xij) + 0.01 * pow(H, 2)));
+                    
+                    pi->accelerat.first += constant2 * gradient.first;
+                    pi->accelerat.second += constant2 * gradient.second;
+                }
+
+                n = n->next;
+            }
+
+            // Gravity
+            pi->accelerat.second -= gravity;
+        }
+    }
+}
+
+
 /**   
 *     @brief Add the turbulent term into the acceleration of every particle
 *     @param all_particle pointer to an array containing information of all the particles
@@ -207,11 +248,11 @@ void AddTurbulentModel(Particle *all_particle){
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
-void AddRepulsiveForce(Particle *all_particle){
+void AddRepulsiveForce(Particle *all_particle, double t){
     int N = NUMBER_OF_PARTICLE;
     int i;
     Particle *pi;
-    double c2 = ComputeSoundSpeedSquared(all_particle);
+    double c2 = ComputeSoundSpeedSquared(all_particle, t);
     double beta, q;
     vector pos;
     for (i = 0; i < N; i++) {
@@ -294,7 +335,7 @@ double f(double eta){
 		return 0.0;
 }
 
-void AddRepulsiveForce2(Particle *all_particle){
+void AddRepulsiveForce2(Particle *all_particle, double t){
     double d = H;
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
         // interior particles
@@ -308,7 +349,7 @@ void AddRepulsiveForce2(Particle *all_particle){
                     vector xij = vec_sub_vec(pj->position, pi->position);
                     double r2 = vec_dot_vec(xij, xij);
                     double r = sqrt(r2);
-                    double c2 = ComputeSoundSpeedSquared(all_particle);
+                    double c2 = ComputeSoundSpeedSquared(all_particle, t);
                     double eta = r / (0.75 * H);
                     if (0 < r && r < d) {
                         double chi = 1 - r / d;
