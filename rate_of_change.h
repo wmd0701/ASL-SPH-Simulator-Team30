@@ -75,9 +75,9 @@ double ComputeSoundSpeedSquared(Particle *all_particle, double t){
     double nu = dynamic_viscosity/initial_density;
     double force_x = 0;
     if (t > 0){
-        force_x = - 0.032* (2*M_PI/1.5)*(2*M_PI/1.5)*cos(2*M_PI/1.5);
+        force_x = - 0.032* (2*M_PI/1.5)*(2*M_PI/1.5)*cos(2*M_PI*t/1.5)*all_particle[0].mass;
     }
-    double force_y = -gravity;
+    double force_y = -gravity*all_particle[0].mass;
     double force = sqrt((force_x*force_x) + (force_y*force_y));
     
     double term1 = bulk_velocity*bulk_velocity/delta;
@@ -204,7 +204,7 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
              
                 if (vec_dot_vec(xij, vij) < 0) {
                     mu_ij = H * vec_dot_vec(xij, vij) / (vec_dot_vec(xij, xij) + 0.01 * H * H);
-                    PI_ij = - alpha * c * mu_ij / (pi->density + pj->density);
+                    PI_ij = - alpha *c * mu_ij / (pi->density + pj->density);
                     pi->accelerat.first  -= pj->mass * PI_ij * gradient.first;
                     pi->accelerat.second -= pj->mass * PI_ij * gradient.second;
                 }
