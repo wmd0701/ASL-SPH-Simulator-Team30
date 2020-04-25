@@ -417,6 +417,7 @@ void DisplaceBoundaries(Particle* all_particle, Particle* initial_configuration,
 	for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
 		if(all_particle[i].tag != interior){
 			all_particle[i].position.first = initial_configuration[i].position.first + (A*cos(2*M_PI*t/T) - A); 
+			all_particle[i].velocity.first = - 2 * M_PI * A * sin(2 * M_PI * t / T) / T;
 		}
 	}
 }

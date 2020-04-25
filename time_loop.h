@@ -121,7 +121,7 @@ double TimeLoop2 () {
 		ComputeGlobalKernel                  (all_particle);
 		ComputeGlobalDensity                 (all_particle);
 
-		ComputeGhostAndRepulsiveVelocity     (all_particle);
+		//ComputeGhostAndRepulsiveVelocity     (all_particle);
 		DensityAndBCVelocityCorrection       (all_particle);
 		ComputeGlobalPressure                (all_particle, t);
 		ComputeInteriorLaminarAcceleration   (all_particle, t);
@@ -139,8 +139,8 @@ double TimeLoop2 () {
 
 		ComputeGlobalKernel                  (all_particle);
 		ComputeGlobalDensity                 (all_particle);
-		
-        ComputeGhostAndRepulsiveVelocity     (all_particle);
+
+		//ComputeGhostAndRepulsiveVelocity     (all_particle);
 		DensityAndBCVelocityCorrection       (all_particle);
 		ComputeGlobalPressure                (all_particle, t);
 		ComputeInteriorLaminarAcceleration   (all_particle, t);
