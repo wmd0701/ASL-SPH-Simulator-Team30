@@ -14,10 +14,10 @@
 */
 double ComputeLocalDensity (Particle *all_particle, int ptc_idx) {
 	double sum = 0;
-    for (Neighbor_p *p = all_particle[ptc_idx].neighbors; p != NULL; p = p->next) {
-        sum += p->Wij * all_particle[p->idx].mass;
-    }
-    return sum;
+	for (Neighbor_p *p = all_particle[ptc_idx].neighbors; p != NULL; p = p->next) {
+		sum += p->Wij * all_particle[p->idx].mass;
+	}
+	return sum;
 }
 
 /**!  
@@ -27,9 +27,9 @@ double ComputeLocalDensity (Particle *all_particle, int ptc_idx) {
 */
 void ComputeGlobalDensity (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;
-    for (int i = 0; i < N; i++) {
-        all_particle[i].density = ComputeLocalDensity(all_particle, i);
-    }
+	for (int i = 0; i < N; i++) {
+		all_particle[i].density = ComputeLocalDensity(all_particle, i);
+	}
 }
 
 /**   
@@ -40,23 +40,23 @@ void ComputeGlobalDensity (Particle *all_particle) {
 */
 void DensityAndBCVelocityCorrection (Particle *all_particle) {
 	int N = NUMBER_OF_PARTICLE;   // get the number of particles
-    double* sum = (double*)malloc(sizeof(double)*N);
-    for (int i = 0; i < N; i++) {     // traverse particles
-        double sum_Wij = 0;
-        for (Neighbor_p *nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
-                Particle * pk = &all_particle[nk->idx];
-                    sum_Wij += nk->Wij * pk->mass / pk->density;
-        }
-        sum[i] = sum_Wij;
-    }
-    for (int i = 0; i < N; i++) {
-        all_particle[i].density /= sum[i];
-        if (all_particle[i].tag != interior) {
-            all_particle[i].velocity.first /= sum[i];
-            all_particle[i].velocity.second /= sum[i];
-        }
-    }
-    free(sum);
+	double* sum = (double*)malloc(sizeof(double)*N);
+	for (int i = 0; i < N; i++) {     // traverse particles
+		double sum_Wij = 0;
+		for (Neighbor_p *nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
+			Particle * pk = &all_particle[nk->idx];
+			sum_Wij += nk->Wij * pk->mass / pk->density;
+		}
+		sum[i] = sum_Wij;
+	}
+	for (int i = 0; i < N; i++) {
+		all_particle[i].density /= sum[i];
+		if (all_particle[i].tag != interior) {
+			all_particle[i].velocity.first /= sum[i];
+			all_particle[i].velocity.second /= sum[i];
+		}
+	}
+	free(sum);
 }
 
 /**   
@@ -80,17 +80,18 @@ double ComputeSoundSpeedSquared(Particle *all_particle, double t){
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [pressure] attribute in all_particle
 */
+
 void ComputeGlobalPressure (Particle *all_particle, double t){
 	double c2 = ComputeSoundSpeedSquared(all_particle, t);
     
     int N = NUMBER_OF_PARTICLE;
 	for (int i = 0; i < N; i++) {
-        all_particle[i].pressure = c2 * (all_particle[i].density - initial_density);
-        if (all_particle[i].pressure < 0) {
-            all_particle[i].pressure = 0;
-        }
-    }
-    return;
+		all_particle[i].pressure = c2 * (all_particle[i].density - initial_density);
+		if (all_particle[i].pressure < 0) {
+			all_particle[i].pressure = 0;
+		}
+	}
+	return;
 }
 
 
@@ -107,12 +108,12 @@ void ComputeGlobalPressure2 (Particle *all_particle, double t){
     
     int N = NUMBER_OF_PARTICLE;
 	for (int i = 0; i < N; i++) {
-        all_particle[i].pressure = c2 * initial_density / 7 * (pow(all_particle[i].density / initial_density, 7) - 1);
-        if (all_particle[i].pressure < 0) {
-            all_particle[i].pressure = 0;
-        }
-    }
-    return;
+		all_particle[i].pressure = c2 * initial_density / 7 * (pow(all_particle[i].density / initial_density, 7) - 1);
+		if (all_particle[i].pressure < 0) {
+			all_particle[i].pressure = 0;
+		}
+	}
+	return;
 }
 
 /**   
@@ -123,20 +124,20 @@ void ComputeGlobalPressure2 (Particle *all_particle, double t){
 void ComputeGhostAndRepulsiveVelocity (Particle *all_particle){
 	int N = NUMBER_OF_PARTICLE;
 	for (int i = 0; i < N; i++) {
-        if(all_particle[i].tag != 0){
-            vector sum;
-            sum.first = 0;
-            sum.second = 0;
-            for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
+		if(all_particle[i].tag != 0){
+			vector sum;
+			sum.first = 0;
+			sum.second = 0;
+			for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
 
-                sum.first  -= all_particle[p->idx].velocity.first  * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
-                sum.second -= all_particle[p->idx].velocity.second * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
+				sum.first  -= all_particle[p->idx].velocity.first  * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
+				sum.second -= all_particle[p->idx].velocity.second * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
 
-            }
-            all_particle[i].velocity.first = sum.first;//sum.first;
-            all_particle[i].velocity.second = sum.second; //sum.second;
-        }
-    }
+			}
+			all_particle[i].velocity.first = sum.first;//sum.first;
+			all_particle[i].velocity.second = sum.second; //sum.second;
+		}
+	}
 }
 
 /**   
@@ -188,7 +189,6 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
             pi->accelerat.second -= gravity;
         }
     }
-}
 
 void ComputeInteriorLaminarAcceleration2(Particle *all_particle, double t) {
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
@@ -248,6 +248,7 @@ void AddTurbulentModel(Particle *all_particle){
 *     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
+
 void AddRepulsiveForce(Particle *all_particle, double t){
     int N = NUMBER_OF_PARTICLE;
     int i;
@@ -369,27 +370,27 @@ void AddRepulsiveForce2(Particle *all_particle, double t){
  *      @brief use an extra inertial force to deal with moving boundary
  */
 void AddInertialForce (Particle* all_particle, double t_now) {
-    int N = NUMBER_OF_PARTICLE;
-    double amplitude = 0.32, T = 1.5;
-    
-    for (int i = 0; i < N; i++) {
-        if (all_particle[i].tag == interior) {
+	int N = NUMBER_OF_PARTICLE;
+	double amplitude = 0.32, T = 1.5;
 
-            all_particle[i].accelerat.first += - amplitude * 2 * M_PI / T * sin(2 * M_PI * t_now / T);
+	for (int i = 0; i < N; i++) {
+		if (all_particle[i].tag == interior) {
 
-        }
-    }
-    return;
+			all_particle[i].accelerat.first += - amplitude * 2 * M_PI / T * sin(2 * M_PI * t_now / T);
+
+		}
+	}
+	return;
 }
 
 void DisplaceBoundaries(Particle* all_particle, Particle* initial_configuration, double t){
-    double A = amplitude;
-    double T = period;
-    for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
-        if(all_particle[i].tag != interior){
-            all_particle[i].position.first = initial_configuration[i].position.first + (A*cos(2*M_PI*t/T) - A); 
-        }
-    }
+	double A = amplitude;
+	double T = period;
+	for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
+		if(all_particle[i].tag != interior){
+			all_particle[i].position.first = initial_configuration[i].position.first + (A*cos(2*M_PI*t/T) - A); 
+		}
+	}
 }
 
 #endif // RATE_OF_CHANGE_H

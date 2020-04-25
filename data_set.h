@@ -80,31 +80,34 @@ typedef struct Neighbor Neighbor_p;
 
 // delete a whole linked list
 void deleteNeighbors(Neighbor_p **p){
-    Neighbor_p *prev = *p;
-    while(*p){
-        *p = (*p)->next;
-        free(prev);
-        prev = *p;
-    }
+	Neighbor_p *prev = *p;
+	while(*p){
+		*p = (*p)->next;
+		free(prev);
+		prev = *p;
+	}
 }
 
 /**  
 *	 @brief A struct containing some variables of a particle
 */
 typedef struct {
-	
+
 	vector   position;      //!< 2d coordinate
 	double   mass;          //!< mass
 	vector   velocity;      //!< 2d velocity
 	double   density;       //!< the value of density field 
 	double   pressure;      //!< the value of pressure field
 	vector 	 accelerat;     //!< acceleration of the particle, namely dv/dt
-	
+
+	vector	position_help;	//!< help variable for Heun and Midpoint methods
+	vector	accelerat_help;	//!< help variable for Heun and Midpoint methods
+
 	ParticleType   tag;          //!< whether it's an interior particle (0), repulsive particle (1) or ghost particle (2)
-		
+
 	Neighbor_p   *neighbors;    /*!< List containing the index array of nearby particles
-									  This is the pointer to the first neighbor. */
-								
+																This is the pointer to the first neighbor. */
+
 } Particle;
 
 /**  
@@ -150,7 +153,7 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx) {
 		for (int j = 0; j < N; j++) {
 			if (all_particle[j].tag == interior || ptc_idx == j) {   // check if itself and if interior
 				r = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
-						  pow((all_particle[j].position.second - xi.second), 2));
+						pow((all_particle[j].position.second - xi.second), 2));
 				if (r < 2 * H) {	  // check if neighbor
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
 						Neighbor_p *new_p = (Neighbor_p*)malloc(sizeof(Neighbor_p));
@@ -174,7 +177,7 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx) {
 		for (int j = 0; j < N; j++) {
 			if (all_particle[j].tag != ghost || ptc_idx == j) {   // check if not ghost
 				r = sqrt(pow((all_particle[j].position.first  - xi.first ), 2) +     \
-						  pow((all_particle[j].position.second - xi.second), 2));
+						pow((all_particle[j].position.second - xi.second), 2));
 				if (r < 2 * H) {	  // check if neighbor
 					if (all_particle[ptc_idx].neighbors == NULL) {	// if it's the first pointer of list
 						Neighbor_p *new_p = (Neighbor_p*)malloc(sizeof(Neighbor_p));
@@ -206,36 +209,36 @@ void SearchNeighbors (Particle* all_particle, int ptc_idx) {
 *		@return	pointer to an array containing information of all the particles
 */
 Particle *Init() {
-  // TODO: initialization
-  Particle *particles =
-      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
-  for (int i = 0; i < 16; ++i) {
-    for (int j = 0; j < 16; ++j) {
-      particles[i * 16 + j].position.first = 0.5 * H * i;
-      particles[i * 16 + j].position.second = 0.5 * H * j;
+	// TODO: initialization
+	Particle *particles =
+		(Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+	for (int i = 0; i < 16; ++i) {
+		for (int j = 0; j < 16; ++j) {
+			particles[i * 16 + j].position.first = 0.5 * H * i;
+			particles[i * 16 + j].position.second = 0.5 * H * j;
 
-      if ((i > 2 && i < 13) && (j > 2 && j < 13))
-        particles[i * 16 + j].tag = interior; // interior
-      else if (i < 2 || i > 13 || j < 2 || j > 13)
-        particles[i * 16 + j].tag = ghost; // ghost
-      else {
-        particles[i * 16 + j].tag = 1; // repulsive
-      }
-    }
-  }
-  int N = NUMBER_OF_PARTICLE;     // get the number of particles
-  for (int i = 0; i < N; i++) { // traverse particles
-    particles[i].velocity.first = 0.;
-    particles[i].velocity.second = 0.;
-    particles[i].mass = 10.;
-    particles[i].density = initial_density;
-    particles[i].pressure = 1.;
-    particles[i].accelerat.first = 0.;
-    particles[i].accelerat.second = 0.;
+			if ((i > 2 && i < 13) && (j > 2 && j < 13))
+				particles[i * 16 + j].tag = interior; // interior
+			else if (i < 2 || i > 13 || j < 2 || j > 13)
+				particles[i * 16 + j].tag = ghost; // ghost
+			else {
+				particles[i * 16 + j].tag = 1; // repulsive
+			}
+		}
+	}
+	int N = NUMBER_OF_PARTICLE;     // get the number of particles
+	for (int i = 0; i < N; i++) { // traverse particles
+		particles[i].velocity.first = 0.;
+		particles[i].velocity.second = 0.;
+		particles[i].mass = 10.;
+		particles[i].density = initial_density;
+		particles[i].pressure = 1.;
+		particles[i].accelerat.first = 0.;
+		particles[i].accelerat.second = 0.;
 
-    SearchNeighbors(particles, i);
-  }
-  return particles;
+		SearchNeighbors(particles, i);
+	}
+	return particles;
 }
 
 /**
@@ -250,92 +253,92 @@ Particle *Init() {
  *		@return pointer to an array containing information of all the particles
  */
 Particle *Init_dam_break() {
-  // TODO: initialization
-  Particle *particles =
-      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
-  int now = 0;
+	// TODO: initialization
+	Particle *particles =
+		(Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+	int now = 0;
 
-  // Set interior particles
-  for (int i = 1; i <= 20; ++i) {
-    for (int j = 1; j <= 40; ++j) {
-		particles[now].position.first  = i * H;
-		particles[now].position.second = j * H;
-		particles[now].tag = interior;
+	// Set interior particles
+	for (int i = 1; i <= 20; ++i) {
+		for (int j = 1; j <= 40; ++j) {
+			particles[now].position.first  = i * H;
+			particles[now].position.second = j * H;
+			particles[now].tag = interior;
+			++now;
+		}
+	}
+
+	// Set repulsive particles
+	for (int i = 1; i <= 160; i++) {
+		particles[now].position.first  = i * H / 2;
+		particles[now].position.second = 0;
+		particles[now].tag = repulsive;
 		++now;
 	}
-  }
+	for (int j = 0; j <= 160; j++) {
+		particles[now].position.first  = 0;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = repulsive;
+		++now;
+	}
+	for (int j = 1; j <= 160; j++) {
+		particles[now].position.first  = 80 * H;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = repulsive;
+		++now;
+	}
 
-  // Set repulsive particles
-  for (int i = 1; i <= 160; i++) {
-	  particles[now].position.first  = i * H / 2;
-	  particles[now].position.second = 0;
-	  particles[now].tag = repulsive;
-	  ++now;
-  }
-  for (int j = 0; j <= 160; j++) {
-	  particles[now].position.first  = 0;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = repulsive;
-	  ++now;
-  }
-  for (int j = 1; j <= 160; j++) {
-	  particles[now].position.first  = 80 * H;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = repulsive;
-	  ++now;
-  }
+	// Set ghost particles
+	for (int i = -2; i <= 162; i++) {
+		particles[now].position.first  = i * H / 2;
+		particles[now].position.second = - H / 2;
+		particles[now].tag = ghost;
+		++now;
 
-  // Set ghost particles
-  for (int i = -2; i <= 162; i++) {
-	  particles[now].position.first  = i * H / 2;
-	  particles[now].position.second = - H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
+		particles[now].position.first  = i * H / 2;
+		particles[now].position.second = - H ;
+		particles[now].tag = ghost;
+		++now;
+	}
 
-	  particles[now].position.first  = i * H / 2;
-	  particles[now].position.second = - H ;
-	  particles[now].tag = ghost;
-	  ++now;
-  }
+	for (int j = 0; j <= 160; j++) {
+		particles[now].position.first  = - H;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = ghost;
+		++now;
 
-  for (int j = 0; j <= 160; j++) {
-	  particles[now].position.first  = - H;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
+		particles[now].position.first  = - H / 2;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = ghost;
+		++now;
 
-	  particles[now].position.first  = - H / 2;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
+		particles[now].position.first  = 80 * H + H / 2;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = ghost;
+		++now;
 
-	  particles[now].position.first  = 80 * H + H / 2;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
+		particles[now].position.first  = 80 * H + H;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = ghost;
+		++now;
+	}
+	if(NUMBER_OF_PARTICLE != now) printf("number of particles doesn't match with init,\n"); 
 
-	  particles[now].position.first  = 80 * H + H;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
-  }
-  if(NUMBER_OF_PARTICLE != now) printf("number of particles doesn't match with init,\n"); 
+	int N = NUMBER_OF_PARTICLE;     // get the number of particles
+	for (int i = 0; i < N; i++) { // traverse particles
+		particles[i].velocity.first = 0.;
+		particles[i].velocity.second = 0.;
+		particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997;  /* determined after the first iteration 
+																																								 to make density to be 997 */
+		particles[i].density = initial_density;
+		particles[i].pressure = 1.;
+		particles[i].accelerat.first = 0.;
+		particles[i].accelerat.second = 0.;
+		particles[i].neighbors = NULL;
 
-  int N = NUMBER_OF_PARTICLE;     // get the number of particles
-  for (int i = 0; i < N; i++) { // traverse particles
-    particles[i].velocity.first = 0.;
-    particles[i].velocity.second = 0.;
-    particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997;  /* determined after the first iteration 
-																				 to make density to be 997 */
-    particles[i].density = initial_density;
-    particles[i].pressure = 1.;
-    particles[i].accelerat.first = 0.;
-    particles[i].accelerat.second = 0.;
-	particles[i].neighbors = NULL;
-
-    SearchNeighbors(particles, i);
-  }
-  return particles;
+		SearchNeighbors(particles, i);
+	}
+	return particles;
 }
 
 /**
@@ -351,91 +354,91 @@ Particle *Init_dam_break() {
  *		@return pointer to an array containing information of all the particles
  */
 Particle *Init3() {
-  // TODO: initialization
-  Particle *particles =
-      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
-  int now = 0;
+	// TODO: initialization
+	Particle *particles =
+		(Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+	int now = 0;
 
-  // Set interior particles
-  for (int i = 1; i <= 20; ++i) {
-    for (int j = 1; j <= 40; ++j) {
-		particles[now].position.first  = i * H;
-		particles[now].position.second = j * H;
-		particles[now].tag = interior;
+	// Set interior particles
+	for (int i = 1; i <= 20; ++i) {
+		for (int j = 1; j <= 40; ++j) {
+			particles[now].position.first  = i * H;
+			particles[now].position.second = j * H;
+			particles[now].tag = interior;
+			++now;
+		}
+	}
+
+	// Set repulsive particles
+	for (int i = 1; i <= 42; i++) {
+		particles[now].position.first  = i * H / 2;
+		particles[now].position.second = 0;
+		particles[now].tag = repulsive;
 		++now;
 	}
-  }
+	for (int j = 0; j <= 160; j++) {
+		particles[now].position.first  = 0;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = repulsive;
+		++now;
+	}
+	for (int j = 1; j <= 160; j++) {
+		particles[now].position.first  = 21 * H;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = repulsive;
+		++now;
+	}
 
-  // Set repulsive particles
-  for (int i = 1; i <= 42; i++) {
-	  particles[now].position.first  = i * H / 2;
-	  particles[now].position.second = 0;
-	  particles[now].tag = repulsive;
-	  ++now;
-  }
-  for (int j = 0; j <= 160; j++) {
-	  particles[now].position.first  = 0;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = repulsive;
-	  ++now;
-  }
-  for (int j = 1; j <= 160; j++) {
-	  particles[now].position.first  = 21 * H;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = repulsive;
-	  ++now;
-  }
+	// Set ghost particles
+	for (int i = -2; i <= 44; i++) {
+		particles[now].position.first  = i * H / 2;
+		particles[now].position.second = - H / 2;
+		particles[now].tag = ghost;
+		++now;
 
-  // Set ghost particles
-  for (int i = -2; i <= 44; i++) {
-	  particles[now].position.first  = i * H / 2;
-	  particles[now].position.second = - H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
+		particles[now].position.first  = i * H / 2;
+		particles[now].position.second = - H ;
+		particles[now].tag = ghost;
+		++now;
+	}
 
-	  particles[now].position.first  = i * H / 2;
-	  particles[now].position.second = - H ;
-	  particles[now].tag = ghost;
-	  ++now;
-  }
+	for (int j = 0; j <= 160; j++) {
+		particles[now].position.first  = - H;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = ghost;
+		++now;
 
-  for (int j = 0; j <= 160; j++) {
-	  particles[now].position.first  = - H;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
+		particles[now].position.first  = - H / 2;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = ghost;
+		++now;
 
-	  particles[now].position.first  = - H / 2;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
+		particles[now].position.first  = 21 * H + H / 2;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = ghost;
+		++now;
 
-	  particles[now].position.first  = 21 * H + H / 2;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
+		particles[now].position.first  = 21 * H + H;
+		particles[now].position.second = j * H / 2;
+		particles[now].tag = ghost;
+		++now;
+	}
+	if(NUMBER_OF_PARTICLE != now) printf("number of particles doesn't match with init,\n"); 
 
-	  particles[now].position.first  = 21 * H + H;
-	  particles[now].position.second = j * H / 2;
-	  particles[now].tag = ghost;
-	  ++now;
-  }
-  if(NUMBER_OF_PARTICLE != now) printf("number of particles doesn't match with init,\n"); 
+	int N = NUMBER_OF_PARTICLE;     // get the number of particles
+	for (int i = 0; i < N; i++) { // traverse particles
+		particles[i].velocity.first = 0.;
+		particles[i].velocity.second = 0.;
+		particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997; 
+		particles[i].density = initial_density;
+		particles[i].pressure = 1.;
+		particles[i].accelerat.first = 0.;
+		particles[i].accelerat.second = 0.;
+		particles[i].neighbors = NULL;
 
-  int N = NUMBER_OF_PARTICLE;     // get the number of particles
-  for (int i = 0; i < N; i++) { // traverse particles
-    particles[i].velocity.first = 0.;
-    particles[i].velocity.second = 0.;
-    particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997; 
-    particles[i].density = initial_density;
-    particles[i].pressure = 1.;
-    particles[i].accelerat.first = 0.;
-    particles[i].accelerat.second = 0.;
-	particles[i].neighbors = NULL;
-
-    SearchNeighbors(particles, i);
-  }
-  return particles;
+		SearchNeighbors(particles, i);
+	}
+	return particles;
 }
 
 

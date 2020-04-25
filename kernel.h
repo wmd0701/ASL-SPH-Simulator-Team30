@@ -15,7 +15,7 @@
 *	 @return value of kernel function
 */
 double Kernel (const vector xi,const vector xj) {
-	
+
 	double r = sqrt(pow((xi.first - xj.first),2) + pow((xi.second - xj.second),2));
 	double q = r / H;
 
@@ -30,7 +30,7 @@ double Kernel (const vector xi,const vector xj) {
 		printf("something wrong with searchneibors.");
 		return 0;
 	}
-    
+
 }
 
 /** 
@@ -42,26 +42,26 @@ double Kernel (const vector xi,const vector xj) {
 vector KernelGradient (const vector xi,const vector xj) {
 	double r = sqrt(pow((xi.first - xj.first),2) + pow((xi.second - xj.second),2));
 	double q = r / H;
-    double factor = 10 / 7 / M_PI / H / H;
-    vector grad;
-    
+	double factor = 10 / 7 / M_PI / H / H;
+	vector grad;
+
 	if(1e-12 <= q && q <= 1){
 		double temp = factor * (-3 * q + 9/4 * q * q);
 		grad.first = temp*(xi.first - xj.first)/(H * r);
-        grad.second = temp*(xi.second - xj.second)/(H * r);
+		grad.second = temp*(xi.second - xj.second)/(H * r);
 	}
 	else if(1 <= q && q <= 2){
 		double temp = - factor * 3 / 4 * (2 - q) * (2 - q);
 		grad.first = temp*(xi.first - xj.first)/(H * r);
-        grad.second = temp*(xi.second - xj.second)/(H * r); 
+		grad.second = temp*(xi.second - xj.second)/(H * r); 
 	}
 	else{
 		grad.first = 0;
 		grad.second = 0;
 	}
 
-    return grad;
-    
+	return grad;
+
 }
 
 /** 
@@ -102,7 +102,7 @@ void KernelGradientCorrection (Particle *all_particle) {
 		a10 = 0;
 		a11 = 0;
 		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
-			
+
 			V = all_particle[p->idx].mass / all_particle[p->idx].density;
 			xji = all_particle[p->idx].position.first  - all_particle[i].position.first;
 			yji = all_particle[p->idx].position.second - all_particle[i].position.second;
@@ -116,11 +116,11 @@ void KernelGradientCorrection (Particle *all_particle) {
 		determinant = a00 * a11 - a10 * a01;
 
 		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
-			
+
 			new_grad.first  = (  a11 * p->Wij_grad_i.first - a01 * p->Wij_grad_i.second) / determinant;
 			new_grad.second = (- a10 * p->Wij_grad_i.first + a00 * p->Wij_grad_i.second) / determinant;
 			p->Wij_grad_i = new_grad;
-			
+
 		}		
 	}
 }
