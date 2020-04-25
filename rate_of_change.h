@@ -52,8 +52,8 @@ void DensityAndBCVelocityCorrection (Particle *all_particle) {
 	for (int i = 0; i < N; i++) {
 		all_particle[i].density /= sum[i];
 		if (all_particle[i].tag != interior) {
-			all_particle[i].velocity.first /= sum[i];
-			all_particle[i].velocity.second /= sum[i];
+			all_particle[i].velocity.first /= (-sum[i]);
+			all_particle[i].velocity.second /= (-sum[i]);
 		}
 	}
 	free(sum);
