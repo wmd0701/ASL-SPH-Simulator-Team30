@@ -4,7 +4,7 @@
 
 
 const double H = 0.05;  //!< smoothing length
-const int    NUMBER_OF_PARTICLE = 1071;  //!< number of particles. Need to be change from cases to cases.
+const int    NUMBER_OF_PARTICLE = 891;  //!< number of particles. Need to be change from cases to cases.
 const double dam_height = 0.6;
 const double gravity = 9.81;
 const double initial_density = 997;

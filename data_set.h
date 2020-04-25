@@ -448,7 +448,7 @@ Particle *Init3() {
  * 				|■ ■ ■ ■ ■|
  * 				|■_■_■_■_■|
  * 
- * 		@note  number of paricles = 1071
+ * 		@note  number of paricles = 891
  *		@return pointer to an array containing information of all the particles
  */
 Particle *Init4() {
@@ -458,7 +458,7 @@ Particle *Init4() {
   int now = 0;
 
   // Set interior particles
-  for (int i = 1; i <= 35; ++i) {
+  for (int i = 1; i <= 33; ++i) {
     for (int j = 1; j <= 12; ++j) {
 		particles[now].position.first  = i * H;
 		particles[now].position.second = j * H;
@@ -468,27 +468,27 @@ Particle *Init4() {
   }
 
   // Set repulsive particles
-  for (int i = 1; i <= 72; i++) {
+  for (int i = 1; i <= 68; i++) {
 	  particles[now].position.first  = i * H / 2;
 	  particles[now].position.second = 0;
 	  particles[now].tag = repulsive;
 	  ++now;
   }
-  for (int j = 0; j <= 70; j++) {
+  for (int j = 0; j <= 46; j++) {
 	  particles[now].position.first  = 0;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = repulsive;
 	  ++now;
   }
-  for (int j = 1; j <= 70; j++) {
-	  particles[now].position.first  = 36 * H;
+  for (int j = 1; j <= 46; j++) {
+	  particles[now].position.first  = 34 * H;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = repulsive;
 	  ++now;
   }
 
   // Set ghost particles
-  for (int i = -2; i <= 74; i++) {
+  for (int i = -2; i <= 70; i++) {
 	  particles[now].position.first  = i * H / 2;
 	  particles[now].position.second = - H / 2;
 	  particles[now].tag = ghost;
@@ -500,7 +500,7 @@ Particle *Init4() {
 	  ++now;
   }
 
-  for (int j = 0; j <= 70; j++) {
+  for (int j = 0; j <= 46; j++) {
 	  particles[now].position.first  = - H;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
@@ -511,12 +511,12 @@ Particle *Init4() {
 	  particles[now].tag = ghost;
 	  ++now;
 
-	  particles[now].position.first  = 36 * H + H / 2;
+	  particles[now].position.first  = 34 * H + H / 2;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
 	  ++now;
 
-	  particles[now].position.first  = 36 * H + H;
+	  particles[now].position.first  = 34 * H + H;
 	  particles[now].position.second = j * H / 2;
 	  particles[now].tag = ghost;
 	  ++now;
