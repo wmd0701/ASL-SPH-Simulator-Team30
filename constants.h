@@ -13,7 +13,7 @@ const double amplitude = 0.032;
 const double period = 1.5;
 
 void set_smoothing_length(double smoothing_length){
-    H = smoothing_length;
+	H = smoothing_length;
 }
 
 #endif // CONSTANTS_H

@@ -14,8 +14,8 @@
 *   @brief: main function
 *   @param argc: number of parameters
 *   @param argv[0]: name of executable file
-*	@param argv[1]: smoothing length
-+	@param argv[2]: output path
+*		@param argv[1]: smoothing length
+*		@param argv[2]: output path
 */
 int main(int argc, char* argv[]){
 	if(argc != 3){
@@ -29,10 +29,10 @@ int main(int argc, char* argv[]){
 
 	printf("output path: %s", argv[2]);
 	set_output_path(argv[2]);
-	
+
 	double t_end = TimeLoop();	
 
 	printf("Done. End time is: %f\n", t_end);	
-	
+
 	return EXIT_SUCCESS;
 }

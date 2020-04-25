@@ -30,7 +30,7 @@ double ComputeTimeStep (Particle* all_particle) {
 */
 double TimeLoop () {
 	double dt, t = 0;
-	
+
 	Particle* all_particle = Init4();
 	printf("init completed.\n");
 	WriteData(all_particle, t);
@@ -43,9 +43,9 @@ double TimeLoop () {
 
 	// choose which time integration method to use. By default using Explicit Euler
 	Set_Integration_Method(EXPLICIT_EULER);
-    
-  	int N = NUMBER_OF_PARTICLE;   // get the number of particles
-	
+
+	int N = NUMBER_OF_PARTICLE;   // get the number of particles
+
 	for (int step = 0; step < 80000; step ++) {
 		dt = ComputeTimeStep                 (all_particle);
 
@@ -55,20 +55,20 @@ double TimeLoop () {
 
 		ComputeGlobalKernel                  (all_particle);
 		ComputeGlobalDensity                 (all_particle);
-		
-        ComputeGhostAndRepulsiveVelocity     (all_particle);
+
+		ComputeGhostAndRepulsiveVelocity     (all_particle);
 		DensityAndBCVelocityCorrection       (all_particle);
-    	//KernelGradientCorrection           (all_particle);
+		//KernelGradientCorrection           (all_particle);
 		ComputeGlobalPressure2               (all_particle);
 		ComputeInteriorLaminarAcceleration   (all_particle);
 		//AddTurbulentModel                  (all_particle);
 		AddRepulsiveForce	                 (all_particle);
 		// AddInertialForce		             (all_particle, t);   
-		
+
 		Time_Integration		             (all_particle, dt);
-		
+
 		t += dt;
-		
+
 		for(int i = 0; i < NUMBER_OF_PARTICLE; i++){
 			SearchNeighbors(all_particle, i);
 		}
@@ -79,7 +79,7 @@ double TimeLoop () {
 			RecordWaveHeight(all_particle, fp, t);
 		}
 		// printf("time t = %f\n",t);
-	
+
 	}
 
 	RecordWaveHeight(all_particle, fp, t);
