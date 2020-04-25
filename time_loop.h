@@ -31,13 +31,18 @@ double ComputeTimeStep (Particle* all_particle) {
 double TimeLoop () {
 	double dt, t = 0;
 
+	// Initialization
 	Particle* all_particle = Init4();
 	printf("init completed.\n");
+	
+	// Write output of Initialization
 	WriteData(all_particle, t);
 
+	// Define a file for the wave height
 	char output_path_wave[40];
 	strcpy(output_path_wave, folder_name);
 	strcat(output_path_wave, "/wave_height.csv");
+	// open file for wave height
 	FILE *fp = fopen(output_path_wave, "w");
 	fprintf(fp, "t, height\n");
 
@@ -46,6 +51,7 @@ double TimeLoop () {
 
 	int N = NUMBER_OF_PARTICLE;   // get the number of particles
 
+	// loop over time steps
 	for (int step = 0; step < 80000; step ++) {
 		dt = ComputeTimeStep                 (all_particle);
 
@@ -59,16 +65,19 @@ double TimeLoop () {
 		ComputeGhostAndRepulsiveVelocity     (all_particle);
 		DensityAndBCVelocityCorrection       (all_particle);
 		//KernelGradientCorrection           (all_particle);
+		
 		ComputeGlobalPressure2               (all_particle);
 		ComputeInteriorLaminarAcceleration   (all_particle);
 		//AddTurbulentModel                  (all_particle);
+
 		AddRepulsiveForce	                 (all_particle);
 		// AddInertialForce		             (all_particle, t);   
 
 		Time_Integration		             (all_particle, dt);
 
 		t += dt;
-
+	
+		// Search the neighbors for the next time step
 		for(int i = 0; i < NUMBER_OF_PARTICLE; i++){
 			SearchNeighbors(all_particle, i);
 		}
@@ -78,8 +87,6 @@ double TimeLoop () {
 			WriteData(all_particle, t);
 			RecordWaveHeight(all_particle, fp, t);
 		}
-		// printf("time t = %f\n",t);
-
 	}
 
 	RecordWaveHeight(all_particle, fp, t);
