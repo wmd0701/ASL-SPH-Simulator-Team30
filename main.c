@@ -11,7 +11,7 @@
 
 int main(int argc, char* argv[]){
 
-	double t_end = TimeLoop();	
+	double t_end = TimeLoop2();	
 
 	printf("Finish.\nEnd time is: %f\n", t_end);	
 	
