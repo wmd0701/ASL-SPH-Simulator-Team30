@@ -69,7 +69,34 @@ void DensityAndBCVelocityCorrection (Particle *all_particle) {
 *     @return sound speed value squared
 */
 double ComputeSoundSpeedSquared(Particle *all_particle, double t){
-    return 2*dam_height*gravity*100;
+    double bulk_velocity = sqrt(2*dam_height*gravity);
+    double l = 1.7;
+    double delta = 0.01;
+    double nu = dynamic_viscosity/initial_density;
+    double force_x = 0;
+    if (t > 0){
+        force_x = - 0.032* (2*M_PI/1.5)*(2*M_PI/1.5)*cos(2*M_PI/1.5);
+    }
+    double force_y = -gravity;
+    double force = sqrt((force_x*force_x) + (force_y*force_y));
+    
+    double term1 = bulk_velocity*bulk_velocity/delta;
+    double term2 = nu*bulk_velocity/(delta*l);
+    double term3 = force*l/delta;
+    
+    //Max computation
+    double temp;
+    if(term1 >= term2){
+        temp = term1;
+    }
+    else{
+        temp = term2;
+    }
+    
+    if(term3 >= temp){
+        temp = term3;
+    }
+    return temp;
 }
 
 /**   
