@@ -189,6 +189,7 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
             pi->accelerat.second -= gravity;
         }
     }
+}
 
 void ComputeInteriorLaminarAcceleration2(Particle *all_particle, double t) {
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {

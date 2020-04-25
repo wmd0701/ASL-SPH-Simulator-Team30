@@ -4,9 +4,9 @@
 
 #define _USE_MATH_DEFINES
 
-#include "data_set.h"
-#include "constants.h"
 #include <math.h>
+#include "constants.h"
+#include "data_set.h"
 
 /**  
 *    @brief Compute the kernel function

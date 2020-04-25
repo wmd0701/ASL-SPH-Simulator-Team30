@@ -3,9 +3,7 @@
 #define OUTPUT_H
 
 #include "data_set.h"
-#include <stdlib.h>
 #include <string.h>
-
 char folder_name[40];
 
 void set_output_path(char* output_path){
@@ -20,7 +18,7 @@ void set_output_path(char* output_path){
 void WriteData(Particle* all_particle, double t_now) {
 	Particle this_p;
 	char file_name[23];
-	char output_path[40];
+	char output_path[60];
 	t_now *= 1000000;
 	sprintf(file_name, "/data-%08.0f.csv", t_now);
 	strcpy(output_path, folder_name);
