@@ -49,7 +49,7 @@ void RecordWaveHeight(Particle* all_particle, FILE *fp, double t_now) {
 	double wave_height = 0;
 	for (int i = 0; i < N; i++) {
 		if (all_particle[i].tag == interior && 
-				all_particle[i].position.first < 0.5 && 
+				all_particle[i].position.first < 0.1 && 
 				all_particle[i].position.second > wave_height) {
 			wave_height = all_particle[i].position.second;
 		}
