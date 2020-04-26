@@ -24,7 +24,7 @@ int main(int argc, char* argv[]){
 	int particles_interior = atoi(argv[1]);
 	set_particles_interior(particles_interior);	
 
-	printf("output path: %s", argv[2]);
+	printf("output path: %s\n", argv[2]);
 	set_output_path(argv[2]);
 
 	double t_end = TimeLoop2();	
