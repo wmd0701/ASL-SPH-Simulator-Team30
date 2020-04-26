@@ -105,61 +105,65 @@ double TimeLoop2 () {
 	Particle* all_particle = Init4();
 	Particle* initial_configuration = Init4();
 	printf("init completed.\n");
+
+	// choose which time integration method to use. By default using Explicit Euler
+	Set_Integration_Method(EXPLICIT_EULER);
+
+	int N = NUMBER_OF_PARTICLE;   // get the number of particles
+
+	//Initial steps without moving the boundary
+	for (int step = 0; step < 20000; step ++) {
+		dt = ComputeTimeStep                 (all_particle);
+
+		for(int i = 0; i < NUMBER_OF_PARTICLE; i++){
+			SearchNeighbors(all_particle, i);
+		}	
+
+		ComputeGlobalKernel                  (all_particle);
+		ComputeGlobalDensity                 (all_particle);
+
+		//ComputeGhostAndRepulsiveVelocity     (all_particle);
+		DensityAndBCVelocityCorrection       (all_particle);
+
+		ComputeGlobalPressure                (all_particle, t);
+		ComputeInteriorLaminarAcceleration   (all_particle, t);
+		AddRepulsiveForce2	                 (all_particle, t);
+
+		Time_Integration		             (all_particle, dt);
+	}
 	
 	// Write output of Initialization
 	WriteData(all_particle, t);
 
-	// choose which time integration method to use. By default using Explicit Euler
-	Set_Integration_Method(EXPLICIT_EULER);
-    
-  	int N = NUMBER_OF_PARTICLE;   // get the number of particles
-    
-    //Initial steps without moving the boundary
-    for (int step = 0; step < 20000; step ++) {
-		dt = ComputeTimeStep                 (all_particle);
-
-		ComputeGlobalKernel                  (all_particle);
-		ComputeGlobalDensity                 (all_particle);
-
-		ComputeGhostAndRepulsiveVelocity     (all_particle);
-		DensityAndBCVelocityCorrection       (all_particle);
-		ComputeGlobalPressure                (all_particle, t);
-		ComputeInteriorLaminarAcceleration   (all_particle, t);
-		AddRepulsiveForce2	                 (all_particle, t);
-		
-		Time_Integration		             (all_particle, dt);
-		
-		for(int i = 0; i < NUMBER_OF_PARTICLE; i++){
-			SearchNeighbors(all_particle, i);
-		}	
-	}
-	
 	for (int step = 0; step < 100000; step ++) {
 		dt = ComputeTimeStep                 (all_particle);
 
-		ComputeGlobalKernel                  (all_particle);
-		ComputeGlobalDensity                 (all_particle);
-		
-        ComputeGhostAndRepulsiveVelocity     (all_particle);
-		DensityAndBCVelocityCorrection       (all_particle);
-		ComputeGlobalPressure                (all_particle, t);
-		ComputeInteriorLaminarAcceleration   (all_particle, t);
-		AddRepulsiveForce2	                 (all_particle, t);
-		
-		Time_Integration		             (all_particle, dt);
-		
-		t += dt;
-        //output data to file
-		if (step % 100 == 0) {
-			WriteData(all_particle, t);
-		}
+		DisplaceBoundaries(all_particle, initial_configuration, t);
 
-		printf("time t = %f\n",t);
-		
-        DisplaceBoundaries(all_particle, initial_configuration, t);
 		for(int i = 0; i < NUMBER_OF_PARTICLE; i++){
 			SearchNeighbors(all_particle, i);
 		}	
+
+		ComputeGlobalKernel                  (all_particle);
+		ComputeGlobalDensity                 (all_particle);
+
+		//ComputeGhostAndRepulsiveVelocity     (all_particle);
+		DensityAndBCVelocityCorrection       (all_particle);
+
+		ComputeGlobalPressure                (all_particle, t);
+		ComputeInteriorLaminarAcceleration   (all_particle, t);
+		AddRepulsiveForce2	                 (all_particle, t);
+
+		Time_Integration		             (all_particle, dt);
+
+		t += dt;
+
+		//output data to file
+		if ((step + 1) % 2000 == 0) {
+			WriteData(all_particle, t);
+		}
+		printf("time t = %f\n",t);
+
 	}
 	return t;
 }
