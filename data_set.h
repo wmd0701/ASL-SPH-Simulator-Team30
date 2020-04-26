@@ -464,39 +464,40 @@ Particle *Init4() {
   Particle *particles =
       (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
   int now = 0;
-
-  // Set interior particles
-  for (int i = 1; i <= 33; ++i) {
-    for (int j = 1; j <= 12; ++j) {
-      particles[now].position.first = i * H;
-      particles[now].position.second = j * H;
+  
+	// Set interior particles
+  for (int i = 0; i < Nx_interior; ++i) {
+    for (int j = 0; j < Ny_interior; ++j) {
+      particles[now].position.first = (i + 1) * H;
+      particles[now].position.second = (j + 1) * H;
       particles[now].tag = interior;
       ++now;
     }
   }
-
+	
   // Set repulsive particles
-  for (int i = 1; i <= 68; i++) {
+  for (int i = 0; i < Nx_boundary; i++) {
     particles[now].position.first = i * H / 2;
     particles[now].position.second = 0;
     particles[now].tag = repulsive;
     ++now;
   }
-  for (int j = 0; j <= 46; j++) {
+	
+  for (int j = 0; j < Ny_boundary; j++) {
     particles[now].position.first = 0;
     particles[now].position.second = j * H / 2;
     particles[now].tag = repulsive;
     ++now;
   }
-  for (int j = 1; j <= 46; j++) {
-    particles[now].position.first = 34 * H;
+  for (int j = 0; j < Ny_boundary; j++) {
+    particles[now].position.first = (Nx_interior + 1) * H;
     particles[now].position.second = j * H / 2;
     particles[now].tag = repulsive;
     ++now;
   }
-
+		
   // Set ghost particles
-  for (int i = -2; i <= 70; i++) {
+  for (int i = -2; i < Nx_boundary + 2; i++) {
     particles[now].position.first = i * H / 2;
     particles[now].position.second = -H / 2;
     particles[now].tag = ghost;
@@ -507,8 +508,8 @@ Particle *Init4() {
     particles[now].tag = ghost;
     ++now;
   }
-
-  for (int j = 0; j <= 46; j++) {
+		
+  for (int j = 0; j < Ny_boundary; j++) {
     particles[now].position.first = -H;
     particles[now].position.second = j * H / 2;
     particles[now].tag = ghost;
@@ -519,20 +520,22 @@ Particle *Init4() {
     particles[now].tag = ghost;
     ++now;
 
-    particles[now].position.first = 34 * H + H / 2;
+    particles[now].position.first = (Nx_interior + 1.5) * H;
     particles[now].position.second = j * H / 2;
     particles[now].tag = ghost;
     ++now;
 
-    particles[now].position.first = 34 * H + H;
+    particles[now].position.first = (Nx_interior + 2) * H;
     particles[now].position.second = j * H / 2;
     particles[now].tag = ghost;
-    ++now;
-  }
+		++now;
+	}
+	
   printf("%i \n", now);
   if (NUMBER_OF_PARTICLE != now)
     printf("number of particles doesn't match with init,\n");
-
+	
+	
   int N = NUMBER_OF_PARTICLE;   // get the number of particles
   for (int i = 0; i < N; i++) { // traverse particles
     particles[i].position.first += amplitude;
