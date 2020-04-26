@@ -21,11 +21,10 @@ int main(int argc, char* argv[]){
 		return EXIT_FAILURE;
 	}
 
-	double smoothing_length = atof(argv[1]);
-	printf("smoothing length: %lf\n", smoothing_length);
-	set_smoothing_length(smoothing_length);
+	int particles_interior = atoi(argv[1]);
+	set_particles_interior(particles_interior);	
 
-	printf("output path: %s", argv[2]);
+	printf("output path: %s\n", argv[2]);
 	set_output_path(argv[2]);
 
 	double t_end = TimeLoop2();	
