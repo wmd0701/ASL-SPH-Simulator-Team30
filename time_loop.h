@@ -8,27 +8,10 @@
 #include "output.h"
 #include <string.h>
 
-/** 	
-*		@brief Compute dt for the next iteration using CFL criterion
-*	
-*		@param all_particle pointer to an array containing information of all the particles
-*		@return dt
-*/
-double ComputeTimeStep (Particle* all_particle) {
-	//~ double max = 40 * sqrt(2*gravity*dam_height);
-	//~ double v;
-	//~ for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-		//~ if (all_particle[i].tag == interior) {
-			//~ v = sqrt(pow(all_particle[i].velocity.first, 2) + pow(all_particle[i].velocity.second, 2));
-			//~ max = (v > max) ? v : max;
-		//~ }
-	//~ }
-	//~ return 0.4 * H / max;
-    return 0.00005;
-}
 
 double TimeLoop() {
-  double dt, t = 0;
+  double t = 0;
+  double dt = 0.00005; //Warning: this timestep is valid only for number of interior particles < 4000! Else use dt = 0.000005
 
   // Initialization
   Particle *all_particle = Init();
@@ -43,8 +26,6 @@ double TimeLoop() {
 
   // Initial steps without moving the boundary
   for (int step = 0; step < 20000; step++) {
-    dt = ComputeTimeStep(all_particle);
-
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
       SearchNeighbors(all_particle, i);
     }
@@ -62,9 +43,10 @@ double TimeLoop() {
   // Write output of Initialization
   WriteData(all_particle, t);
 
-  for (int step = 0; step < 100000; step++) {
-    dt = ComputeTimeStep(all_particle);
-
+  //-------------------------------------------------------------------
+  // MEASURE FROM HERE
+  //-------------------------------------------------------------------
+  for (int step = 0; step < 1000; step++) {
     DisplaceBoundaries(all_particle, initial_configuration, t);
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
       SearchNeighbors(all_particle, i);
@@ -81,10 +63,10 @@ double TimeLoop() {
     t += dt;
 
     // output data to file
-    if ((step + 1) % 2000 == 0) {
-      WriteData(all_particle, t);
-    }
-    printf("time t = %f\n", t);
+    //~ if ((step + 1) % 2000 == 0) {
+      //~ WriteData(all_particle, t);
+    //~ }
+    //~ printf("time t = %f\n", t);
   }
   return t;
 }
