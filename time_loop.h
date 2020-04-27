@@ -45,6 +45,10 @@ double TimeLoop() {
   for (int step = 0; step < 20000; step++) {
     dt = ComputeTimeStep(all_particle);
 
+     // if using Heun or Midpoint method
+    if (integration == HEUN || integration == MIDPOINT)
+      Time_Integration_Half(all_particle, dt);
+
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
       SearchNeighbors(all_particle, i);
     }
@@ -64,6 +68,10 @@ double TimeLoop() {
 
   for (int step = 0; step < 100000; step++) {
     dt = ComputeTimeStep(all_particle);
+
+     // if using Heun or Midpoint method
+    if (integration == HEUN || integration == MIDPOINT)
+      Time_Integration_Half(all_particle, dt);
 
     DisplaceBoundaries(all_particle, initial_configuration, t);
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
