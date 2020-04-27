@@ -203,8 +203,8 @@ void SearchNeighbors(Particle *all_particle, int ptc_idx) {
  * 		@brief initialize a tank with water
  * 			   This case is corresponding to that in SHAO_2012
  * 
- * 				|	      |
- * 				|	      |
+ * 				|	        |
+ * 				|	        |
  * 				|■ ■ ■ ■ ■|
  * 				|■_■_■_■_■|
  * 
