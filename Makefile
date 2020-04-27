@@ -6,4 +6,4 @@ run: main.c time_loop.h time_integration.h kernel.h data_set.h constants.h
 
 clean:
 	- $(RM) simulation
-	- $(RM) -r data_smoothing_length*
+	- $(RM) -r data_num_of_part_*
