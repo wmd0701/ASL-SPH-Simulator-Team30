@@ -12,7 +12,7 @@ int Nx_boundary; // boundary particles in x direction
 int Ny_boundary; // boundary particles in y direction
 double H;  //!< smoothing length
 
-int    NUMBER_OF_PARTICLE;  //!< number of particles of all particles (interior, repulsive, ghost)
+int NUMBER_OF_PARTICLE;  //!< number of particles of all particles (interior, repulsive, ghost)
 const double dam_height = 0.6;
 const double gravity = 9.81;
 const double initial_density = 997;
@@ -28,12 +28,11 @@ void set_particles_interior(int N){
 
 	Nx_boundary = 2 * round(1.73 / H) + 1;
  	Ny_boundary = 2 * round(1.15 / H) + 1;
-	N_boundary = Nx_boundary + 2 * Ny_boundary 
-								+ 2 * (Nx_boundary + 4) + 2 * 2 * Ny_boundary;
+	N_boundary = Nx_boundary + 2 * Ny_boundary + 2 * (Nx_boundary + 4) + 2 * 2 * Ny_boundary;
 
 	NUMBER_OF_PARTICLE = N_interior + N_boundary;
 	printf("interior particles: %i (x: %i, y: %i)\nboundary particles: %i\nsmoothing length: %.5f\n\n", 
-					N_interior, Nx_interior, Ny_interior, N_boundary, H);
+            N_interior, Nx_interior, Ny_interior, N_boundary, H);
 }
 
 #endif // CONSTANTS_H

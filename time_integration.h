@@ -16,12 +16,6 @@ enum Integration_Method integration;
 *		
 *			   One of the following four methods will be called in Time_Integration
 */
-//~ void Explicit_Euler (Particle* all_particle, double dt);
-//~ void Leap_Frog      (Particle* all_particle, double dt);
-//~ void Heun           (Particle* all_particle, double dt);
-//~ void Heun_Half      (Particle* all_particle, double dt);
-//~ void Midpoint       (Particle* all_particle, double dt);
-//~ void Midpoint_Half  (Particle* all_particle, double dt);
 
 void Explicit_Euler (Particle* all_particle, double dt){
 	for(int i = 0 ; i < NUMBER_OF_PARTICLE ; i++){

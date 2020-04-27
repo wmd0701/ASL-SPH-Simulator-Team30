@@ -27,84 +27,12 @@ double ComputeTimeStep (Particle* all_particle) {
     return 0.00005;
 }
 
-/** 	
-*		@brief Iterate the simulation
-*
-*/
 double TimeLoop() {
   double dt, t = 0;
 
   // Initialization
-  Particle *all_particle = Init4();
-  Particle *initial_configuration = Init4();
-  printf("init completed.\n");
-
-  // Define a file for the wave height
-  char output_path_wave[40];
-  strcpy(output_path_wave, folder_name);
-  strcat(output_path_wave, "/wave_height.csv");
-  // open file for wave height
-  FILE *fp = fopen(output_path_wave, "w");
-  fprintf(fp, "t, height\n");
-
-  // Write output of Initialization
-  WriteData(all_particle, t);
-
-  // choose which time integration method to use. By default using Explicit
-  // Euler
-  Set_Integration_Method(EXPLICIT_EULER);
-  int N = NUMBER_OF_PARTICLE; // get the number of particles
-
-  // loop over time steps
-  for (int step = 0; step < 80000; step++) {
-    dt = ComputeTimeStep(all_particle);
-
-    // if using Heun or Midpoint method
-    if (integration == HEUN || integration == MIDPOINT)
-      Time_Integration_Half(all_particle, dt);
-
-    ComputeGlobalKernel(all_particle);
-    ComputeGlobalDensity(all_particle);
-
-    ComputeGhostAndRepulsiveVelocity(all_particle);
-    DensityAndBCVelocityCorrection(all_particle);
-    // KernelGradientCorrection           (all_particle);
-
-    ComputeGlobalPressure2(all_particle, t);
-    ComputeInteriorLaminarAcceleration(all_particle, t);
-    // AddTurbulentModel                  (all_particle);
-
-    AddRepulsiveForce(all_particle, t);
-    // AddInertialForce		             (all_particle, t);
-
-    Time_Integration(all_particle, dt);
-
-    t += dt;
-
-    // Search the neighbors for the next time step
-    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-      SearchNeighbors(all_particle, i);
-    }
-
-    // output data to file
-    if (step % 200 == 0) {
-      WriteData(all_particle, t);
-      RecordWaveHeight(all_particle, fp, t);
-    }
-    printf("time t = %f\n", t);
-  }
-  RecordWaveHeight(all_particle, fp, t);
-  fclose(fp);
-  free(all_particle);
-  return t;
-}
-
-double TimeLoop2() {
-  double dt, t = 0;
-
-  // Initialization
-  Particle *all_particle = Init4();
-  Particle *initial_configuration = Init4();
+  Particle *all_particle = Init();
+  Particle *initial_configuration = Init();
   printf("init completed.\n");
 
   // choose which time integration method to use. By default using Explicit
@@ -123,13 +51,10 @@ double TimeLoop2() {
 
     ComputeGlobalKernel(all_particle);
     ComputeGlobalDensity(all_particle);
-
-    // ComputeGhostAndRepulsiveVelocity     (all_particle);
     DensityAndBCVelocityCorrection(all_particle);
-
     ComputeGlobalPressure(all_particle, t);
     ComputeInteriorLaminarAcceleration(all_particle, t);
-    AddRepulsiveForce2(all_particle, t);
+    AddRepulsiveForce(all_particle, t);
 
     Time_Integration(all_particle, dt);
   }
@@ -141,23 +66,18 @@ double TimeLoop2() {
     dt = ComputeTimeStep(all_particle);
 
     DisplaceBoundaries(all_particle, initial_configuration, t);
-
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
       SearchNeighbors(all_particle, i);
     }
 
     ComputeGlobalKernel(all_particle);
     ComputeGlobalDensity(all_particle);
-
-    // ComputeGhostAndRepulsiveVelocity     (all_particle);
     DensityAndBCVelocityCorrection(all_particle);
-
     ComputeGlobalPressure(all_particle, t);
     ComputeInteriorLaminarAcceleration(all_particle, t);
-    AddRepulsiveForce2(all_particle, t);
+    AddRepulsiveForce(all_particle, t);
 
     Time_Integration(all_particle, dt);
-
     t += dt;
 
     // output data to file

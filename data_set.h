@@ -7,7 +7,6 @@
 #include <math.h>
 #include "constants.h"
 
-
 // struct for position, velocity, grad
 typedef struct vec {
   double first;
@@ -58,6 +57,7 @@ double vec_distance_vec_square(const vector v1, const vector v2) {
 // tag used to tell different types of particles
 enum Particle_Type { interior, repulsive, ghost };
 typedef enum Particle_Type ParticleType;
+
 /**  
 *	 @brief A struct containing some variables of a neighbor particle
 */
@@ -77,8 +77,8 @@ struct Neighbor {
 	struct Neighbor *next;	//!< pointer to the next neighbor particle.
 
 };
-typedef struct Neighbor Neighbor_p;
 
+typedef struct Neighbor Neighbor_p;
 // delete a whole linked list
 void deleteNeighbors(Neighbor_p **p) {
   Neighbor_p *prev = *p;
@@ -93,7 +93,6 @@ void deleteNeighbors(Neighbor_p **p) {
 *	 @brief A struct containing some variables of a particle
 */
 typedef struct {
-
   vector position;  //!< 2d coordinate
   double mass;      //!< mass
   vector velocity;  //!< 2d velocity
@@ -107,11 +106,11 @@ typedef struct {
   ParticleType tag; //!< whether it's an interior particle (0), repulsive
                     //!< particle (1) or ghost particle (2)
 
-  Neighbor_p *
-      neighbors; /*!< List containing the index array of nearby particles
-                                                                                                             This is the pointer to the first neighbor. */
+  Neighbor_p * neighbors; /*!< List containing the index array of nearby particles
+                               This is the pointer to the first neighbor. */
 
 } Particle;
+
 /**  
 *    @brief search for the neighbor particles and  allocate memory for [neighbors]
 *    @param all_particle pointer to an array containing information of all the particles
@@ -200,253 +199,6 @@ void SearchNeighbors(Particle *all_particle, int ptc_idx) {
   }
 }
 
-/**     
-*		@brief Initiate the data structure as well as initial condition
-*		
-*			   Step 1: Memory allocation
-*			   Step 2: Assign tag, position, mass and velocity to every particles
-*			   Step 3: Establish the nearby relaiton 
-*
-*		@return	pointer to an array containing information of all the particles
-*/
-Particle *Init() {
-  // TODO: initialization
-  Particle *particles =
-      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
-  for (int i = 0; i < 16; ++i) {
-    for (int j = 0; j < 16; ++j) {
-      particles[i * 16 + j].position.first = 0.5 * H * i;
-      particles[i * 16 + j].position.second = 0.5 * H * j;
-
-      if ((i > 2 && i < 13) && (j > 2 && j < 13))
-        particles[i * 16 + j].tag = interior; // interior
-      else if (i < 2 || i > 13 || j < 2 || j > 13)
-        particles[i * 16 + j].tag = ghost; // ghost
-      else {
-        particles[i * 16 + j].tag = 1; // repulsive
-      }
-    }
-  }
-  int N = NUMBER_OF_PARTICLE;   // get the number of particles
-  for (int i = 0; i < N; i++) { // traverse particles
-    particles[i].velocity.first = 0.;
-    particles[i].velocity.second = 0.;
-    particles[i].mass = 10.;
-    particles[i].density = initial_density;
-    particles[i].pressure = 1.;
-    particles[i].accelerat.first = 0.;
-    particles[i].accelerat.second = 0.;
-
-    SearchNeighbors(particles, i);
-  }
-  return particles;
-}
-
-/**
- * 		@brief initialize a dam break problem
- * 				
- * 				|				  |
- * 				|				  |
- * 				|■ ■ 			  |
- * 				|■_■______________|
- * 
- * 		@note  number of paricles = 2255
- *		@return pointer to an array containing information of all the particles
- */
-Particle *Init_dam_break() {
-  // TODO: initialization
-  Particle *particles =
-      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
-  int now = 0;
-
-  // Set interior particles
-  for (int i = 1; i <= 20; ++i) {
-    for (int j = 1; j <= 40; ++j) {
-      particles[now].position.first = i * H;
-      particles[now].position.second = j * H;
-      particles[now].tag = interior;
-      ++now;
-    }
-  }
-
-  // Set repulsive particles
-  for (int i = 1; i <= 160; i++) {
-    particles[now].position.first = i * H / 2;
-    particles[now].position.second = 0;
-    particles[now].tag = repulsive;
-    ++now;
-  }
-  for (int j = 0; j <= 160; j++) {
-    particles[now].position.first = 0;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = repulsive;
-    ++now;
-  }
-  for (int j = 1; j <= 160; j++) {
-    particles[now].position.first = 80 * H;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = repulsive;
-    ++now;
-  }
-
-  // Set ghost particles
-  for (int i = -2; i <= 162; i++) {
-    particles[now].position.first = i * H / 2;
-    particles[now].position.second = -H / 2;
-    particles[now].tag = ghost;
-    ++now;
-
-    particles[now].position.first = i * H / 2;
-    particles[now].position.second = -H;
-    particles[now].tag = ghost;
-    ++now;
-  }
-
-  for (int j = 0; j <= 160; j++) {
-    particles[now].position.first = -H;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = ghost;
-    ++now;
-
-    particles[now].position.first = -H / 2;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = ghost;
-    ++now;
-
-    particles[now].position.first = 80 * H + H / 2;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = ghost;
-    ++now;
-
-    particles[now].position.first = 80 * H + H;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = ghost;
-    ++now;
-  }
-  if (NUMBER_OF_PARTICLE != now)
-    printf("number of particles doesn't match with init,\n");
-
-  int N = NUMBER_OF_PARTICLE;   // get the number of particles
-  for (int i = 0; i < N; i++) { // traverse particles
-    particles[i].velocity.first = 0.;
-    particles[i].velocity.second = 0.;
-    particles[i].mass =
-        7 * M_PI *
-        H * H * initial_density / 40 / 384 * 997; /* determined after the first
-                                                     iteration to make density
-                                                     to be 997 */
-    particles[i].density = initial_density;
-    particles[i].pressure = 1.;
-    particles[i].accelerat.first = 0.;
-    particles[i].accelerat.second = 0.;
-    particles[i].neighbors = NULL;
-
-    SearchNeighbors(particles, i);
-  }
-  return particles;
-}
-
-/**
- * 		@brief initialize a tank with water
- * 			   to see how it gets balanced
- * 
- * 				|	|
- * 				|	|
- * 				|■ ■|
- * 				|■_■|
- * 
- * 		@note  number of paricles = 1901
- *		@return pointer to an array containing information of all the particles
- */
-Particle *Init3() {
-  // TODO: initialization
-  Particle *particles =
-      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
-  int now = 0;
-
-  // Set interior particles
-  for (int i = 1; i <= 20; ++i) {
-    for (int j = 1; j <= 40; ++j) {
-      particles[now].position.first = i * H;
-      particles[now].position.second = j * H;
-      particles[now].tag = interior;
-      ++now;
-    }
-  }
-
-  // Set repulsive particles
-  for (int i = 1; i <= 42; i++) {
-    particles[now].position.first = i * H / 2;
-    particles[now].position.second = 0;
-    particles[now].tag = repulsive;
-    ++now;
-  }
-  for (int j = 0; j <= 160; j++) {
-    particles[now].position.first = 0;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = repulsive;
-    ++now;
-  }
-  for (int j = 1; j <= 160; j++) {
-    particles[now].position.first = 21 * H;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = repulsive;
-    ++now;
-  }
-
-  // Set ghost particles
-  for (int i = -2; i <= 44; i++) {
-    particles[now].position.first = i * H / 2;
-    particles[now].position.second = -H / 2;
-    particles[now].tag = ghost;
-    ++now;
-
-    particles[now].position.first = i * H / 2;
-    particles[now].position.second = -H;
-    particles[now].tag = ghost;
-    ++now;
-  }
-
-  for (int j = 0; j <= 160; j++) {
-    particles[now].position.first = -H;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = ghost;
-    ++now;
-
-    particles[now].position.first = -H / 2;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = ghost;
-    ++now;
-
-    particles[now].position.first = 21 * H + H / 2;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = ghost;
-    ++now;
-
-    particles[now].position.first = 21 * H + H;
-    particles[now].position.second = j * H / 2;
-    particles[now].tag = ghost;
-    ++now;
-  }
-  if (NUMBER_OF_PARTICLE != now)
-    printf("number of particles doesn't match with init,\n");
-
-  int N = NUMBER_OF_PARTICLE;   // get the number of particles
-  for (int i = 0; i < N; i++) { // traverse particles
-    particles[i].velocity.first = 0.;
-    particles[i].velocity.second = 0.;
-    particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997;
-    particles[i].density = initial_density;
-    particles[i].pressure = 1.;
-    particles[i].accelerat.first = 0.;
-    particles[i].accelerat.second = 0.;
-    particles[i].neighbors = NULL;
-
-    SearchNeighbors(particles, i);
-  }
-  return particles;
-}
-
 /**
  * 		@brief initialize a tank with water
  * 			   This case is corresponding to that in SHAO_2012
@@ -456,16 +208,14 @@ Particle *Init3() {
  * 				|■ ■ ■ ■ ■|
  * 				|■_■_■_■_■|
  * 
- * 		@note  number of paricles = 891
  *		@return pointer to an array containing information of all the particles
  */
-Particle *Init4() {
+Particle *Init() {
   // TODO: initialization
-  Particle *particles =
-      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+  Particle *particles = (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
   int now = 0;
   
-	// Set interior particles
+  // Set interior particles
   for (int i = 0; i < Nx_interior; ++i) {
     for (int j = 0; j < Ny_interior; ++j) {
       particles[now].position.first = (i + 1) * H;

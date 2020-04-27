@@ -82,48 +82,5 @@ void ComputeGlobalKernel (Particle *all_particle) {
 		}
 	}	
 }
-
-
-/** 
-*   @brief Compute the "corrected" gradient of the kernel function
-*	@param all_particle all_particle pointer to an array containing information of all the particles
-*   @return no returns. Update the [Wij_grad_i] in [neighbors] of [all_particle]
-*/   
-void KernelGradientCorrection (Particle *all_particle) {
-	double a00, a01, a10, a11, V, xji, yji;
-	double determinant;
-	vector new_grad;
-	int N = NUMBER_OF_PARTICLE;
-
-	for (int i = 0; i < N; i++) {
-
-		a00 = 0;
-		a01 = 0;
-		a10 = 0;
-		a11 = 0;
-		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
-
-			V = all_particle[p->idx].mass / all_particle[p->idx].density;
-			xji = all_particle[p->idx].position.first  - all_particle[i].position.first;
-			yji = all_particle[p->idx].position.second - all_particle[i].position.second;
-			a00 += xji * p->Wij_grad_i.first  * V;
-			a01 += yji * p->Wij_grad_i.first  * V;
-			a10 += xji * p->Wij_grad_i.second * V;
-			a11 += yji * p->Wij_grad_i.second * V;
-
-		}
-
-		determinant = a00 * a11 - a10 * a01;
-
-		for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {
-
-			new_grad.first  = (  a11 * p->Wij_grad_i.first - a01 * p->Wij_grad_i.second) / determinant;
-			new_grad.second = (- a10 * p->Wij_grad_i.first + a00 * p->Wij_grad_i.second) / determinant;
-			p->Wij_grad_i = new_grad;
-
-		}		
-	}
-}
-
 #endif // KERNEL_H
 

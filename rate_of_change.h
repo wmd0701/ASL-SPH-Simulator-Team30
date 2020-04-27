@@ -121,52 +121,6 @@ void ComputeGlobalPressure (Particle *all_particle, double t){
 	return;
 }
 
-
-/**   
-*     @brief Compute the value of pressure field at every particle
-*           
-*              p = c2 * rho0 / 7 * max((rho/rho0)^7 - 1, 0)
-*
-*     @param all_particle pointer to an array containing information of all the particles
-*     @return no returns. Update the [pressure] attribute in all_particle
-*/
-void ComputeGlobalPressure2 (Particle *all_particle, double t){
-	double c2 = ComputeSoundSpeedSquared(all_particle, t);
-    
-    int N = NUMBER_OF_PARTICLE;
-	for (int i = 0; i < N; i++) {
-		all_particle[i].pressure = c2 * initial_density / 7 * (pow(all_particle[i].density / initial_density, 7) - 1);
-		if (all_particle[i].pressure < 0) {
-			all_particle[i].pressure = 0;
-		}
-	}
-	return;
-}
-
-/**   
-*     @brief Compute the velocity of every ghost particle
-*     @param all_particle pointer to an array containing information of all the particles
-*     @return no returns. Update the [velocity] attribute in all_particle
-*/
-void ComputeGhostAndRepulsiveVelocity (Particle *all_particle){
-	int N = NUMBER_OF_PARTICLE;
-	for (int i = 0; i < N; i++) {
-		if(all_particle[i].tag != 0){
-			vector sum;
-			sum.first = 0;
-			sum.second = 0;
-			for (Neighbor_p *p = all_particle[i].neighbors; p != NULL; p = p->next) {    // traverse neighbors
-
-				sum.first  -= all_particle[p->idx].velocity.first  * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
-				sum.second -= all_particle[p->idx].velocity.second * p->Wij * all_particle[p->idx].mass / all_particle[p->idx].density;
-
-			}
-			all_particle[i].velocity.first = sum.first;//sum.first;
-			all_particle[i].velocity.second = sum.second; //sum.second;
-		}
-	}
-}
-
 /**   
 *     @brief Compute dvdt for every particle without considering the influence of boundary points and turbulence
 *     @param all_particle pointer to an array containing information of all the particles
@@ -218,139 +172,8 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
     }
 }
 
-void ComputeInteriorLaminarAcceleration2(Particle *all_particle, double t) {
-    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-        if (all_particle[i].tag == interior) {
-            Neighbor_p *n = all_particle[i].neighbors;
-            Particle *pi = &all_particle[i];
-            pi->accelerat.first  = 0;
-            pi->accelerat.second = 0;
-            
-            while (n != NULL) {
-                Particle *pj = &all_particle[n->idx];
-                vector gradient = n->Wij_grad_i;
-                
-                // Pressure force
-                double constant1 =
-                    pj->mass * (pi->pressure / (pi->density * pi->density) +
-                                pj->pressure / (pj->density * pj->density));
-
-                
-                pi->accelerat.first -= constant1 * gradient.first;
-                pi->accelerat.second -= constant1 * gradient.second;
-
-                // Viscosity force
-                if(pj->tag == interior){
-                    vector xij = vec_sub_vec(pi->position, pj->position);
-                    vector vij = vec_sub_vec(pi->velocity, pj->velocity);
-                    
-                    double constant2 = (4.0 * pj->mass * (2.0 * dynamic_viscosity) * vec_dot_vec(xij, vij)) /(pow((pi->density + pj->density), 2) *(vec_dot_vec(xij, xij) + 0.01 * pow(H, 2)));
-                    
-                    pi->accelerat.first += constant2 * gradient.first;
-                    pi->accelerat.second += constant2 * gradient.second;
-                }
-
-                n = n->next;
-            }
-
-            // Gravity
-            pi->accelerat.second -= gravity;
-        }
-    }
-}
-
-
 /**   
-*     @brief Add the turbulent term into the acceleration of every particle
-*     @param all_particle pointer to an array containing information of all the particles
-*     @return no returns. Update the [accelerat] attribute in all_particle
-*/
-void AddTurbulentModel(Particle *all_particle){
-}
-
-/**   
-*     @brief Add the repulsive force into the acceleration of involved particle
-*
-*     @note  This is dependent on concrete cases.
-*
-*     @param all_particle pointer to an array containing information of all the particles
-*     @return no returns. Update the [accelerat] attribute in all_particle
-*/
-
-void AddRepulsiveForce(Particle *all_particle, double t){
-    int N = NUMBER_OF_PARTICLE;
-    int i;
-    Particle *pi;
-    double c2 = ComputeSoundSpeedSquared(all_particle, t);
-    double beta, q;
-    vector pos;
-    for (i = 0; i < N; i++) {
-        pi = &all_particle[i];
-        if (pi->tag == interior) {                     
-            pos = pi->position;
-
-            // for bottom boundary
-            q = pos.second / (0.75 * H) ;
-            if (q > 0) {
-                if (q <= 2 / 3) {
-                    beta = 0.02 * c2 / pos.second;
-                    pi->accelerat.second += 2 / 3 * beta / 2; 
-                }
-                else if (q <= 1) {
-                    beta = 0.02 * c2 / pos.second;
-                    pi->accelerat.second += beta * (2 * q - 3/2 * q * q) / 2;
-                }
-                else if (q <= 2) {
-                    beta = 0.02 * c2 / pos.second;
-                    pi->accelerat.second += 0.5 * beta * (2 - q) * (2 - q) / 2;
-                }
-            }
-
-            // for left boundary
-            q = pos.first / (0.75 * H);
-            if (q > 0) {
-                if (q <= 2 / 3) {
-                    beta = 0.02 * c2 / pos.first;
-                    pi->accelerat.first += 2 / 3 * beta / 2;
-                }
-                else if (q <= 1) {
-                    beta = 0.02 * c2 / pos.first;
-                    pi->accelerat.first += beta * (2 * q - 3/2 * q * q) / 2;
-                }
-                else if (q <= 2) {
-                    beta = 0.02 * c2 / pos.first;
-                    pi->accelerat.first += 0.5 * beta * (2 - q) * (2 - q) / 2;
-                }
-            }
-
-            // for right boundary
-            q = (160 * H - pos.first) / (0.75 * H);
-            if (q > 0) {
-                if (q <= 2 / 3) {
-                    beta = 0.02 * c2 / (160 * H - pos.first);
-                    pi->accelerat.first -= 2 / 3 * beta / 2;
-                }
-                else if (q <= 1) {
-                    beta = 0.02 * c2 / (160 * H - pos.first);
-                    pi->accelerat.first -= beta * (2 * q - 3/2 * q * q) / 2;
-                }
-                else if (q <= 2) {
-                    beta = 0.02 * c2 / (160 * H - pos.first);
-                    pi->accelerat.first -= 0.5 * beta * (2 - q) * (2 - q) / 2;
-                }
-            }
-        }
-    }	
-}
-
-
-/**   
-*     @brief Add the repulsive force into the acceleration of involved particle
-*
-*     @note  This is dependent on concrete cases.
-*
-*     @param all_particle pointer to an array containing information of all the particles
-*     @return no returns. Update the [accelerat] attribute in all_particle
+*     @brief Implementation of function f, formula 28 in the paper
 */
 double f(double eta){
 	const double c = 2.0 / 3.0;
@@ -364,7 +187,13 @@ double f(double eta){
 		return 0.0;
 }
 
-void AddRepulsiveForce2(Particle *all_particle, double t){
+/**   
+*     @brief Add the repulsive force into the acceleration of involved particle
+*
+*     @param all_particle pointer to an array containing information of all the particles
+*     @return no returns. Update the [accelerat] attribute in all_particle
+*/
+void AddRepulsiveForce(Particle *all_particle, double t){
     double d = H;
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
         // interior particles
@@ -394,23 +223,13 @@ void AddRepulsiveForce2(Particle *all_particle, double t){
     }
 }
 
-/**     
- *      @brief use an extra inertial force to deal with moving boundary
- */
-void AddInertialForce (Particle* all_particle, double t_now) {
-	int N = NUMBER_OF_PARTICLE;
-	double amplitude = 0.32, T = 1.5;
-
-	for (int i = 0; i < N; i++) {
-		if (all_particle[i].tag == interior) {
-
-			all_particle[i].accelerat.first += - amplitude * 2 * M_PI / T * sin(2 * M_PI * t_now / T);
-
-		}
-	}
-	return;
-}
-
+/**   
+*     @brief Displace the boundaries and update their velocity according to x(t) = A*cos(2*M_PI*t/T)
+*
+*     @param all_particle: pointer to an array containing information of all the particles
+*     @param initial_configuration: pointer to an array containing the initial position of all particles
+*     @return no returns. Update the attributes in all_particle
+*/
 void DisplaceBoundaries(Particle* all_particle, Particle* initial_configuration, double t){
 	double A = amplitude;
 	double T = period;

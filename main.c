@@ -27,7 +27,7 @@ int main(int argc, char* argv[]){
 	printf("output path: %s\n", argv[2]);
 	set_output_path(argv[2]);
 
-	double t_end = TimeLoop2();	
+	double t_end = TimeLoop();	
 
 	printf("Done. End time is: %f\n", t_end);	
 
