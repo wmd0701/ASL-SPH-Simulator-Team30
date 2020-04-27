@@ -12,7 +12,7 @@
 *   @brief: main function
 *   @param argc: number of parameters
 *   @param argv[0]: name of executable file
-*		@param argv[1]: smoothing length
+*		@param argv[1]: number of interior particles
 *		@param argv[2]: output path
 */
 int main(int argc, char* argv[]){
