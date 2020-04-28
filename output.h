@@ -3,6 +3,7 @@
 #define OUTPUT_H
 
 #include "data_set.h"
+#include "constants.h"
 #include <string.h>
 char folder_name[40];
 
@@ -40,6 +41,30 @@ void WriteData(Particle* all_particle, double t_now) {
 				this_p.accelerat.first,
 				this_p.accelerat.second);
 	}
+	fclose(fp);
+}
+
+void WritePerformance() {
+	char file_name[23];
+	sprintf(file_name, "/performance.csv");
+	char output_path[60];
+	strcpy(output_path, folder_name);
+	strcat(output_path, file_name);
+	
+	FILE *fp = NULL;
+	fp = fopen(output_path,"w");
+	fprintf(fp, "cycles_DispBoundar, cycles_SearchNeighbor, cycles_CompGlbKernel, cycles_CompGlbDensity, cycles_DensityCorr, cycles_CompPressure, cycles_CompAccelerat, cycles_RepulsiveForce, cycles_TimeIntegral, cycles_all\n"); 
+	fprintf(fp, "%.0lf,%.0lf,%.0lf,%.0lf,%.0lf,%.0lf,%.0lf,%.0lf,%.0lf,%.0lf\n",
+			cycles_DispBoundary,
+			cycles_SearchNeighbor,
+			cycles_CompGlbKernel,
+			cycles_CompGlbDensity,
+			cycles_DensityCorr,
+			cycles_CompPressure,
+			cycles_CompAccelerat,
+			cycles_RepulsiveForce,
+			cycles_TimeIntegral,
+			cycles_all	);
 	fclose(fp);
 }
 

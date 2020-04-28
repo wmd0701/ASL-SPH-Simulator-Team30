@@ -20,6 +20,17 @@ const double dynamic_viscosity = 0.8926e-3;
 const double amplitude = 0.032;
 const double period = 1.5;
 
+double cycles_DispBoundary   = 0;
+double cycles_SearchNeighbor = 0;
+double cycles_CompGlbKernel  = 0;
+double cycles_CompGlbDensity = 0;
+double cycles_DensityCorr    = 0;
+double cycles_CompPressure   = 0;
+double cycles_CompAccelerat  = 0;
+double cycles_RepulsiveForce = 0;
+double cycles_TimeIntegral   = 0;
+double cycles_all            = 0;
+
 void set_particles_interior(int N){
 	H = (sqrt(2595 * N + 225) - 15) / (50 * N);
 	Nx_interior = round(1.73 / H - 1);

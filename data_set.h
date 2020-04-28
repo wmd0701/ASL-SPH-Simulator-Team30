@@ -281,10 +281,9 @@ Particle *Init() {
 		++now;
 	}
 	
-  printf("%i \n", now);
+  //printf("%i \n", now);
   if (NUMBER_OF_PARTICLE != now)
-    printf("number of particles doesn't match with init,\n");
-	
+    printf("number of particles doesn't match with init,\n");  
 	
   int N = NUMBER_OF_PARTICLE;   // get the number of particles
   for (int i = 0; i < N; i++) { // traverse particles

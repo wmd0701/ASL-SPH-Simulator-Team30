@@ -29,22 +29,20 @@ int main(int argc, char* argv[]){
 
 	double t_end = TimeLoop();	
 
-	printf("cycles_DispBoundar    = %.0f \n", cycles_DispBoundary  );
-	printf("cycles_SearchNeighbor = %.0f \n", cycles_SearchNeighbor);
-	printf("cycles_CompGlbKernel  = %.0f \n", cycles_CompGlbKernel );
-	printf("cycles_CompGlbDensity = %.0f \n", cycles_CompGlbDensity);
-	printf("cycles_DensityCorr    = %.0f \n", cycles_DensityCorr   );
-	printf("cycles_CompPressure   = %.0f \n", cycles_CompPressure  );
-	printf("cycles_CompAccelerat  = %.0f \n", cycles_CompAccelerat );
-	printf("cycles_RepulsiveForce = %.0f \n", cycles_RepulsiveForce);
-	printf("cycles_TimeIntegral   = %.0f \n", cycles_TimeIntegral  );
-	printf("-----------------------------\n");
-	printf("overall cycles        = %.0f \n", cycles_DispBoundary   + cycles_SearchNeighbor + cycles_CompGlbKernel +    \
-											  cycles_CompGlbDensity + cycles_DensityCorr    + cycles_CompPressure  +
-											  cycles_CompAccelerat  + cycles_RepulsiveForce + cycles_TimeIntegral);
-											  
-	
+	printf("cycles_DispBoundar    = %.0lf \n", cycles_DispBoundary  );
+	printf("cycles_SearchNeighbor = %.0lf \n", cycles_SearchNeighbor);
+	printf("cycles_CompGlbKernel  = %.0lf \n", cycles_CompGlbKernel );
+	printf("cycles_CompGlbDensity = %.0lf \n", cycles_CompGlbDensity);
+	printf("cycles_DensityCorr    = %.0lf \n", cycles_DensityCorr   );
+	printf("cycles_CompPressure   = %.0lf \n", cycles_CompPressure  );
+	printf("cycles_CompAccelerat  = %.0lf \n", cycles_CompAccelerat );
+	printf("cycles_RepulsiveForce = %.0lf \n", cycles_RepulsiveForce);
+	printf("cycles_TimeIntegral   = %.0lf \n", cycles_TimeIntegral  );
+	printf("cycles_all			  = %.0lf \n", cycles_all);
 	printf("Done. End time is: %f\n", t_end);	
+	printf("-----------------------------\n");
+
+	WritePerformance();
 
 	return EXIT_SUCCESS;
 }
