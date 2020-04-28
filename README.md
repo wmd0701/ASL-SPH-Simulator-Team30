@@ -13,7 +13,8 @@ According to the requirement of the course, the project is fully implemented in 
 - output.h:             output testing results to file, useful for validation
 - rate_of_change.h:     computation
 - time_integration.h:   time integration methods
-- time_loop:            main loop
+- time_loop.h:          main loop
+- tsc_x86.h:            count cycles
 - main.c:               main function
 
 ## Directories
@@ -25,7 +26,7 @@ make (or make -f Makefile_gcc_9, depending on platform and gcc version)
 ```
 ### Usage
 ```sh
-bash simulation_bash.sh (or ./simulation $smoothing_length $output_path)
+bash simulation_bash.sh (or ./simulation $num_particles $output_path)
 ```
 
 ### Parameters
