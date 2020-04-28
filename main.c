@@ -38,9 +38,9 @@ int main(int argc, char* argv[]){
 	printf("cycles_CompAccelerat  = %.0lf \n", cycles_CompAccelerat );
 	printf("cycles_RepulsiveForce = %.0lf \n", cycles_RepulsiveForce);
 	printf("cycles_TimeIntegral   = %.0lf \n", cycles_TimeIntegral  );
-	printf("cycles_all			  = %.0lf \n", cycles_all);
+	printf("cycles_all            = %.0lf \n\n", cycles_all);
 	printf("Done. End time is: %f\n", t_end);	
-	printf("-----------------------------\n");
+	printf("------------------------------------------------\n");
 
 	WritePerformance();
 

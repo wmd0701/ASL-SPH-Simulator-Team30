@@ -17,7 +17,7 @@ double TimeLoop() {
   // Initialization
   Particle *all_particle = Init();
   Particle *initial_configuration = Init();
-  printf("init completed.\n");
+  printf("init completed.\n\n");
 
   // choose which time integration method to use. By default using Explicit
   // Euler
