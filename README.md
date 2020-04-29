@@ -17,8 +17,9 @@ According to the requirement of the course, the project is fully implemented in 
 - tsc_x86.h:            count cycles
 - main.c:               main function
 
-## Directories
-- data:                 output files
+## Branches
+- master:               original simulator
+- optimization:         optimized version
 
 ### Compile
 ```sh
