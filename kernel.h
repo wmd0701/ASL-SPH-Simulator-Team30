@@ -15,8 +15,7 @@
 *	 @return value of kernel function
 */
 double Kernel (const vector xi,const vector xj) {
-
-	double r = sqrt(pow((xi.first - xj.first),2) + pow((xi.second - xj.second),2));
+	double r = vec_distance_vec(xi, xj);
 	double q = r / H;
 
 	double factor = 10 / 7 / M_PI / H / H;
@@ -40,7 +39,7 @@ double Kernel (const vector xi,const vector xj) {
 *	@return gradient of kernel function
 */   
 vector KernelGradient (const vector xi,const vector xj) {
-	double r = sqrt(pow((xi.first - xj.first),2) + pow((xi.second - xj.second),2));
+	double r = vec_distance_vec(xi, xj);
 	double q = r / H;
 	double factor = 10 / 7 / M_PI / H / H;
 	vector grad;
