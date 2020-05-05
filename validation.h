@@ -3,16 +3,12 @@
 #include "data_set.h"
 
 
-const int N = 60;
-const double dx = 0.02916;
-const double dy = dx;
-const int M = 38;
-
-vector index_from_coord(vector particle_pos){
+vector index_from_coord(vector particle_pos, double x_min, int N, int M, double dx, double dy){
     double x = particle_pos.first;
     double y = particle_pos.second;
-    if(!(x < 1.73 - 0.5*dx && y < 1.1 - 0.5*dy && x > -0.5*dx && y > -0.5*dy)){
+    if(!(x < N*dx - 0.5*dx && y < N*dy - 0.5*dy && x > -0.5*dx && y > -0.5*dy)){
         printf("Something wrong with particle position! \n");
+        printf("x: %lf, y: %lf \n", x, y);
     }
     
     vector result;
@@ -22,7 +18,7 @@ vector index_from_coord(vector particle_pos){
 }
 
 double displace_to_origin(Particle* all_particle){
-    double x_min = all_particle[0].position.first;
+    double x_min = 100.;
     for (int i = 1; i < NUMBER_OF_PARTICLE; ++i){
         if(all_particle[i].tag == repulsive){
             if(all_particle[i].position.first < x_min){
@@ -38,7 +34,16 @@ double displace_to_origin(Particle* all_particle){
     return x_min;
 }
 
-void validation(Particle* all_particle){
+double validation(Particle* all_particle, char output_name[], double smoothing_length){
+    double dx, dy;
+    int N, M;
+    
+    dx = smoothing_length;
+    dy = dx;
+    N = ((int)(1.73/smoothing_length)) + 2;
+    M = ((int)(1.1/smoothing_length)) + 2;
+    
+    
     //Displace all the particles, such that the left most repulsive particle has position.first = 0
     double x_min = displace_to_origin(all_particle);
     
@@ -67,11 +72,9 @@ void validation(Particle* all_particle){
 	for(int p = 0; p < NUMBER_OF_PARTICLE; ++p){
         if(all_particle[p].tag == interior){
             vector particle_pos = all_particle[p].position;
-            vector init_cell = index_from_coord(particle_pos);
+            vector init_cell = index_from_coord(particle_pos, x_min, N, M, dx, dy);
             is_fluid[(int)init_cell.first + (int)init_cell.second * (N+2)];
         
-            //~ for(int j = (int)init_cell.second - 2; j <= (int)init_cell.second + 2; ++j){
-                //~ for(int i = (int)init_cell.first - 2; i <= (int)init_cell.first + 2; ++i){
             for(int j = (int)init_cell.second - 1; j <= (int)init_cell.second + 1; ++j){
                 for(int i = (int)init_cell.first - 1; i <= (int)init_cell.first + 1; ++i){
                     
@@ -132,9 +135,8 @@ void validation(Particle* all_particle){
     }
     
     //Output of level set function
-	char file_name[22] = "level_set_function.csv";
 	FILE *fp = NULL;
-	fp = fopen(file_name,"w");
+	fp = fopen(output_name,"w");
 	fprintf(fp, "x coord, y coord, level set\n"); 
 	for (int i = 0; i < (N+2)*(M+2); i++) {
 		vector this_point = points[i];
@@ -158,9 +160,87 @@ void validation(Particle* all_particle){
             double y1 = dy*(j+1);
             double y = y0 - level_set_x005[j+1]*(y1 - y0)/(level_set_x005[j+2] - level_set_x005[j+1]);
             if ((y >= y0 && y <= y1) && y > 0 && y < 1.1){
-                printf("One 0 of the level set function is situated at y = %f (x = 0.05) \n", y);
+                //~ printf("One 0 of the level set function is situated at y = %f (x = 0.05) \n", y);
+                return y;
             }
         }
     }
+}
+
+double validate(char filename[], char output_name[], double smoothing_length){
+    //Read file
+    FILE *fp = fopen(filename, "r");
+    if (!fp)
+        printf("fail to read the file.\n");
+    Particle *all_particle = (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+    char str[1024];
+    double x1, x2, v1, v2, m, rho, p, a1, a2;
+    int t;
+    fgets(str, 1024, fp);
+    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
+        fgets(str, 1024, fp);
+        sscanf(str, "%lf,%lf,%d,%lf,%lf,%lf,%lf,%lf,%lf,%lf", &x1, &x2, &t, &v1, &v2, &m, &rho, &p, &a1, &a2);
+        all_particle[i].position.first = x1;
+        all_particle[i].position.second = x2;
+        all_particle[i].tag = t;
+    }
     
+   return validation(all_particle, output_name, smoothing_length);
+}
+
+void validation_main(){
+    char folder_name[60] = "data_sdt_3959/data-"; //to be changed if the number of particles is different from 3959
+    char output_name[60] = "level_set_function_3959/data-"; //to be changed if the number of particles is different from 3959
+    char file_name1[60];
+    char file_name2[60];
+    char si[100];
+    char post[60] = "00000.csv";
+    double point_of_interest[217];
+    for(int i = 0; i < 217; ++i){
+      gcvt(i, 5, si);
+      if(i < 10){
+          strcpy(file_name1, folder_name);
+          char pre[40] = "00";
+          strcat(file_name1, pre);
+          strcat(file_name1, si);
+          strcat(file_name1, post);
+    
+          strcpy(file_name2, output_name);
+          strcat(file_name2, pre);
+          strcat(file_name2, si);
+          strcat(file_name2, post);
+      }
+      else if (i >= 10 && i < 100){
+          strcpy(file_name1, folder_name);
+          char pre[40] = "0";
+          strcat(file_name1, pre);
+          strcat(file_name1, si);
+          strcat(file_name1, post);
+          
+          strcpy(file_name2, output_name);
+          strcat(file_name2, pre);
+          strcat(file_name2, si);
+          strcat(file_name2, post);
+      }
+      else{
+          strcpy(file_name1, folder_name);
+          strcat(file_name1, si);
+          strcat(file_name1, post);
+          
+          strcpy(file_name2, output_name);
+          strcat(file_name2, si);
+          strcat(file_name2, post);
+      }
+      point_of_interest[i] = validate(file_name1, file_name2, 0.01603); //to be changed if the number of particles is different from 3959
+    }
+    
+    //Output of level set function
+    FILE *fp = NULL;
+    char final_file[40] = "points_of_interest";
+    fp = fopen(final_file,"w");
+    for (int i = 0; i < 217; i++) {
+        fprintf(fp, "%lf \n",  
+                point_of_interest[i]);
+    }
+    fclose(fp);
 }
