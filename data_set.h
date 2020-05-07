@@ -111,6 +111,7 @@ typedef struct {
 
 } Particle;
 
+
 /**  
 *    @brief search for the neighbor particles and  allocate memory for [neighbors]
 *    @param all_particle pointer to an array containing information of all the particles
@@ -131,305 +132,39 @@ void SearchNeighbors(Particle *all_particle) {
         for(int j = i; j < NUMBER_OF_PARTICLE; ++j){
             vector xj = all_particle[j].position;
             if(i == j){
-                //Add neighbor j to particle i
-                if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
-                    Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                    new_p->idx = j;
-                    new_p->next = NULL;
-                    all_particle[i].neighbors = new_p;
-                } 
-                else { // if it's not the first pointer of list
-                    Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                    new_p->idx = j;
-                    new_p->next = all_particle[i].neighbors;
-                    all_particle[i].neighbors = new_p;
+                //Add particle j to neighbors of particle i
+                Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
+                new_p->idx = j;
+                new_p->next = all_particle[i].neighbors;
+                all_particle[i].neighbors = new_p;
+            }
+            else if(all_particle[i].tag == interior){
+                r = vec_distance_vec(xj, xi);
+                if (r < 2 * H) {
+                    //Add particle j to neighbors of particle i
+                    Neighbor_p *new_p1 = (Neighbor_p *)malloc(sizeof(Neighbor_p));
+                    new_p1->idx = j;
+                    new_p1->next = all_particle[i].neighbors;
+                    all_particle[i].neighbors = new_p1;
+                    //Add particle i to neighbors of particle j
+                    Neighbor_p *new_p2 = (Neighbor_p *)malloc(sizeof(Neighbor_p));
+                    new_p2->idx = i;
+                    new_p2->next = all_particle[j].neighbors;
+                    all_particle[j].neighbors = new_p2;
                 }
-                //Add neighbor i to particle j
-                if (all_particle[j].neighbors == NULL) { // if it's the first pointer of list
-                    Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                    new_p->idx = i;
-                    new_p->next = NULL;
-                    all_particle[j].neighbors = new_p;
-                } 
-                else { // if it's not the first pointer of list
+            }
+            else if(all_particle[i].tag == repulsive && all_particle[j].tag == ghost){
+                r = vec_distance_vec(xj, xi);
+                if (r < 2 * H) {
+                    //Add particle i to neighbors of particle j
                     Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
                     new_p->idx = i;
                     new_p->next = all_particle[j].neighbors;
                     all_particle[j].neighbors = new_p;
                 }
             }
-            else if(all_particle[i].tag == interior && all_particle[j].tag == interior){
-                r = vec_distance_vec(xj, xi);
-                if (r < 2 * H) {
-                    //Add neighbor j to particle i
-                    if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = NULL;
-                        all_particle[i].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = all_particle[i].neighbors;
-                        all_particle[i].neighbors = new_p;
-                    }
-                    //Add neighbor i to particle j
-                    if (all_particle[j].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = NULL;
-                        all_particle[j].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = all_particle[j].neighbors;
-                        all_particle[j].neighbors = new_p;
-                    }
-                }
-            }
-            else if(all_particle[i].tag == interior && all_particle[j].tag == repulsive){
-                r = vec_distance_vec(xj, xi);
-                if (r < 2 * H) {
-                    //Add neighbor j to particle i
-                    if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = NULL;
-                        all_particle[i].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = all_particle[i].neighbors;
-                        all_particle[i].neighbors = new_p;
-                    }
-                    //Add neighbor i to particle j
-                    if (all_particle[j].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = NULL;
-                        all_particle[j].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = all_particle[j].neighbors;
-                        all_particle[j].neighbors = new_p;
-                    }
-                }
-            }
-            else if(all_particle[i].tag == interior && all_particle[j].tag == ghost){
-                r = vec_distance_vec(xj, xi);
-                if (r < 2 * H) {
-                    //Add neighbor j to particle i
-                    if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = NULL;
-                        all_particle[i].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = all_particle[i].neighbors;
-                        all_particle[i].neighbors = new_p;
-                    }
-                    //Add neighbor i to particle j
-                    if (all_particle[j].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = NULL;
-                        all_particle[j].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = all_particle[j].neighbors;
-                        all_particle[j].neighbors = new_p;
-                    }
-                }
-            }
-            else if(all_particle[i].tag == repulsive && all_particle[j].tag == interior){
-                r = vec_distance_vec(xj, xi);
-                if (r < 2 * H) {
-                    //Add neighbor j to particle i
-                    if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = NULL;
-                        all_particle[i].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = all_particle[i].neighbors;
-                        all_particle[i].neighbors = new_p;
-                    }
-                    //Add neighbor i to particle j
-                    if (all_particle[j].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = NULL;
-                        all_particle[j].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = all_particle[j].neighbors;
-                        all_particle[j].neighbors = new_p;
-                    }
-                }
-            }
-            else if(all_particle[i].tag == repulsive && all_particle[j].tag == ghost){
-                r = vec_distance_vec(xj, xi);
-                if (r < 2 * H) {
-                    //Add neighbor i to particle j
-                    if (all_particle[j].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = NULL;
-                        all_particle[j].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = all_particle[j].neighbors;
-                        all_particle[j].neighbors = new_p;
-                    }
-                }
-            }
-            else if(all_particle[i].tag == ghost && all_particle[j].tag == interior){
-                r = vec_distance_vec(xj, xi);
-                if (r < 2 * H) {
-                    //Add neighbor j to particle i
-                    if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = NULL;
-                        all_particle[i].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = all_particle[i].neighbors;
-                        all_particle[i].neighbors = new_p;
-                    }
-                    //Add neighbor i to particle j
-                    if (all_particle[j].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = NULL;
-                        all_particle[j].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = i;
-                        new_p->next = all_particle[j].neighbors;
-                        all_particle[j].neighbors = new_p;
-                    }
-                }
-            }
-            else if(all_particle[i].tag == ghost && all_particle[j].tag == repulsive){
-                r = vec_distance_vec(xj, xi);
-                if (r < 2 * H) {
-                    //Add neighbor j to particle i
-                    if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = NULL;
-                        all_particle[i].neighbors = new_p;
-                    } 
-                    else { // if it's not the first pointer of list
-                        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                        new_p->idx = j;
-                        new_p->next = all_particle[i].neighbors;
-                        all_particle[i].neighbors = new_p;
-                    }
-                }
-            }
         }
     }
-  
-  
-  
-  //~ vector xi = all_particle[ptc_idx].position;
-  //~ deleteNeighbors(&(all_particle[ptc_idx].neighbors));
-  //~ double r; // distance of two particles
-  //~ Neighbor_p *p;
-  //~ int N = NUMBER_OF_PARTICLE;
-
-  //~ if (all_particle[ptc_idx].tag == interior) {
-    //~ for (int j = 0; j < N; j++) {
-      //~ // TODO: for optimization: r = vec_distance_vec_square(...)
-      //~ r = vec_distance_vec(all_particle[j].position, xi);
-      //~ // TODO: for optimization: if(r < 4_H_square)
-      //~ if (r < 2 * H) {
-        //~ if (all_particle[ptc_idx].neighbors ==
-            //~ NULL) { // if it's the first pointer of list
-          //~ Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-          //~ new_p->idx = j;
-          //~ new_p->next = NULL;
-          //~ all_particle[ptc_idx].neighbors = new_p;
-          //~ p = new_p;
-        //~ } else { // if it's not the first pointer of list
-          //~ Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-          //~ new_p->idx = j;
-          //~ new_p->next = NULL;
-          //~ p->next = new_p;
-          //~ p = p->next;
-        //~ }
-      //~ }
-    //~ }
-  //~ } else if (all_particle[ptc_idx].tag == repulsive) {
-    //~ for (int j = 0; j < N; j++) {
-      //~ if (all_particle[j].tag == interior ||
-          //~ ptc_idx == j) { // check if itself and if interior
-        //~ r = sqrt(pow((all_particle[j].position.first - xi.first), 2) +
-                 //~ pow((all_particle[j].position.second - xi.second), 2));
-        //~ if (r < 2 * H) { // check if neighbor
-          //~ if (all_particle[ptc_idx].neighbors ==
-              //~ NULL) { // if it's the first pointer of list
-            //~ Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-            //~ new_p->idx = j;
-            //~ new_p->next = NULL;
-            //~ all_particle[ptc_idx].neighbors = new_p;
-            //~ p = new_p;
-          //~ } else { // if it's not the first pointer of list
-            //~ Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-            //~ new_p->idx = j;
-            //~ new_p->next = NULL;
-            //~ p->next = new_p;
-            //~ p = p->next;
-          //~ }
-        //~ }
-      //~ }
-    //~ }
-  //~ } else { // it's a ghost particle
-    //~ for (int j = 0; j < N; j++) {
-      //~ if (all_particle[j].tag != ghost || ptc_idx == j) { // check if not ghost
-        //~ r = sqrt(pow((all_particle[j].position.first - xi.first), 2) +
-                 //~ pow((all_particle[j].position.second - xi.second), 2));
-        //~ if (r < 2 * H) { // check if neighbor
-          //~ if (all_particle[ptc_idx].neighbors ==
-              //~ NULL) { // if it's the first pointer of list
-            //~ Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-            //~ new_p->idx = j;
-            //~ new_p->next = NULL;
-            //~ all_particle[ptc_idx].neighbors = new_p;
-            //~ p = new_p;
-          //~ } else { // if it's not the first pointer of list
-            //~ Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-            //~ new_p->idx = j;
-            //~ new_p->next = NULL;
-            //~ p->next = new_p;
-            //~ p = p->next;
-          //~ }
-        //~ }
-      //~ }
-    //~ }
-  //~ }
 }
 
 /**
