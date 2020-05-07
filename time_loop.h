@@ -28,9 +28,7 @@ double TimeLoop() {
   // Initial steps without moving the boundary, also used for heating up CPU
   // for (int step = 0; step < 20000; step++) {
   for (int step = 0; step < 2000; step++) {
-    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-      SearchNeighbors(all_particle, i);
-    }
+    SearchNeighbors(all_particle);
 
     ComputeGlobalKernel(all_particle);
     ComputeGlobalDensity(all_particle);
@@ -61,9 +59,7 @@ double TimeLoop() {
     cycles_DispBoundary += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
-    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-      SearchNeighbors(all_particle, i);
-    }
+    SearchNeighbors(all_particle);
     cycles_SearchNeighbor += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
@@ -96,11 +92,11 @@ double TimeLoop() {
 
     t += dt;
 
-    // output data to file
-    //~ if ((step + 1) % 2000 == 0) {
-      //~ WriteData(all_particle, t);
-    //~ }
-    //~ printf("time t = %f\n", t);
+    //~ // output data to file
+    if ((step + 1) % 100 == 0) {
+      WriteData(all_particle, t);
+    }
+    printf("time t = %f\n", t);
   }
   cycles_all += (double)stop_tsc(start_all);
 
