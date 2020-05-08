@@ -53,14 +53,13 @@ void WritePerformance() {
 	
 	FILE *fp = NULL;
 	fp = fopen(output_path,"w");
-	fprintf(fp, "interior_p, boundary_p, smoothing_length, cycles_DispBoundar, cycles_SearchNeighbor, cycles_CompGlbKernel, cycles_CompGlbDensity, cycles_DensityCorr, cycles_CompPressure, cycles_CompAccelerat, cycles_RepulsiveForce, cycles_TimeIntegral, cycles_all\n"); 
-	fprintf(fp, "%d, %d, %.5lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf\n",
+	fprintf(fp, "interior_p, boundary_p, smoothing_length, cycles_DispBoundar, cycles_SearchNeighbor, cycles_CompGlbDensity, cycles_DensityCorr, cycles_CompPressure, cycles_CompAccelerat, cycles_RepulsiveForce, cycles_TimeIntegral, cycles_all\n"); 
+	fprintf(fp, "%d, %d, %.5lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf\n",
 			N_interior,
 			N_boundary,
 			H,
 			cycles_DispBoundary,
 			cycles_SearchNeighbor,
-			cycles_CompGlbKernel,
 			cycles_CompGlbDensity,
 			cycles_DensityCorr,
 			cycles_CompPressure,

@@ -61,11 +61,7 @@ double TimeLoop() {
     start = start_tsc();
     SearchNeighbors(all_particle);
     cycles_SearchNeighbor += (double)stop_tsc(start);
-    // ------------------------
-    start = start_tsc();
-    ComputeGlobalKernel(all_particle);
-    cycles_CompGlbKernel  += (double)stop_tsc(start);
-    // ------------------------
+    //-------------------------
     start = start_tsc();
     ComputeGlobalDensity(all_particle);
     cycles_CompGlbDensity += (double)stop_tsc(start);
@@ -102,7 +98,6 @@ double TimeLoop() {
 
   cycles_DispBoundary   /= overall_step;
   cycles_SearchNeighbor /= overall_step;
-  cycles_CompGlbKernel  /= overall_step;
   cycles_CompGlbDensity /= overall_step;
   cycles_DensityCorr    /= overall_step;
   cycles_CompPressure   /= overall_step;

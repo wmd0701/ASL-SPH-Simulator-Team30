@@ -111,6 +111,47 @@ typedef struct {
 
 } Particle;
 
+void KernelAndGradient(vector xi, vector xj, Neighbor_p* neighbor1, Neighbor_p* neighbor2, double r){
+    double factor = 10 / 7 / M_PI / H / H;
+    double kernel;
+    vector grad;
+    double q = r / H;
+	
+    if (q <= 1) {
+		kernel = factor * ( 1 - 1.5 * q * q * (1 - 0.5*q));
+        if(1e-12 <= q){
+            double temp = factor * (-3 * q + 9/4 * q * q);
+            grad.first = temp*(xi.first - xj.first)/(H * r);
+            grad.second = temp*(xi.second - xj.second)/(H * r);
+        }
+        else{
+            grad.first = 0.;
+            grad.second = 0.;
+        }
+	}
+	else if (1 <= q && q <= 2) {
+		kernel = factor * 0.25 * pow((2 - q), 3);
+        double temp = - factor * 3 / 4 * (2 - q) * (2 - q);
+		grad.first = temp*(xi.first - xj.first)/(H * r);
+		grad.second = temp*(xi.second - xj.second)/(H * r); 
+	}
+	else{
+		printf("something wrong with searchneibors.");
+		kernel = 0;
+        grad.first = 0;
+		grad.second = 0;
+	}
+    
+    neighbor1->Wij = kernel;
+    neighbor1->Wij_grad_i = grad;
+    if(neighbor2 != NULL){
+        neighbor2->Wij = kernel;
+        grad.first = -grad.first;
+        grad.second = -grad.second;
+        neighbor2->Wij_grad_i = grad;
+    }
+}
+
 
 /**  
 *    @brief search for the neighbor particles and  allocate memory for [neighbors]
@@ -136,6 +177,7 @@ void SearchNeighbors(Particle *all_particle) {
                 Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
                 new_p->idx = j;
                 new_p->next = all_particle[i].neighbors;
+                KernelAndGradient(xi, xj, new_p, NULL, 0.);
                 all_particle[i].neighbors = new_p;
             }
             else if(all_particle[i].tag == interior){
@@ -145,11 +187,13 @@ void SearchNeighbors(Particle *all_particle) {
                     Neighbor_p *new_p1 = (Neighbor_p *)malloc(sizeof(Neighbor_p));
                     new_p1->idx = j;
                     new_p1->next = all_particle[i].neighbors;
-                    all_particle[i].neighbors = new_p1;
                     //Add particle i to neighbors of particle j
                     Neighbor_p *new_p2 = (Neighbor_p *)malloc(sizeof(Neighbor_p));
                     new_p2->idx = i;
                     new_p2->next = all_particle[j].neighbors;
+                    
+                    KernelAndGradient(xi, xj, new_p1, new_p2, r);
+                    all_particle[i].neighbors = new_p1;
                     all_particle[j].neighbors = new_p2;
                 }
             }
@@ -160,6 +204,7 @@ void SearchNeighbors(Particle *all_particle) {
                     Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
                     new_p->idx = i;
                     new_p->next = all_particle[j].neighbors;
+                    KernelAndGradient(xi, xj, new_p, NULL, r);
                     all_particle[j].neighbors = new_p;
                 }
             }
