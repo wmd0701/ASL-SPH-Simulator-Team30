@@ -94,6 +94,11 @@ double TimeLoop() {
     }
     printf("time t = %f\n", t);
   }
+  
+  for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
+      deleteNeighbors(&(all_particle[i].neighbors));
+  }
+  
   cycles_all += (double)stop_tsc(start_all);
 
   cycles_DispBoundary   /= overall_step;
