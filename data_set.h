@@ -218,7 +218,7 @@ void SearchNeighbors(Particle *all_particle) {
                 }
             }
             else if(all_particle[i].tag == repulsive && all_particle[j].tag == ghost){
-                vector diff = vec_sub_vec(xi, xj);
+                vector diff = vec_sub_vec(xj, xi);
                 r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
                 if (r < 2 * H) {
                     //Add particle i to neighbors of particle j
@@ -230,7 +230,7 @@ void SearchNeighbors(Particle *all_particle) {
                 }
             }
             else if(all_particle[i].tag == ghost && all_particle[j].tag == repulsive){
-                vector diff = vec_sub_vec(xj, xi);
+                vector diff = vec_sub_vec(xi, xj);
                 r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
                 if (r < 2 * H) {
                     //Add particle i to neighbors of particle j
