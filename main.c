@@ -31,7 +31,6 @@ int main(int argc, char* argv[]){
 
 	printf("cycles_DispBoundar    = %.0lf \n", cycles_DispBoundary  );
 	printf("cycles_SearchNeighbor = %.0lf \n", cycles_SearchNeighbor);
-	printf("cycles_CompGlbKernel  = %.0lf \n", cycles_CompGlbKernel );
 	printf("cycles_CompGlbDensity = %.0lf \n", cycles_CompGlbDensity);
 	printf("cycles_DensityCorr    = %.0lf \n", cycles_DensityCorr   );
 	printf("cycles_CompPressure   = %.0lf \n", cycles_CompPressure  );

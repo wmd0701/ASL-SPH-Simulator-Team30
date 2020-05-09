@@ -28,11 +28,8 @@ double TimeLoop() {
   // Initial steps without moving the boundary, also used for heating up CPU
   // for (int step = 0; step < 20000; step++) {
   for (int step = 0; step < 2000; step++) {
-    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-      SearchNeighbors(all_particle, i);
-    }
+    SearchNeighbors(all_particle);
 
-    ComputeGlobalKernel(all_particle);
     ComputeGlobalDensity(all_particle);
     DensityAndBCVelocityCorrection(all_particle);
     ComputeGlobalPressure(all_particle, t);
@@ -61,15 +58,9 @@ double TimeLoop() {
     cycles_DispBoundary += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
-    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-      SearchNeighbors(all_particle, i);
-    }
+    SearchNeighbors(all_particle);
     cycles_SearchNeighbor += (double)stop_tsc(start);
-    // ------------------------
-    start = start_tsc();
-    ComputeGlobalKernel(all_particle);
-    cycles_CompGlbKernel  += (double)stop_tsc(start);
-    // ------------------------
+    //-------------------------
     start = start_tsc();
     ComputeGlobalDensity(all_particle);
     cycles_CompGlbDensity += (double)stop_tsc(start);
@@ -96,17 +87,21 @@ double TimeLoop() {
 
     t += dt;
 
-    // output data to file
-    //~ if ((step + 1) % 2000 == 0) {
+    //~ // output data to file
+    //~ if ((step + 1) % 100 == 0) {
       //~ WriteData(all_particle, t);
     //~ }
     //~ printf("time t = %f\n", t);
   }
+  
+  for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
+      deleteNeighbors(&(all_particle[i].neighbors));
+  }
+  
   cycles_all += (double)stop_tsc(start_all);
 
   cycles_DispBoundary   /= overall_step;
   cycles_SearchNeighbor /= overall_step;
-  cycles_CompGlbKernel  /= overall_step;
   cycles_CompGlbDensity /= overall_step;
   cycles_DensityCorr    /= overall_step;
   cycles_CompPressure   /= overall_step;

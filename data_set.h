@@ -111,6 +111,66 @@ typedef struct {
 
 } Particle;
 
+void KernelAndGradient(vector diff, Neighbor_p* neighbor1, Neighbor_p* neighbor2, double r){
+    double factor = 10 / 7 / M_PI / H / H;
+    double kernel;
+    vector grad;
+    double q = r / H;
+	
+    if (q <= 1) {
+		kernel = factor * ( 1 - 1.5 * q * q * (1 - 0.5*q));
+        if(1e-12 <= q){
+            double temp = factor * (-3 * q + 9/4 * q * q);
+            grad.first = temp*diff.first/(H * r);
+            grad.second = temp*diff.second/(H * r);
+        }
+        else{
+            grad.first = 0.;
+            grad.second = 0.;
+        }
+	}
+	else if (1 <= q && q <= 2) {
+		kernel = factor * 0.25 * pow((2 - q), 3);
+        double temp = - factor * 3 / 4 * (2 - q) * (2 - q);
+		grad.first = temp*diff.first/(H * r);
+		grad.second = temp*diff.second/(H * r); 
+	}
+	else{
+		printf("something wrong with searchneibors.");
+		kernel = 0;
+        grad.first = 0;
+		grad.second = 0;
+	}
+    
+    neighbor1->Wij = kernel;
+    neighbor1->Wij_grad_i = grad;
+    if(neighbor2 != NULL){
+        neighbor2->Wij = kernel;
+        grad.first = -grad.first;
+        grad.second = -grad.second;
+        neighbor2->Wij_grad_i = grad;
+    }
+}
+
+void AddNeighbor(Particle *all_particle, Neighbor_p **LastNeighbor, int i, int j) {
+    if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
+        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
+        new_p->idx = j;
+        new_p->next = NULL;
+        all_particle[i].neighbors = new_p;
+        LastNeighbor[i] = new_p;
+    } 
+    else { // if it's not the first pointer of list
+        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
+        new_p->idx = j;
+        new_p->next = NULL;
+        LastNeighbor[i]->next = new_p;
+        LastNeighbor[i] = new_p;
+    }
+}
+
+
+
 /**  
 *    @brief search for the neighbor particles and  allocate memory for [neighbors]
 *    @param all_particle pointer to an array containing information of all the particles
@@ -120,84 +180,72 @@ typedef struct {
 *			 - repulsive particles only need information of interior particles
 *			 - ghost particles need information of both interior and repulsive particles
 */
-void SearchNeighbors(Particle *all_particle, int ptc_idx) {
-  vector xi = all_particle[ptc_idx].position;
-  deleteNeighbors(&(all_particle[ptc_idx].neighbors));
-  double r; // distance of two particles
-  Neighbor_p *p;
-  int N = NUMBER_OF_PARTICLE;
-
-  if (all_particle[ptc_idx].tag == interior) {
-    for (int j = 0; j < N; j++) {
-      // TODO: for optimization: r = vec_distance_vec_square(...)
-      r = vec_distance_vec(all_particle[j].position, xi);
-      // TODO: for optimization: if(r < 4_H_square)
-      if (r < 2 * H) {
-        if (all_particle[ptc_idx].neighbors ==
-            NULL) { // if it's the first pointer of list
-          Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-          new_p->idx = j;
-          new_p->next = NULL;
-          all_particle[ptc_idx].neighbors = new_p;
-          p = new_p;
-        } else { // if it's not the first pointer of list
-          Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-          new_p->idx = j;
-          new_p->next = NULL;
-          p->next = new_p;
-          p = p->next;
+void SearchNeighbors(Particle *all_particle) {
+    for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
+        deleteNeighbors(&(all_particle[i].neighbors));
+    }  
+    
+    double r;
+    Neighbor_p *LastNeighbor[NUMBER_OF_PARTICLE];    
+    
+    for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
+        vector xi = all_particle[i].position;
+        for(int j = i; j < NUMBER_OF_PARTICLE; ++j){
+            vector xj = all_particle[j].position;
+            if(i == j){
+                //Add particle j to neighbors of particle i
+                AddNeighbor(all_particle, LastNeighbor, i, j);
+                vector diff = vec_sub_vec(xi, xj);
+                KernelAndGradient(diff, LastNeighbor[i], NULL, 0.);
+            }
+            else if(all_particle[i].tag == interior){
+                vector diff = vec_sub_vec(xi, xj);
+                r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
+                if (r < 2 * H) {
+                    //Add particle j to neighbors of particle i
+                    AddNeighbor(all_particle, LastNeighbor, i, j);
+                    //Add particle i to neighbors of particle j
+                    AddNeighbor(all_particle, LastNeighbor, j, i);
+                    //Compute kernel and its gradient
+                    KernelAndGradient(diff, LastNeighbor[i], LastNeighbor[j], r);
+                }
+            }
+            else if(all_particle[j].tag == interior){
+                vector diff = vec_sub_vec(xj, xi);
+                r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
+                if (r < 2 * H) {
+                    //Add particle i to neighbors of particle j
+                    AddNeighbor(all_particle, LastNeighbor, j, i);
+                    //Add particle j to neighbors of particle i
+                    AddNeighbor(all_particle, LastNeighbor, i, j);
+                    //Compute kernel and its gradient
+                    KernelAndGradient(diff, LastNeighbor[j], LastNeighbor[i], r);
+                }
+            }
+            else if(all_particle[i].tag == repulsive && all_particle[j].tag == ghost){
+                vector diff = vec_sub_vec(xj, xi);
+                r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
+                if (r < 2 * H) {
+                    //Add particle i to neighbors of particle j
+                    AddNeighbor(all_particle, LastNeighbor, j, i);
+                    //Compute kernel and its gradient
+                    KernelAndGradient(diff, LastNeighbor[j], NULL, r);
+                }
+            }
+            else if(all_particle[i].tag == ghost && all_particle[j].tag == repulsive){
+                vector diff = vec_sub_vec(xi, xj);
+                r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
+                if (r < 2 * H) {
+                    //Add particle j to neighbors of particle i
+                    AddNeighbor(all_particle, LastNeighbor, i, j);
+                    //Compute kernel and its gradient
+                    KernelAndGradient(diff, LastNeighbor[i], NULL, r);
+                }
+            }
         }
-      }
     }
-  } else if (all_particle[ptc_idx].tag == repulsive) {
-    for (int j = 0; j < N; j++) {
-      if (all_particle[j].tag == interior ||
-          ptc_idx == j) { // check if itself and if interior
-        r = sqrt(pow((all_particle[j].position.first - xi.first), 2) +
-                 pow((all_particle[j].position.second - xi.second), 2));
-        if (r < 2 * H) { // check if neighbor
-          if (all_particle[ptc_idx].neighbors ==
-              NULL) { // if it's the first pointer of list
-            Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-            new_p->idx = j;
-            new_p->next = NULL;
-            all_particle[ptc_idx].neighbors = new_p;
-            p = new_p;
-          } else { // if it's not the first pointer of list
-            Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-            new_p->idx = j;
-            new_p->next = NULL;
-            p->next = new_p;
-            p = p->next;
-          }
-        }
-      }
-    }
-  } else { // it's a ghost particle
-    for (int j = 0; j < N; j++) {
-      if (all_particle[j].tag != ghost || ptc_idx == j) { // check if not ghost
-        r = sqrt(pow((all_particle[j].position.first - xi.first), 2) +
-                 pow((all_particle[j].position.second - xi.second), 2));
-        if (r < 2 * H) { // check if neighbor
-          if (all_particle[ptc_idx].neighbors ==
-              NULL) { // if it's the first pointer of list
-            Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-            new_p->idx = j;
-            new_p->next = NULL;
-            all_particle[ptc_idx].neighbors = new_p;
-            p = new_p;
-          } else { // if it's not the first pointer of list
-            Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-            new_p->idx = j;
-            new_p->next = NULL;
-            p->next = new_p;
-            p = p->next;
-          }
-        }
-      }
-    }
-  }
 }
+
 
 /**
  * 		@brief initialize a tank with water
@@ -297,9 +345,6 @@ Particle *Init() {
     particles[i].accelerat.second = 0.;
     particles[i].neighbors = NULL;
   }
-  for (int i = 0; i < N; i++) {
-    SearchNeighbors(particles, i);
-  }
   return particles;
 }
 
@@ -328,9 +373,7 @@ Particle *Read_Init(char filename[]) {
     all_particle[i].mass = m;
     all_particle[i].neighbors = NULL;
   }
-  for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-    SearchNeighbors(all_particle, i);
-  }
+  SearchNeighbors(all_particle);
   return all_particle;
 }
 

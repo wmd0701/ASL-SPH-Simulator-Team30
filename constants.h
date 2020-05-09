@@ -22,7 +22,6 @@ const double period = 1.5;
 
 double cycles_DispBoundary   = 0;
 double cycles_SearchNeighbor = 0;
-double cycles_CompGlbKernel  = 0;
 double cycles_CompGlbDensity = 0;
 double cycles_DensityCorr    = 0;
 double cycles_CompPressure   = 0;
