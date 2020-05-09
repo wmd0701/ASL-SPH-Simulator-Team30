@@ -30,7 +30,6 @@ double TimeLoop() {
   for (int step = 0; step < 2000; step++) {
     SearchNeighbors(all_particle);
 
-    ComputeGlobalKernel(all_particle);
     ComputeGlobalDensity(all_particle);
     DensityAndBCVelocityCorrection(all_particle);
     ComputeGlobalPressure(all_particle, t);
@@ -89,10 +88,10 @@ double TimeLoop() {
     t += dt;
 
     //~ // output data to file
-    if ((step + 1) % 100 == 0) {
-      WriteData(all_particle, t);
-    }
-    printf("time t = %f\n", t);
+    //~ if ((step + 1) % 100 == 0) {
+      //~ WriteData(all_particle, t);
+    //~ }
+    //~ printf("time t = %f\n", t);
   }
   
   for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){

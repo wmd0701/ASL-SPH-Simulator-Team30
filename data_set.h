@@ -152,6 +152,24 @@ void KernelAndGradient(vector diff, Neighbor_p* neighbor1, Neighbor_p* neighbor2
     }
 }
 
+void AddNeighbor(Particle *all_particle, Neighbor_p **LastNeighbor, int i, int j) {
+    if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
+        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
+        new_p->idx = j;
+        new_p->next = NULL;
+        all_particle[i].neighbors = new_p;
+        LastNeighbor[i] = new_p;
+    } 
+    else { // if it's not the first pointer of list
+        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
+        new_p->idx = j;
+        new_p->next = NULL;
+        LastNeighbor[i]->next = new_p;
+        LastNeighbor[i] = new_p;
+    }
+}
+
+
 
 /**  
 *    @brief search for the neighbor particles and  allocate memory for [neighbors]
@@ -167,36 +185,29 @@ void SearchNeighbors(Particle *all_particle) {
         deleteNeighbors(&(all_particle[i].neighbors));
     }  
     
-    double r;    
+    double r;
+    Neighbor_p *LastNeighbor[NUMBER_OF_PARTICLE];    
+    
     for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
         vector xi = all_particle[i].position;
         for(int j = i; j < NUMBER_OF_PARTICLE; ++j){
             vector xj = all_particle[j].position;
             if(i == j){
                 //Add particle j to neighbors of particle i
-                Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                new_p->idx = j;
-                new_p->next = all_particle[i].neighbors;
+                AddNeighbor(all_particle, LastNeighbor, i, j);
                 vector diff = vec_sub_vec(xi, xj);
-                KernelAndGradient(diff, new_p, NULL, 0.);
-                all_particle[i].neighbors = new_p;
+                KernelAndGradient(diff, LastNeighbor[i], NULL, 0.);
             }
             else if(all_particle[i].tag == interior){
                 vector diff = vec_sub_vec(xi, xj);
                 r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
                 if (r < 2 * H) {
                     //Add particle j to neighbors of particle i
-                    Neighbor_p *new_p1 = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                    new_p1->idx = j;
-                    new_p1->next = all_particle[i].neighbors;
+                    AddNeighbor(all_particle, LastNeighbor, i, j);
                     //Add particle i to neighbors of particle j
-                    Neighbor_p *new_p2 = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                    new_p2->idx = i;
-                    new_p2->next = all_particle[j].neighbors;
-                    
-                    KernelAndGradient(diff, new_p1, new_p2, r);
-                    all_particle[i].neighbors = new_p1;
-                    all_particle[j].neighbors = new_p2;
+                    AddNeighbor(all_particle, LastNeighbor, j, i);
+                    //Compute kernel and its gradient
+                    KernelAndGradient(diff, LastNeighbor[i], LastNeighbor[j], r);
                 }
             }
             else if(all_particle[j].tag == interior){
@@ -204,17 +215,11 @@ void SearchNeighbors(Particle *all_particle) {
                 r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
                 if (r < 2 * H) {
                     //Add particle i to neighbors of particle j
-                    Neighbor_p *new_p1 = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                    new_p1->idx = i;
-                    new_p1->next = all_particle[j].neighbors;
+                    AddNeighbor(all_particle, LastNeighbor, j, i);
                     //Add particle j to neighbors of particle i
-                    Neighbor_p *new_p2 = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                    new_p2->idx = j;
-                    new_p2->next = all_particle[i].neighbors;
-                    
-                    KernelAndGradient(diff, new_p1, new_p2, r);
-                    all_particle[j].neighbors = new_p1;
-                    all_particle[i].neighbors = new_p2;
+                    AddNeighbor(all_particle, LastNeighbor, i, j);
+                    //Compute kernel and its gradient
+                    KernelAndGradient(diff, LastNeighbor[j], LastNeighbor[i], r);
                 }
             }
             else if(all_particle[i].tag == repulsive && all_particle[j].tag == ghost){
@@ -222,28 +227,25 @@ void SearchNeighbors(Particle *all_particle) {
                 r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
                 if (r < 2 * H) {
                     //Add particle i to neighbors of particle j
-                    Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                    new_p->idx = i;
-                    new_p->next = all_particle[j].neighbors;
-                    KernelAndGradient(diff, new_p, NULL, r);
-                    all_particle[j].neighbors = new_p;
+                    AddNeighbor(all_particle, LastNeighbor, j, i);
+                    //Compute kernel and its gradient
+                    KernelAndGradient(diff, LastNeighbor[j], NULL, r);
                 }
             }
             else if(all_particle[i].tag == ghost && all_particle[j].tag == repulsive){
                 vector diff = vec_sub_vec(xi, xj);
                 r = sqrt(pow(diff.first, 2) + pow(diff.second, 2));
                 if (r < 2 * H) {
-                    //Add particle i to neighbors of particle j
-                    Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-                    new_p->idx = j;
-                    new_p->next = all_particle[i].neighbors;
-                    KernelAndGradient(diff, new_p, NULL, r);
-                    all_particle[i].neighbors = new_p;
+                    //Add particle j to neighbors of particle i
+                    AddNeighbor(all_particle, LastNeighbor, i, j);
+                    //Compute kernel and its gradient
+                    KernelAndGradient(diff, LastNeighbor[i], NULL, r);
                 }
             }
         }
     }
 }
+
 
 /**
  * 		@brief initialize a tank with water
@@ -343,7 +345,6 @@ Particle *Init() {
     particles[i].accelerat.second = 0.;
     particles[i].neighbors = NULL;
   }
-  SearchNeighbors(particles);
   return particles;
 }
 
