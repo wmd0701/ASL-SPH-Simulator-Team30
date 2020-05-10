@@ -111,13 +111,9 @@ typedef struct {
 
 } Particle;
 
-void KernelAndGradient(vector diff, Neighbor_p* neighbor1, Neighbor_p* neighbor2, double r){
     double factor = 10 / 7 / M_PI / H / H;
-    double kernel;
-    vector grad;
     double q = r / H;
 	
-    if (q <= 1) {
 		kernel = factor * ( 1 - 1.5 * q * q * (1 - 0.5*q));
         if(1e-12 <= q){
             double temp = factor * (-3 * q + 9/4 * q * q);
@@ -129,44 +125,50 @@ void KernelAndGradient(vector diff, Neighbor_p* neighbor1, Neighbor_p* neighbor2
             grad.second = 0.;
         }
 	}
-	else if (1 <= q && q <= 2) {
 		kernel = factor * 0.25 * pow((2 - q), 3);
         double temp = - factor * 3 / 4 * (2 - q) * (2 - q);
 		grad.first = temp*diff.first/(H * r);
 		grad.second = temp*diff.second/(H * r); 
 	}
-	else{
-		printf("something wrong with searchneibors.");
-		kernel = 0;
-        grad.first = 0;
-		grad.second = 0;
-	}
-    
-    neighbor1->Wij = kernel;
-    neighbor1->Wij_grad_i = grad;
-    if(neighbor2 != NULL){
-        neighbor2->Wij = kernel;
-        grad.first = -grad.first;
-        grad.second = -grad.second;
-        neighbor2->Wij_grad_i = grad;
+void KernelAndGradient(vector diff, Neighbor_p *neighbor1,
+                       Neighbor_p *neighbor2, double r) {
+  double kernel;
+  vector grad;
+  if (q <= 1.) {
     }
+  } else if (1. <= q && q <= 2.) {
+  } else {
+    printf("something wrong with searchneibors.");
+    kernel = 0;
+    grad.first = 0;
+    grad.second = 0;
+  }
+
+  neighbor1->Wij = kernel;
+  neighbor1->Wij_grad_i = grad;
+  if (neighbor2 != NULL) {
+    neighbor2->Wij = kernel;
+    grad.first = -grad.first;
+    grad.second = -grad.second;
+    neighbor2->Wij_grad_i = grad;
+  }
 }
 
-void AddNeighbor(Particle *all_particle, Neighbor_p **LastNeighbor, int i, int j) {
-    if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
-        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-        new_p->idx = j;
-        new_p->next = NULL;
-        all_particle[i].neighbors = new_p;
-        LastNeighbor[i] = new_p;
-    } 
-    else { // if it's not the first pointer of list
-        Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-        new_p->idx = j;
-        new_p->next = NULL;
-        LastNeighbor[i]->next = new_p;
-        LastNeighbor[i] = new_p;
-    }
+void AddNeighbor(Particle *all_particle, Neighbor_p **LastNeighbor, int i,
+                 int j) {
+  if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
+    Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
+    new_p->idx = j;
+    new_p->next = NULL;
+    all_particle[i].neighbors = new_p;
+    LastNeighbor[i] = new_p;
+  } else { // if it's not the first pointer of list
+    Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
+    new_p->idx = j;
+    new_p->next = NULL;
+    LastNeighbor[i]->next = new_p;
+    LastNeighbor[i] = new_p;
+  }
 }
 
 
