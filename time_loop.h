@@ -26,8 +26,7 @@ double TimeLoop() {
   int N = NUMBER_OF_PARTICLE; // get the number of particles
 
   // Initial steps without moving the boundary, also used for heating up CPU
-  // for (int step = 0; step < 20000; step++) {
-  for (int step = 0; step < 2000; step++) {
+  for (int step = 0; step < 5000; step++) {
     SearchNeighbors(all_particle);
 
     ComputeGlobalDensity(all_particle);
@@ -44,14 +43,10 @@ double TimeLoop() {
   //-------------------------------------------------------------------
   // MEASURE FROM HERE
   //-------------------------------------------------------------------
-  int overall_step = 100000;
+  int overall_step = 50000;
   start_all = start_tsc();
   for (int step = 0; step < overall_step; step++) {
     // ------------------------
-    start = start_tsc();
-    if(integration == HEUN || integration == MIDPOINT)
-      Time_Integration_Half(all_particle, dt);
-    cycles_TimeIntegral += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
     DisplaceBoundaries(all_particle, initial_configuration, t);

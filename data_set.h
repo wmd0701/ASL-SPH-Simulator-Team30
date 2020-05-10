@@ -99,13 +99,23 @@ typedef struct {
   ParticleType tag; //!< whether it's an interior particle (0), repulsive
                     //!< particle (1) or ghost particle (2)
 
-  int    neighbor_index[40];
-  double Wij           [40];
-  vector Wij_grad      [40];
-  int    num_of_neighbors;
+  int    neighbor_index[30];   //!< store the indices of neighbors
+  double Wij           [30];   //!< store the kernel 
+  vector Wij_grad      [30];   //!< store the kernel gradient
+  int    num_of_neighbors;     //!< the number of neighbors
 
 } Particle;
 
+
+/**
+ *      @brief Add neighbors for one/two particle(s), meanwhile compute the kernel and gradient
+ *      @param idx_1 index of particle_1
+ *      @param idx_2 index of particle_2
+ *      @param diff  position(1) - position(2)
+ *      @param r distance of two particles
+ *      @param flag  1: particle_1 and particle_2 are neighbors of each other
+ *                  -1: particle_2 is a neighbor of particle_1 but the opposite is false.
+ */ 
 void AddNeighborWithKernel(Particle* all_particle, int idx_1, int idx_2, vector diff, double r, bool flag) {
   double kernel;
   vector grad;

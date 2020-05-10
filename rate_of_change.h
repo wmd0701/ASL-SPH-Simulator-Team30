@@ -14,8 +14,8 @@
 double ComputeLocalDensity (Particle *all_particle, int ptc_idx) {
 	double sum = 0;
     Particle *par = &all_particle[ptc_idx];
-	for (int i = 0; i < par->num_of_neighbors; i++) {
-		sum += par->Wij[i] * all_particle[par->neighbor_index[i]].mass;
+	for (int j = 0; j < par->num_of_neighbors; j++) {
+		sum += par->Wij[j] * all_particle[par->neighbor_index[j]].mass;
 	}
 	return sum;
 }
