@@ -1,7 +1,6 @@
 //! @file main.c
 
 #include "data_set.h"
-#include "kernel.h"
 #include "rate_of_change.h"
 #include "time_integration.h"
 #include "time_loop.h"

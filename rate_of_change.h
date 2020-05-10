@@ -3,7 +3,6 @@
 #define RATE_OF_CHANGE_H
 
 #include "data_set.h"
-#include "kernel.h"
 #include "constants.h"
 
 /**   
@@ -14,8 +13,9 @@
 */
 double ComputeLocalDensity (Particle *all_particle, int ptc_idx) {
 	double sum = 0;
-	for (Neighbor_p *p = all_particle[ptc_idx].neighbors; p != NULL; p = p->next) {
-		sum += p->Wij * all_particle[p->idx].mass;
+    Particle *par = &all_particle[ptc_idx];
+	for (int i = 0; i < par->num_of_neighbors; i++) {
+		sum += par->Wij[i] * all_particle[par->neighbor_index[i]].mass;
 	}
 	return sum;
 }
@@ -43,9 +43,9 @@ void DensityAndBCVelocityCorrection (Particle *all_particle) {
 	double* sum = (double*)malloc(sizeof(double)*N);
 	for (int i = 0; i < N; i++) {     // traverse particles
 		double sum_Wij = 0;
-		for (Neighbor_p *nk = all_particle[i].neighbors; nk != NULL; nk = nk->next) {    // traverse neighbors
-			Particle * pk = &all_particle[nk->idx];
-			sum_Wij += nk->Wij * pk->mass / pk->density;
+		for (int j = 0; j < all_particle[i].num_of_neighbors; j++) {    // traverse neighbors
+            int neighbor = all_particle[i].neighbor_index[j];
+			sum_Wij += all_particle[i].Wij[j] * all_particle[neighbor].mass / all_particle[neighbor].density;
 		}
 		sum[i] = sum_Wij;
 	}
@@ -133,15 +133,14 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
 
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
         if (all_particle[i].tag == interior) {
-            Neighbor_p *n = all_particle[i].neighbors;
             Particle *pi = &all_particle[i];
             
             pi->accelerat.first = 0;
             pi->accelerat.second = 0;
             
-            while (n != NULL) {
-                Particle *pj = &all_particle[n->idx];
-                vector gradient = n->Wij_grad_i;
+            for (int j = 0; j < pi->num_of_neighbors; j++) {
+                Particle *pj = &all_particle[pi->neighbor_index[j]];
+                vector gradient = pi->Wij_grad[j];
 
                 // Pressure force
                 double constant1 =
@@ -162,8 +161,6 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
                     pi->accelerat.first  -= pj->mass * PI_ij * gradient.first;
                     pi->accelerat.second -= pj->mass * PI_ij * gradient.second;
                 }
-
-                n = n->next;
             }
 
             // Gravity
@@ -197,12 +194,11 @@ void AddRepulsiveForce(Particle *all_particle, double t){
     double d = H;
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
         // interior particles
-        Neighbor_p *n = all_particle[i].neighbors;
         Particle *pi = &all_particle[i];
         
         if (pi->tag == interior) {
-            while (n != NULL) {
-                Particle *pj = &all_particle[n->idx];
+            for (int j = 0; j < pi->num_of_neighbors; j++) {
+                Particle *pj = &all_particle[pi->neighbor_index[j]];
                 if (pj->tag == repulsive) {
                     vector xij = vec_sub_vec(pj->position, pi->position);
                     double r2 = vec_dot_vec(xij, xij);
@@ -217,7 +213,6 @@ void AddRepulsiveForce(Particle *all_particle, double t){
                         pi->accelerat.second -= constant * xij.second;
                     }
                 }
-                n = n->next;
             }
         }
     }

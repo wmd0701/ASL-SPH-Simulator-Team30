@@ -44,7 +44,7 @@ double TimeLoop() {
   //-------------------------------------------------------------------
   // MEASURE FROM HERE
   //-------------------------------------------------------------------
-  int overall_step = 1000;
+  int overall_step = 100000;
   start_all = start_tsc();
   for (int step = 0; step < overall_step; step++) {
     // ------------------------
@@ -87,15 +87,11 @@ double TimeLoop() {
 
     t += dt;
 
-    //~ // output data to file
-    //~ if ((step + 1) % 100 == 0) {
-      //~ WriteData(all_particle, t);
-    //~ }
-    //~ printf("time t = %f\n", t);
-  }
-  
-  for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
-      deleteNeighbors(&(all_particle[i].neighbors));
+    // output data to file
+    if ((step + 1) % 100 == 0) {
+       WriteData(all_particle, t);
+    }
+    printf("time t = %f\n", t);
   }
   
   cycles_all += (double)stop_tsc(start_all);
