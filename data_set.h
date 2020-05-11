@@ -102,7 +102,7 @@ void KernelAndGradient(Particle *all_particle, vector diff, int par_idx_1,
 
   if (q <= 1.) {
     kernel = factor * (1. - 1.5 * q2 * (1. - 0.5 * q));
-    if (1e-12 <= q) {
+    if (1.0e-12 <= q) {
       temp = factor * (-3. * q + 2.25 * q2) * Hinv / r;
       grad.first = temp * diff.first;
       grad.second = temp * diff.second;
