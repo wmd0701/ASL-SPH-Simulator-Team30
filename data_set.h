@@ -338,7 +338,7 @@ Particle *Init() {
     particles[i].position.first += amplitude;
     particles[i].velocity.first = 0.;
     particles[i].velocity.second = 0.;
-    particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997;
+    particles[i].mass = initial_density * H * H;
     particles[i].density = initial_density;
     particles[i].pressure = 1.;
     particles[i].accelerat.first = 0.;
