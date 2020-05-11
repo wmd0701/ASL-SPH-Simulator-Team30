@@ -30,19 +30,21 @@ double cycles_RepulsiveForce = 0;
 double cycles_TimeIntegral   = 0;
 double cycles_all            = 0;
 
-void set_particles_interior(int N){
-	H = (sqrt(2595. * N + 225.) - 15.) / (50. * N);
-	Nx_interior = round(1.73 / H - 1);
-	Ny_interior = round(0.6 / H);
-	N_interior = Nx_interior * Ny_interior;	
+void set_particles_interior(int N) {
+  H = (sqrt(2595. * N + 225.) - 15.) / (50. * N);
+  Nx_interior = round(1.73 / H - 1);
+  Ny_interior = round(0.6 / H);
+  N_interior = Nx_interior * Ny_interior;
 
-	Nx_boundary = 2 * round(1.73 / H) + 1;
- 	Ny_boundary = 2 * round(1.15 / H) + 1;
-	N_boundary = Nx_boundary + 2 * Ny_boundary + 2 * (Nx_boundary + 4) + 2 * 2 * Ny_boundary;
+  Nx_boundary = 2 * round(1.73 / H) + 1;
+  Ny_boundary = 2 * round(1.15 / H) + 1;
+  N_boundary = Nx_boundary + 2 * Ny_boundary + 2 * (Nx_boundary + 4) +
+               2 * 2 * Ny_boundary;
 
-	NUMBER_OF_PARTICLE = N_interior + N_boundary;
-	printf("interior particles: %i (x: %i, y: %i)\nboundary particles: %i\nsmoothing length: %.5f\n\n", 
-            N_interior, Nx_interior, Ny_interior, N_boundary, H);
+  NUMBER_OF_PARTICLE = N_interior + N_boundary;
+  printf("interior particles: %i (x: %i, y: %i)\nboundary particles: "
+         "%i\nsmoothing length: %.5f\n\n",
+         N_interior, Nx_interior, Ny_interior, N_boundary, H);
 }
 
 #endif // CONSTANTS_H
