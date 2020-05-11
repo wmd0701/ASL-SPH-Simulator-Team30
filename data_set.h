@@ -106,13 +106,14 @@ typedef struct {
   ParticleType tag; //!< whether it's an interior particle (0), repulsive
                     //!< particle (1) or ghost particle (2)
 
-  Neighbor_p * neighbors; /*!< List containing the index array of nearby particles
-                               This is the pointer to the first neighbor. */
+  double Wij[40];
+  vector Wij_grad[40];
+  int    index[40];
+  int    neighbor_num;
 
 } Particle;
 
-void KernelAndGradient(vector diff, Neighbor_p *neighbor1,
-                       Neighbor_p *neighbor2, double r) {
+void KernelAndGradient(Particle* all_particle, vector diff, int par_idx_1, int nei_idx_1, int par_idx_2, int nei_idx_2, double r) {
   double kernel;
   vector grad;
   double q = r * Hinv;
@@ -141,31 +142,25 @@ void KernelAndGradient(vector diff, Neighbor_p *neighbor1,
     grad.second = 0;
   }
 
-  neighbor1->Wij = kernel;
-  neighbor1->Wij_grad_i = grad;
-  if (neighbor2 != NULL) {
-    neighbor2->Wij = kernel;
+  all_particle[par_idx_1].Wij[nei_idx_1] = kernel;
+  all_particle[par_idx_1].Wij_grad[nei_idx_1]  = grad;
+  if (par_idx_2 != -1) {
+    
     grad.first = -grad.first;
     grad.second = -grad.second;
-    neighbor2->Wij_grad_i = grad;
+
+    all_particle[par_idx_2].Wij[nei_idx_2] = kernel;
+    all_particle[par_idx_2].Wij_grad[nei_idx_2]  = grad;
   }
 }
 
-void AddNeighbor(Particle *all_particle, Neighbor_p **LastNeighbor, int i,
+void AddNeighbor(Particle *all_particle, int *LastNeighbor, int i,
                  int j) {
-  if (all_particle[i].neighbors == NULL) { // if it's the first pointer of list
-    Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-    new_p->idx = j;
-    new_p->next = NULL;
-    all_particle[i].neighbors = new_p;
-    LastNeighbor[i] = new_p;
-  } else { // if it's not the first pointer of list
-    Neighbor_p *new_p = (Neighbor_p *)malloc(sizeof(Neighbor_p));
-    new_p->idx = j;
-    new_p->next = NULL;
-    LastNeighbor[i]->next = new_p;
-    LastNeighbor[i] = new_p;
-  }
+    
+    LastNeighbor[i] = all_particle[i].neighbor_num;
+    all_particle[i].index[LastNeighbor[i]] = j;
+    all_particle[i].neighbor_num ++;
+  
 }
 
 
@@ -181,11 +176,11 @@ void AddNeighbor(Particle *all_particle, Neighbor_p **LastNeighbor, int i,
 */
 void SearchNeighbors(Particle *all_particle) {
     for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
-        deleteNeighbors(&(all_particle[i].neighbors));
+        all_particle[i].neighbor_num = 0;
     }  
     
     double r;
-    Neighbor_p *LastNeighbor[NUMBER_OF_PARTICLE];    
+    int LastNeighbor[NUMBER_OF_PARTICLE];    
     
     for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
         vector xi = all_particle[i].position;
@@ -195,7 +190,7 @@ void SearchNeighbors(Particle *all_particle) {
                 //Add particle j to neighbors of particle i
                 AddNeighbor(all_particle, LastNeighbor, i, j);
                 vector diff = vec_sub_vec(xi, xj);
-                KernelAndGradient(diff, LastNeighbor[i], NULL, 0.);
+                KernelAndGradient(all_particle, diff, i, LastNeighbor[i], -1, -1, 0.);
             }
             else if(all_particle[i].tag == interior){
                 vector diff = vec_sub_vec(xi, xj);
@@ -206,7 +201,7 @@ void SearchNeighbors(Particle *all_particle) {
                     //Add particle i to neighbors of particle j
                     AddNeighbor(all_particle, LastNeighbor, j, i);
                     //Compute kernel and its gradient
-                    KernelAndGradient(diff, LastNeighbor[i], LastNeighbor[j], r);
+                    KernelAndGradient(all_particle, diff, i, LastNeighbor[i], j, LastNeighbor[j], r);
                 }
             }
             else if(all_particle[j].tag == interior){
@@ -218,7 +213,7 @@ void SearchNeighbors(Particle *all_particle) {
                     //Add particle j to neighbors of particle i
                     AddNeighbor(all_particle, LastNeighbor, i, j);
                     //Compute kernel and its gradient
-                    KernelAndGradient(diff, LastNeighbor[j], LastNeighbor[i], r);
+                    KernelAndGradient(all_particle, diff, j, LastNeighbor[j], i, LastNeighbor[i], r);
                 }
             }
             else if(all_particle[i].tag == repulsive && all_particle[j].tag == ghost){
@@ -228,7 +223,7 @@ void SearchNeighbors(Particle *all_particle) {
                     //Add particle i to neighbors of particle j
                     AddNeighbor(all_particle, LastNeighbor, j, i);
                     //Compute kernel and its gradient
-                    KernelAndGradient(diff, LastNeighbor[j], NULL, r);
+                    KernelAndGradient(all_particle, diff, j, LastNeighbor[j], -1, -1, r);
                 }
             }
             else if(all_particle[i].tag == ghost && all_particle[j].tag == repulsive){
@@ -238,7 +233,7 @@ void SearchNeighbors(Particle *all_particle) {
                     //Add particle j to neighbors of particle i
                     AddNeighbor(all_particle, LastNeighbor, i, j);
                     //Compute kernel and its gradient
-                    KernelAndGradient(diff, LastNeighbor[i], NULL, r);
+                    KernelAndGradient(all_particle, diff, i, LastNeighbor[i], -1, -1, r);
                 }
             }
         }
@@ -342,7 +337,6 @@ Particle *Init() {
     particles[i].pressure = 1.;
     particles[i].accelerat.first = 0.;
     particles[i].accelerat.second = 0.;
-    particles[i].neighbors = NULL;
   }
   return particles;
 }
@@ -370,7 +364,6 @@ Particle *Read_Init(char filename[]) {
     all_particle[i].velocity.first = v1;
     all_particle[i].velocity.second = v2;
     all_particle[i].mass = m;
-    all_particle[i].neighbors = NULL;
   }
   SearchNeighbors(all_particle);
   return all_particle;
