@@ -215,7 +215,7 @@ Particle *Init() {
 
   // Set repulsive particles
   for (int i = 0; i < Nx_boundary; i++) {
-    particles[now].position.first = i * H / 2;
+    particles[now].position.first = i * H / 2.;
     particles[now].position.second = 0;
     particles[now].tag = repulsive;
     ++now;
@@ -223,25 +223,25 @@ Particle *Init() {
 
   for (int j = 0; j < Ny_boundary; j++) {
     particles[now].position.first = 0;
-    particles[now].position.second = j * H / 2;
+    particles[now].position.second = j * H / 2.;
     particles[now].tag = repulsive;
     ++now;
   }
   for (int j = 0; j < Ny_boundary; j++) {
     particles[now].position.first = (Nx_interior + 1) * H;
-    particles[now].position.second = j * H / 2;
+    particles[now].position.second = j * H / 2.;
     particles[now].tag = repulsive;
     ++now;
   }
 
   // Set ghost particles
   for (int i = -2; i < Nx_boundary + 2; i++) {
-    particles[now].position.first = i * H / 2;
-    particles[now].position.second = -H / 2;
+    particles[now].position.first = i * H / 2.;
+    particles[now].position.second = -H / 2.;
     particles[now].tag = ghost;
     ++now;
 
-    particles[now].position.first = i * H / 2;
+    particles[now].position.first = i * H / 2.;
     particles[now].position.second = -H;
     particles[now].tag = ghost;
     ++now;
@@ -249,22 +249,22 @@ Particle *Init() {
 
   for (int j = 0; j < Ny_boundary; j++) {
     particles[now].position.first = -H;
-    particles[now].position.second = j * H / 2;
+    particles[now].position.second = j * H / 2.;
     particles[now].tag = ghost;
     ++now;
 
-    particles[now].position.first = -H / 2;
-    particles[now].position.second = j * H / 2;
+    particles[now].position.first = -H / 2.;
+    particles[now].position.second = j * H / 2.;
     particles[now].tag = ghost;
     ++now;
 
     particles[now].position.first = (Nx_interior + 1.5) * H;
-    particles[now].position.second = j * H / 2;
+    particles[now].position.second = j * H / 2.;
     particles[now].tag = ghost;
     ++now;
 
-    particles[now].position.first = (Nx_interior + 2) * H;
-    particles[now].position.second = j * H / 2;
+    particles[now].position.first = (Nx_interior + 2.) * H;
+    particles[now].position.second = j * H / 2.;
     particles[now].tag = ghost;
     ++now;
   }
