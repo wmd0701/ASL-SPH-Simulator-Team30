@@ -26,16 +26,15 @@ void WriteData(Particle* all_particle, double t_now) {
 	strcat(output_path, file_name);
 	FILE *fp = NULL;
 	fp = fopen(output_path,"w");
-	fprintf(fp, "x coord, y coord, tag, u, v, m, rho, p, a1, a2\n"); 
+	fprintf(fp, "x coord, y coord, tag, u, v, rho, p, a1, a2\n"); 
 	for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
 		this_p = all_particle[i];
-		fprintf(fp, "%lf, %lf, %d, %lf, %lf, %lf, %lf, %lf, %lf, %lf\n",  
+		fprintf(fp, "%lf, %lf, %d, %lf, %lf, %lf, %lf, %lf, %lf\n",  
 				this_p.position.first,
 				this_p.position.second,
 				this_p.tag,
 				this_p.velocity.first,
 				this_p.velocity.second,
-				this_p.mass,
 				this_p.density,
 				this_p.pressure,
 				this_p.accelerat.first,

@@ -63,7 +63,6 @@ typedef enum Particle_Type ParticleType;
 */
 typedef struct {
   vector position;  //!< 2d coordinate
-  double mass;      //!< mass
   vector velocity;  //!< 2d velocity
   double density;   //!< the value of density field
   double pressure;  //!< the value of pressure field
@@ -75,13 +74,22 @@ typedef struct {
   ParticleType tag; //!< whether it's an interior particle (0), repulsive
                     //!< particle (1) or ghost particle (2)
 
-  double Wij[40];
-  vector Wij_grad[40];
-  int    index[40];
-  int    neighbor_num;
+  double Wij[40];        //!< store the kernel
+  vector Wij_grad[40];   //!< store the kernel gradient
+  int    index[40];      //!< store the indices of neighbors
+  int    neighbor_num;   //!< number of neighbors
 
 } Particle;
 
+/**
+ *      @brief Add neighbors for one/two particle(s), meanwhile compute the kernel and gradient
+ *      @param par_idx_1 index of particle_1
+ *      @param par_idx_2 index of particle_2
+ *      @param diff  position(1) - position(2)
+ *      @param r distance of two particles
+ *      @param flag  1: particle_1 and particle_2 are neighbors of each other
+ *                  -1: particle_2 is a neighbor of particle_1 but the opposite is false.
+ */
 void KernelAndGradient(Particle* all_particle, vector diff, int par_idx_1, int par_idx_2, double r, int flag) {
   double kernel;
   vector grad;
@@ -105,7 +113,7 @@ void KernelAndGradient(Particle* all_particle, vector diff, int par_idx_1, int p
     grad.first = temp * diff.first;
     grad.second = temp * diff.second;
   } else {
-    printf("something wrong with searchneibors.");
+    printf("Something wrong with SearchnNeighbors.");
     kernel = 0;
     grad.first = 0;
     grad.second = 0;
@@ -262,7 +270,6 @@ Particle *Init() {
     particles[i].position.first += amplitude;
     particles[i].velocity.first = 0.;
     particles[i].velocity.second = 0.;
-    particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997;
     particles[i].density = initial_density;
     particles[i].pressure = 1.;
     particles[i].accelerat.first = 0.;
@@ -293,7 +300,6 @@ Particle *Read_Init(char filename[]) {
     all_particle[i].tag = t;
     all_particle[i].velocity.first = v1;
     all_particle[i].velocity.second = v2;
-    all_particle[i].mass = m;
   }
   SearchNeighbors(all_particle);
   return all_particle;
