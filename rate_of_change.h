@@ -69,13 +69,13 @@ void DensityAndBCVelocityCorrection (Particle *all_particle) {
 *     @return sound speed value squared
 */
 double ComputeSoundSpeedSquared(Particle *all_particle, double t){
-    double bulk_velocity = sqrt(2*dam_height*gravity);
+    double bulk_velocity = sqrt(2.0*dam_height*gravity);
     double l = 1.7;
     double delta = 0.01;
     double nu = dynamic_viscosity/initial_density;
-    double force_x = 0;
+    double force_x = 0.0;
     if (t > 0){
-        force_x = - 0.032* (2*M_PI/1.5)*(2*M_PI/1.5)*cos(2*M_PI*t/1.5)*all_particle[0].mass;
+        force_x = - 0.032* (2.0*M_PI/1.5)*(2.0*M_PI/1.5)*cos(2.0*M_PI*t/1.5)*all_particle[0].mass;
     }
     double force_y = -gravity*all_particle[0].mass;
     double force = sqrt((force_x*force_x) + (force_y*force_y));
@@ -114,8 +114,8 @@ void ComputeGlobalPressure (Particle *all_particle, double t){
     int N = NUMBER_OF_PARTICLE;
 	for (int i = 0; i < N; i++) {
 		all_particle[i].pressure = c2 * (all_particle[i].density - initial_density);
-		if (all_particle[i].pressure < 0) {
-			all_particle[i].pressure = 0;
+		if (all_particle[i].pressure < 0.0) {
+			all_particle[i].pressure = 0.0;
 		}
 	}
 	return;
@@ -136,8 +136,8 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
             Neighbor_p *n = all_particle[i].neighbors;
             Particle *pi = &all_particle[i];
             
-            pi->accelerat.first = 0;
-            pi->accelerat.second = 0;
+            pi->accelerat.first = 0.0;
+            pi->accelerat.second = 0.0;
             
             while (n != NULL) {
                 Particle *pj = &all_particle[n->idx];
@@ -156,7 +156,7 @@ void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
                 vector xij = vec_sub_vec(pj->position, pi->position);
                 vector vij = vec_sub_vec(pj->velocity, pi->velocity);
              
-                if (vec_dot_vec(xij, vij) < 0) {
+                if (vec_dot_vec(xij, vij) < 0.0) {
                     mu_ij = H * vec_dot_vec(xij, vij) / (vec_dot_vec(xij, xij) + 0.01 * H * H);
                     PI_ij = - alpha *c * mu_ij / (pi->density + pj->density);
                     pi->accelerat.first  -= pj->mass * PI_ij * gradient.first;
@@ -209,8 +209,8 @@ void AddRepulsiveForce(Particle *all_particle, double t){
                     double r = sqrt(r2);
                     double c2 = ComputeSoundSpeedSquared(all_particle, t);
                     double eta = r / (0.75 * H);
-                    if (0 < r && r < d) {
-                        double chi = 1 - r / d;
+                    if (0.0 < r && r < d) {
+                        double chi = 1.0 - r / d;
                         double constant = 0.01 * c2 * chi * f(eta) / r2;
                         
                         pi->accelerat.first -= constant * xij.first;
@@ -235,8 +235,8 @@ void DisplaceBoundaries(Particle* all_particle, Particle* initial_configuration,
 	double T = period;
 	for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
 		if(all_particle[i].tag != interior){
-			all_particle[i].position.first = initial_configuration[i].position.first + (A*cos(2*M_PI*t/T) - A); 
-			all_particle[i].velocity.first = - 2 * M_PI * A * sin(2 * M_PI * t / T) / T;
+			all_particle[i].position.first = initial_configuration[i].position.first + (A*cos(2.0*M_PI*t/T) - A); 
+			all_particle[i].velocity.first = - 2.0 * M_PI * A * sin(2.0 * M_PI * t / T) / T;
 		}
 	}
 }
