@@ -61,33 +61,10 @@ enum Particle_Type { interior, repulsive, ghost };
 typedef enum Particle_Type ParticleType;
 
 /**  
-*	 @brief A struct containing some variables of a neighbor particle
-*/
-struct Neighbor {
-
-  int idx;           //!< global index of this neighbor particle
-  double Wij;        //!< the value of kernel function
-  vector Wij_grad_i; //!< the gradient of kernel function w.r.t. the position of
-                     //!< [particle i]
-	/* 
-		TODO: 
-		possible improvement: use array with fixed length, instead of linked list
-		e.g. int neightbors[100]
-		pros: faster access, no need for delete
-		cons: fixed size, cannot handle more neighbors
-	*/
-	struct Neighbor *next;	//!< pointer to the next neighbor particle.
-
-};
-
-typedef struct Neighbor Neighbor_p;
-
-/**  
 *	 @brief A struct containing some variables of a particle
 */
 typedef struct {
   vector position;  //!< 2d coordinate
-  double mass;      //!< mass
   vector velocity;  //!< 2d velocity
   double density;   //!< the value of density field
   double pressure;  //!< the value of pressure field
@@ -99,24 +76,23 @@ typedef struct {
   ParticleType tag; //!< whether it's an interior particle (0), repulsive
                     //!< particle (1) or ghost particle (2)
 
-  int    neighbor_index[30];   //!< store the indices of neighbors
-  double Wij           [30];   //!< store the kernel 
-  vector Wij_grad      [30];   //!< store the kernel gradient
-  int    num_of_neighbors;     //!< the number of neighbors
+  double Wij[40];        //!< store the kernel
+  vector Wij_grad[40];   //!< store the kernel gradient
+  int    index[40];      //!< store the indices of neighbors
+  int    neighbor_num;   //!< number of neighbors
 
 } Particle;
 
-
 /**
  *      @brief Add neighbors for one/two particle(s), meanwhile compute the kernel and gradient
- *      @param idx_1 index of particle_1
- *      @param idx_2 index of particle_2
+ *      @param par_idx_1 index of particle_1
+ *      @param par_idx_2 index of particle_2
  *      @param diff  position(1) - position(2)
  *      @param r distance of two particles
  *      @param flag  1: particle_1 and particle_2 are neighbors of each other
  *                  -1: particle_2 is a neighbor of particle_1 but the opposite is false.
- */ 
-void AddNeighborWithKernel(Particle* all_particle, int idx_1, int idx_2, vector diff, double r, bool flag) {
+ */
+void KernelAndGradient(Particle* all_particle, vector diff, int par_idx_1, int par_idx_2, double r, int flag) {
   double kernel;
   vector grad;
   double q = r * Hinv;
@@ -140,25 +116,25 @@ void AddNeighborWithKernel(Particle* all_particle, int idx_1, int idx_2, vector 
     grad.first = temp * diff.first;
     grad.second = temp * diff.second;
   } else {
-    printf("Something wrong with SearchNeighbors.");
+    printf("Something wrong with SearchnNeighbors.");
     kernel = 0;
     grad.first = 0;
     grad.second = 0;
   }
 
-  all_particle[idx_1].Wij           [all_particle[idx_1].num_of_neighbors] = kernel;
-  all_particle[idx_1].Wij_grad      [all_particle[idx_1].num_of_neighbors] = grad;
-  all_particle[idx_1].neighbor_index[all_particle[idx_1].num_of_neighbors] = idx_2;
-  all_particle[idx_1].num_of_neighbors++;
-
+  all_particle[par_idx_1].Wij     [all_particle[par_idx_1].neighbor_num] = kernel;
+  all_particle[par_idx_1].Wij_grad[all_particle[par_idx_1].neighbor_num] = grad;
+  all_particle[par_idx_1].index   [all_particle[par_idx_1].neighbor_num] = par_idx_2;
+  all_particle[par_idx_1].neighbor_num += 1;
   if (flag == 1) {
-    grad.first  = -grad.first;
-    grad.second = -grad.second;
     
-    all_particle[idx_2].Wij           [all_particle[idx_2].num_of_neighbors] = kernel; 
-    all_particle[idx_2].Wij_grad      [all_particle[idx_2].num_of_neighbors] = grad;
-    all_particle[idx_2].neighbor_index[all_particle[idx_2].num_of_neighbors] = idx_1;
-    all_particle[idx_2].num_of_neighbors++;
+    grad.first = -grad.first;
+    grad.second = -grad.second;
+
+    all_particle[par_idx_2].Wij     [all_particle[par_idx_2].neighbor_num] = kernel;
+    all_particle[par_idx_2].Wij_grad[all_particle[par_idx_2].neighbor_num] = grad;
+    all_particle[par_idx_2].index   [all_particle[par_idx_2].neighbor_num] = par_idx_1;
+    all_particle[par_idx_2].neighbor_num += 1;
   }
 }
 
@@ -172,41 +148,37 @@ void AddNeighborWithKernel(Particle* all_particle, int idx_1, int idx_2, vector 
 *			 - ghost particles need information of both interior and repulsive particles
 */
 void SearchNeighbors(Particle *all_particle) {
-  int i, j;
-  double r;
-  vector xi, xj, diff;
+    vector xi, xj, diff;
+    double r;
 
-  // - Delete neighbors list for all particles
-  // - Add itself to neighbor list
-  for (i = 0; i < NUMBER_OF_PARTICLE; i++) {
-    all_particle[i].num_of_neighbors = 0;
-    AddNeighborWithKernel(all_particle, i, i, (vector){0.0, 0.0}, 0.0, -1);
-  }
-
-  // Search neighbors of [interior] particles
-  for (i = 0; i < N_interior; i++) {
-    xi = all_particle[i].position;
-    for (j = i + 1; j < NUMBER_OF_PARTICLE; j++) {
-      xj = all_particle[j].position;
-      r = vec_distance_vec(xi, xj);
-      if (r < Hradius) {
-        diff = vec_sub_vec(xi, xj);
-        AddNeighborWithKernel(all_particle, i, j, diff, r, 1);
-      }
+    vector zero = {0.0, 0.0};
+    for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
+        all_particle[i].neighbor_num = 0;
+        KernelAndGradient(all_particle, zero, i, i, 0.0, -1);
     }  
-  }
-  // Search [impulsive] neighbors of [ghost] particles
-  for (i = N_interior + N_replusive; i < NUMBER_OF_PARTICLE; i++) {
-    xi = all_particle[i].position;
-    for (j = N_interior; j < N_interior + N_replusive; j++) {
-      xj = all_particle[j].position;
-      r = vec_distance_vec(xi, xj);
-      if (r < Hradius) {
-        diff = vec_sub_vec(xi, xj);
-        AddNeighborWithKernel(all_particle, i, j, diff, r, -1);
+    
+    for (int i = 0; i < N_interior; i++) {
+      xi = all_particle[i].position;
+      for (int j = i + 1; j < NUMBER_OF_PARTICLE; j++) {
+        xj = all_particle[j].position;
+        r = vec_distance_vec(xi, xj);
+        if (r < Hradius) {
+          diff = vec_sub_vec(xi, xj);
+          KernelAndGradient(all_particle, diff, i, j, r, 1);
+        }
       }
     }
-  }
+    for (int i = N_interior + N_repulsive; i < NUMBER_OF_PARTICLE; i++) {
+      xi = all_particle[i].position;
+      for (int j = N_interior; j < N_interior + N_repulsive; j++) {
+        xj = all_particle[j].position;
+        r = vec_distance_vec(xi, xj);
+        if (r < Hradius) {
+          diff = vec_sub_vec(xi, xj);
+          KernelAndGradient(all_particle, diff, i, j, r, -1);
+        }
+      }
+    }
 }
 
 
@@ -301,7 +273,6 @@ Particle *Init() {
     particles[i].position.first += amplitude;
     particles[i].velocity.first = 0.;
     particles[i].velocity.second = 0.;
-    particles[i].mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997;
     particles[i].density = initial_density;
     particles[i].pressure = 1.;
     particles[i].accelerat.first = 0.;
@@ -332,7 +303,6 @@ Particle *Read_Init(char filename[]) {
     all_particle[i].tag = t;
     all_particle[i].velocity.first = v1;
     all_particle[i].velocity.second = v2;
-    all_particle[i].mass = m;
   }
   SearchNeighbors(all_particle);
   return all_particle;

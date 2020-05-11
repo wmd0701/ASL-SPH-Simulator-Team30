@@ -10,10 +10,9 @@ int Ny_interior; // interior particles in y direction
 int N_boundary;  // boundary particles
 int Nx_boundary; // boundary particles in x direction
 int Ny_boundary; // boundary particles in y direction
-
-int N_replusive;
+int N_repulsive;
 int N_ghost;
-int NUMBER_OF_PARTICLE;  //!< number of particles of all particles (interior, repulsive, ghost)
+int NUMBER_OF_PARTICLE;
 
 
 double H;  //!< smoothing length
@@ -28,6 +27,7 @@ const double initial_density = 997;
 const double dynamic_viscosity = 0.8926e-3;
 const double amplitude = 0.032;
 const double period = 1.5;
+double mass;
 
 double cycles_DispBoundary   = 0;
 double cycles_SearchNeighbor = 0;
@@ -51,9 +51,14 @@ void set_particles_interior(int N){
 	Nx_boundary = 2 * round(1.73 / H) + 1;
  	Ny_boundary = 2 * round(1.15 / H) + 1;
 	N_boundary = Nx_boundary + 2 * Ny_boundary + 2 * (Nx_boundary + 4) + 2 * 2 * Ny_boundary;
-	N_replusive = Nx_boundary + 2 * Ny_boundary;
-	N_ghost = N_boundary - N_replusive;
+	N_repulsive = Nx_boundary + 2 * Ny_boundary;
+	N_ghost = N_boundary - N_repulsive;
 
+
+	N_repulsive = 2 * Ny_boundary + Nx_boundary;
+	N_ghost = N_boundary - N_repulsive;
+
+	mass = 7 * M_PI * H * H * initial_density / 40 / 384 * 997;
 
 	NUMBER_OF_PARTICLE = N_interior + N_boundary;
 	printf("interior particles: %i (x: %i, y: %i)\nboundary particles: %i\nsmoothing length: %.5f\n\n", 
