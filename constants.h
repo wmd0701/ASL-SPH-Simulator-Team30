@@ -10,6 +10,10 @@ int Ny_interior; // interior particles in y direction
 int N_boundary;  // boundary particles
 int Nx_boundary; // boundary particles in x direction
 int Ny_boundary; // boundary particles in y direction
+int N_repulsive;
+int N_ghost;
+
+
 double H;  //!< smoothing length
 double Hinv; // 1 / H
 double Hradius;
@@ -45,6 +49,9 @@ void set_particles_interior(int N){
 	Nx_boundary = 2 * round(1.73 / H) + 1;
  	Ny_boundary = 2 * round(1.15 / H) + 1;
 	N_boundary = Nx_boundary + 2 * Ny_boundary + 2 * (Nx_boundary + 4) + 2 * 2 * Ny_boundary;
+
+	N_repulsive = 2 * Ny_boundary + Nx_boundary;
+	N_ghost = N_boundary - N_repulsive;
 
 	NUMBER_OF_PARTICLE = N_interior + N_boundary;
 	printf("interior particles: %i (x: %i, y: %i)\nboundary particles: %i\nsmoothing length: %.5f\n\n", 
