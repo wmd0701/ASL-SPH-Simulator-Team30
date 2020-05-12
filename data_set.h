@@ -191,9 +191,9 @@ void *Init() {
   Wij_grads        = (vector**)malloc(sizeof(vector*)*NUMBER_OF_PARTICLE);
   neighbor_indices = (int**   )malloc(sizeof(int**  )*NUMBER_OF_PARTICLE);
   for(int i = 0 ; i < NUMBER_OF_PARTICLE ; i++){
-    Wijs[i]             = (double*)malloc(sizeof(double) * 100);
-    Wij_grads[i]        = (vector*)malloc(sizeof(vector) * 100);
-    neighbor_indices[i] = (int*   )malloc(sizeof(int   ) * 100); 
+    Wijs[i]             = (double*)malloc(sizeof(double) * 40);
+    Wij_grads[i]        = (vector*)malloc(sizeof(vector) * 40);
+    neighbor_indices[i] = (int*   )malloc(sizeof(int   ) * 40); 
   }
   neighbor_counts = (int*)calloc(NUMBER_OF_PARTICLE, sizeof(int));
 
