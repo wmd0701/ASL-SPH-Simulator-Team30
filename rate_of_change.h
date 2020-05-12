@@ -7,54 +7,48 @@
 
 /**   
 *     @brief Compute the value of density field at a certain particle, namely rho_i
-*     @param all_particle pointer to an array containing information of all the particles
 *	  @param ptc_idx index of the particle that is being considered
 *     @return density value
 */
-double ComputeLocalDensity (Particle *all_particle, int ptc_idx) {
+double ComputeLocalDensity (int ptc_idx) {
 	double sum = 0;
-	for (int j = 0; j < all_particle[ptc_idx].neighbor_num; j++) {
-		sum += all_particle[ptc_idx].Wij[j] * mass;
-	}
+    for (int j = 0 ; j < neighbor_counts[j] ; j++)
+        sum += Wijs[ptc_idx][j] * mass;
 	return sum;
 }
 
 /**!  
 *     @brief Compute the value of density field at every particle
-*     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [density] attribute in all_particle
 */
-void ComputeGlobalDensity (Particle *all_particle) {
-	int N = NUMBER_OF_PARTICLE;
-	for (int i = 0; i < N; i++) {
-		all_particle[i].density = ComputeLocalDensity(all_particle, i);
+void ComputeGlobalDensity () {
+	for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
+		densities[i] = ComputeLocalDensity(i);
 	}
 }
 
 /**   
 *     @brief Compute - the "corrected" value of density field at every particle using new Wij
 *                    - the "corrected" value of velocity of boundary particles  using new Wij
-*
-*     @param all_particle pointer to an array containing information of all the particles
 */
-void DensityAndBCVelocityCorrection (Particle *all_particle) {
-	int N = NUMBER_OF_PARTICLE;   // get the number of particles
-	double* sum = (double*)malloc(sizeof(double)*N);
-	for (int i = 0; i < N; i++) {     // traverse particles
+void DensityAndBCVelocityCorrection () {
+	double* sum = (double*)malloc(sizeof(double) * NUMBER_OF_PARTICLE);
+	for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {     // traverse particles
 		double sum_Wij = 0;
-		for (int j = 0; j < all_particle[i].neighbor_num; j++) {    // traverse neighbors
-			Particle * pk = &all_particle[all_particle[i].index[j]];
-			sum_Wij += all_particle[i].Wij[j] * mass / pk->density;
+		for (int j = 0; j < neighbor_counts[i]; j++) {    // traverse neighbors
+			double density = densities[neighbor_indices[i][j]]; 
+            sum_Wij += Wijs[i][j] * mass / density;
 		}
 		sum[i] = sum_Wij;
 	}
-	for (int i = 0; i < N; i++) {
-		all_particle[i].density /= sum[i];
-		if (all_particle[i].tag != interior) {
-			all_particle[i].velocity.first /= (-sum[i]);
-			all_particle[i].velocity.second /= (-sum[i]);
-		}
-	}
+
+	for (int i = 0; i < NUMBER_OF_PARTICLE; i++)
+		densities[i] /= sum[i];
+    
+    // if not interior
+    for (int i = N_interior ; i < NUMBER_OF_PARTICLE ; i++)
+        velocities[i] = vec_div_scalar(velocities[i], -sum[i]);
+
 	free(sum);
 }
 
@@ -64,10 +58,9 @@ void DensityAndBCVelocityCorrection (Particle *all_particle) {
 *     
 *     @note  It is dependent on concrete cases.
 *
-*     @param all_particle pointer to an array containing information of all the particles
 *     @return sound speed value squared
 */
-double ComputeSoundSpeedSquared(Particle *all_particle, double t){
+double ComputeSoundSpeedSquared(double t){
     double bulk_velocity = sqrt(2*dam_height*gravity);
     double l = 1.7;
     double delta = 0.01;
@@ -103,18 +96,16 @@ double ComputeSoundSpeedSquared(Particle *all_particle, double t){
 *           
 *              p = c2 * max(rho - rho0, 0)
 *
-*     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [pressure] attribute in all_particle
 */
 
-void ComputeGlobalPressure (Particle *all_particle, double t){
-	double c2 = ComputeSoundSpeedSquared(all_particle, t);
+void ComputeGlobalPressure (double t){
+	double c2 = ComputeSoundSpeedSquared(t);
     
-    int N = NUMBER_OF_PARTICLE;
-	for (int i = 0; i < N; i++) {
-		all_particle[i].pressure = c2 * (all_particle[i].density - initial_density);
-		if (all_particle[i].pressure < 0) {
-			all_particle[i].pressure = 0;
+	for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
+		pressures[i] = c2 * (densities[i] - initial_density);
+		if (pressures[i] < 0) {
+			pressures[i] = 0;
 		}
 	}
 	return;
@@ -122,50 +113,45 @@ void ComputeGlobalPressure (Particle *all_particle, double t){
 
 /**   
 *     @brief Compute dvdt for every particle without considering the influence of boundary points and turbulence
-*     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
-void ComputeInteriorLaminarAcceleration(Particle *all_particle, double t) {
-    double c = sqrt(ComputeSoundSpeedSquared(all_particle, t));
+void ComputeInteriorLaminarAcceleration(double t) {
+    double c = sqrt(ComputeSoundSpeedSquared(t));
     double alpha = 0.2;
     double mu_ij, PI_ij;
+    vector zero = {0, 0};
 
-    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-        if (all_particle[i].tag == interior) {
-            Particle *pi = &all_particle[i];
-            
-            pi->accelerat.first = 0;
-            pi->accelerat.second = 0;
-            
-            for (int j = 0; j < pi->neighbor_num; j++) {
-                Particle *pj = &all_particle[pi->index[j]];
-                vector gradient = pi->Wij_grad[j];
-
-                // Pressure force
-                double constant1 =
-                    mass * (pi->pressure / (pi->density * pi->density) +
-                            pj->pressure / (pj->density * pj->density));
-
+    for (int i = 0; i < N_interior; i++) {
+        accelerats[i] = zero;
                 
-                pi->accelerat.first -= constant1 * gradient.first;
-                pi->accelerat.second -= constant1 * gradient.second;
+        for (int j = 0; j < neighbor_counts[i]; j++) {
+            int neighbor    = neighbor_indices[i][j];
+            vector gradient = Wij_grads[i][j];
+            
+            // Pressure force
+            double constant1 =
+                mass * (pressures[i] / (densities[i] * densities[i]) +
+                        pressures[neighbor] / (densities[neighbor] * densities[neighbor]));
+            
+            accelerats[i].first -= constant1 * gradient.first;
+            accelerats[i].second -= constant1 * gradient.second;
 
-                // Viscosity force
-                vector xij = vec_sub_vec(pj->position, pi->position);
-                vector vij = vec_sub_vec(pj->velocity, pi->velocity);
-             
-                if (vec_dot_vec(xij, vij) < 0) {
-                    mu_ij = H * vec_dot_vec(xij, vij) / (vec_dot_vec(xij, xij) + 0.01 * H * H);
-                    PI_ij = - alpha *c * mu_ij / (pi->density + pj->density);
-                    pi->accelerat.first  -= mass * PI_ij * gradient.first;
-                    pi->accelerat.second -= mass * PI_ij * gradient.second;
-                }
+            // Viscosity force
+            vector xij = vec_sub_vec(positions[neighbor], positions[i]);
+            vector vij = vec_sub_vec(velocities[neighbor], velocities[i]);
+            
+            if (vec_dot_vec(xij, vij) < 0) {
+                mu_ij = H * vec_dot_vec(xij, vij) / (vec_dot_vec(xij, xij) + 0.01 * H * H);
+                PI_ij = - alpha *c * mu_ij / (densities[i] + densities[neighbor]);
+                accelerats[i].first  -= mass * PI_ij * gradient.first;
+                accelerats[i].second -= mass * PI_ij * gradient.second;
             }
-
-            // Gravity
-            pi->accelerat.second -= gravity;
         }
+
+        // Gravity
+        accelerats[i].second -= gravity;
     }
+    
 }
 
 /**   
@@ -186,52 +172,44 @@ double f(double eta){
 /**   
 *     @brief Add the repulsive force into the acceleration of involved particle
 *
-*     @param all_particle pointer to an array containing information of all the particles
 *     @return no returns. Update the [accelerat] attribute in all_particle
 */
-void AddRepulsiveForce(Particle *all_particle, double t){
+void AddRepulsiveForce(double t){
     double d = H;
-    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-        // interior particles
-        Particle *pi = &all_particle[i];
-        
-        if (pi->tag == interior) {
-            for (int j = 0; j < pi->neighbor_num; j++) {
-                Particle *pj = &all_particle[pi->index[j]];
-                if (pj->tag == repulsive) {
-                    vector xij = vec_sub_vec(pj->position, pi->position);
-                    double r2 = vec_dot_vec(xij, xij);
-                    double r = sqrt(r2);
-                    double c2 = ComputeSoundSpeedSquared(all_particle, t);
-                    double eta = r / (0.75 * H);
-                    if (0 < r && r < d) {
-                        double chi = 1 - r / d;
-                        double constant = 0.01 * c2 * chi * f(eta) / r2;
-                        
-                        pi->accelerat.first -= constant * xij.first;
-                        pi->accelerat.second -= constant * xij.second;
-                    }
+    for (int i = 0; i < N_interior; i++) {
+        for (int j = 0; j < neighbor_counts[i]; j++) {
+            int neighbor = neighbor_indices[i][j];
+            // if neighbor is repulsive 
+            if (neighbor >= N_interior && neighbor < N_interior + N_repulsive) {
+                vector xij = vec_sub_vec(positions[neighbor], positions[i]);
+                double r2 = vec_dot_vec(xij, xij);
+                double r = sqrt(r2);
+                double c2 = ComputeSoundSpeedSquared(t);
+                double eta = r / (0.75 * H);
+                if (0 < r && r < d) {
+                    double chi = 1 - r / d;
+                    double constant = 0.01 * c2 * chi * f(eta) / r2;
+                    
+                    accelerats[i].first -= constant * xij.first;
+                    accelerats[i].second -= constant * xij.second;
                 }
             }
         }
+
     }
 }
 
 /**   
 *     @brief Displace the boundaries and update their velocity according to x(t) = A*cos(2*M_PI*t/T)
 *
-*     @param all_particle: pointer to an array containing information of all the particles
-*     @param initial_configuration: pointer to an array containing the initial position of all particles
 *     @return no returns. Update the attributes in all_particle
 */
-void DisplaceBoundaries(Particle* all_particle, Particle* initial_configuration, double t){
+void DisplaceBoundaries(double t){
 	double A = amplitude;
 	double T = period;
-	for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
-		if(all_particle[i].tag != interior){
-			all_particle[i].position.first = initial_configuration[i].position.first + (A*cos(2*M_PI*t/T) - A); 
-			all_particle[i].velocity.first = - 2 * M_PI * A * sin(2 * M_PI * t / T) / T;
-		}
+	for(int i = 0; i < N_boundary; ++i){
+        positions [i + N_interior].first = init_positions[i].first + (A*cos(2*M_PI*t/T) - A); 
+        velocities[i + N_interior].first = - 2 * M_PI * A * sin(2 * M_PI * t / T) / T;
 	}
 }
 

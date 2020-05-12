@@ -15,8 +15,7 @@ double TimeLoop() {
   double dt = 0.00005; //Warning: this timestep is valid only for number of interior particles < 4000! Else use dt = 0.000005
 
   // Initialization
-  Particle *all_particle = Init();
-  Particle *initial_configuration = Init();
+  Init();
   printf("init completed.\n\n");
 
   // choose which time integration method to use. By default using Explicit
@@ -28,66 +27,68 @@ double TimeLoop() {
   // Initial steps without moving the boundary, also used for heating up CPU
   // for (int step = 0; step < 20000; step++) {
   for (int step = 0; step < 5000; step++) {
-    SearchNeighbors(all_particle);
-
-    ComputeGlobalDensity(all_particle);
-    DensityAndBCVelocityCorrection(all_particle);
-    ComputeGlobalPressure(all_particle, t);
-    ComputeInteriorLaminarAcceleration(all_particle, t);
-    AddRepulsiveForce(all_particle, t);
-
-    Time_Integration(all_particle, dt);
+    SearchNeighbors();
+    ComputeGlobalDensity();
+    DensityAndBCVelocityCorrection();
+    ComputeGlobalPressure(t);
+    ComputeInteriorLaminarAcceleration(t);
+    AddRepulsiveForce(t);
+    Time_Integration(dt);
+    ClearNeighbors();
   }
   // Write output of Initialization
-  // WriteData(all_particle, t);
+  // WriteData(t);
 
   //-------------------------------------------------------------------
   // MEASURE FROM HERE
   //-------------------------------------------------------------------
-  int overall_step = 50000;
+  int overall_step = 1000;
   start_all = start_tsc();
   for (int step = 0; step < overall_step; step++) {
     // ------------------------
     start = start_tsc();
-    DisplaceBoundaries(all_particle, initial_configuration, t);
+    DisplaceBoundaries(t);
     cycles_DispBoundary += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
-    SearchNeighbors(all_particle);
+    SearchNeighbors();
     cycles_SearchNeighbor += (double)stop_tsc(start);
     //-------------------------
     start = start_tsc();
-    ComputeGlobalDensity(all_particle);
+    ComputeGlobalDensity();
     cycles_CompGlbDensity += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
-    DensityAndBCVelocityCorrection(all_particle);
+    DensityAndBCVelocityCorrection();
     cycles_DensityCorr += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
-    ComputeGlobalPressure(all_particle, t);
+    ComputeGlobalPressure(t);
     cycles_CompPressure += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
-    ComputeInteriorLaminarAcceleration(all_particle, t);
+    ComputeInteriorLaminarAcceleration(t);
     cycles_CompAccelerat += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
-    AddRepulsiveForce(all_particle, t);
+    AddRepulsiveForce(t);
     cycles_RepulsiveForce += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
-    Time_Integration(all_particle, dt);
+    Time_Integration(dt);
     cycles_TimeIntegral += (double)stop_tsc(start);
 
     t += dt;
 
+    ClearNeighbors();
+
     //~ // output data to file
-    if ((step + 1) % 100 == 0) {
-       WriteData(all_particle, t);
-    }
-    printf("time t = %f\n", t);
+    // if ((step + 1) % 100 == 0)
+       // WriteData(t);
+    // printf("time t = %f\n", t);
   }
+
+  Destroy();
   
   cycles_all += (double)stop_tsc(start_all);
 

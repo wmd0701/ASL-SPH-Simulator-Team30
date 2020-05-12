@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include "data_set.h"
 
+vector* vali_positions;
 
 vector index_from_coord(vector particle_pos, double x_min, int N, int M, double dx, double dy){
     double x = particle_pos.first;
@@ -17,24 +18,20 @@ vector index_from_coord(vector particle_pos, double x_min, int N, int M, double 
 	return result;
 }
 
-double displace_to_origin(Particle* all_particle){
+double displace_to_origin(){
     double x_min = 100.;
-    for (int i = 1; i < NUMBER_OF_PARTICLE; ++i){
-        if(all_particle[i].tag == repulsive){
-            if(all_particle[i].position.first < x_min){
-                x_min = all_particle[i].position.first;
-            }
-        }
-    }
+    for (int i = N_interior; i < N_interior + N_repulsive; ++i)
+        if(vali_positions[i].first < x_min)
+            x_min = vali_positions[i].first;
     
-    for (int i = 1; i < NUMBER_OF_PARTICLE; ++i){
-        all_particle[i].position.first -= x_min;
+    for (int i = 0; i < NUMBER_OF_PARTICLE; ++i){
+        vali_positions[i].first -= x_min;
     }
     
     return x_min;
 }
 
-double validation(Particle* all_particle, char output_name[], double smoothing_length){
+double validation(char output_name[], double smoothing_length){
     double dx, dy;
     int N, M;
     
@@ -45,7 +42,7 @@ double validation(Particle* all_particle, char output_name[], double smoothing_l
     
     
     //Displace all the particles, such that the left most repulsive particle has position.first = 0
-    double x_min = displace_to_origin(all_particle);
+    double x_min = displace_to_origin();
     
     //Initialize the array which contains the coordinates in which the level set function is computed
     vector* points = (vector*)malloc(sizeof(vector) * (N+2) * (M+2));
@@ -69,37 +66,36 @@ double validation(Particle* all_particle, char output_name[], double smoothing_l
 	double* den = (double*) malloc(sizeof(double)*N*M);
 	
 	//Compute the values of x_avrg_num, r_avrg_num and den
-	for(int p = 0; p < NUMBER_OF_PARTICLE; ++p){
-        if(all_particle[p].tag == interior){
-            vector particle_pos = all_particle[p].position;
-            vector init_cell = index_from_coord(particle_pos, x_min, N, M, dx, dy);
-            is_fluid[(int)init_cell.first + (int)init_cell.second * (N+2)];
-        
-            for(int j = (int)init_cell.second - 1; j <= (int)init_cell.second + 1; ++j){
-                for(int i = (int)init_cell.first - 1; i <= (int)init_cell.first + 1; ++i){
-                    
-                    if (j < 0 || j >= M || i < 0 || i >= N ){
-                        continue;
-                    }
-                    
-                    vector cell;
-                    cell.first = i*dx;
-                    cell.second = j*dy;
-                    int index = i + j*N;
-                    double temp = vec_distance_vec(vec_sub_vec(cell, particle_pos), vec_sub_vec(cell, particle_pos))/h;
-                    
-                    if (temp < 1){
-                        double W_surf = (1-temp*temp)*(1-temp*temp);
-                        vector temp1;
-                        temp1.first = particle_pos.first*W_surf;
-                        temp1.second = particle_pos.second*W_surf;
-                        x_avrg_num[index] = vec_add_vec(x_avrg_num[index], temp1);
-                        *(r_avrg_num + index) += W_surf*0.87*dx;
-                        *(den + index) += W_surf;
-                    }
+	for(int p = 0; p < N_interior; ++p){
+        vector particle_pos = vali_positions[p];
+        vector init_cell = index_from_coord(particle_pos, x_min, N, M, dx, dy);
+        is_fluid[(int)init_cell.first + (int)init_cell.second * (N+2)];
+    
+        for(int j = (int)init_cell.second - 1; j <= (int)init_cell.second + 1; ++j){
+            for(int i = (int)init_cell.first - 1; i <= (int)init_cell.first + 1; ++i){
+                
+                if (j < 0 || j >= M || i < 0 || i >= N ){
+                    continue;
+                }
+                
+                vector cell;
+                cell.first = i*dx;
+                cell.second = j*dy;
+                int index = i + j*N;
+                double temp = vec_distance_vec(vec_sub_vec(cell, particle_pos), vec_sub_vec(cell, particle_pos))/h;
+                
+                if (temp < 1){
+                    double W_surf = (1-temp*temp)*(1-temp*temp);
+                    vector temp1;
+                    temp1.first = particle_pos.first*W_surf;
+                    temp1.second = particle_pos.second*W_surf;
+                    x_avrg_num[index] = vec_add_vec(x_avrg_num[index], temp1);
+                    *(r_avrg_num + index) += W_surf*0.87*dx;
+                    *(den + index) += W_surf;
                 }
             }
         }
+    
     }
         
     //Compute the values of level set function
@@ -165,6 +161,7 @@ double validation(Particle* all_particle, char output_name[], double smoothing_l
             }
         }
     }
+    free(level_set_x005);
 }
 
 double validate(char filename[], char output_name[], double smoothing_length){
@@ -172,7 +169,7 @@ double validate(char filename[], char output_name[], double smoothing_length){
     FILE *fp = fopen(filename, "r");
     if (!fp)
         printf("fail to read the file.\n");
-    Particle *all_particle = (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+    
     char str[1024];
     double x1, x2, v1, v2, m, rho, p, a1, a2;
     int t;
@@ -180,15 +177,17 @@ double validate(char filename[], char output_name[], double smoothing_length){
     for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
         fgets(str, 1024, fp);
         sscanf(str, "%lf,%lf,%d,%lf,%lf,%lf,%lf,%lf,%lf,%lf", &x1, &x2, &t, &v1, &v2, &m, &rho, &p, &a1, &a2);
-        all_particle[i].position.first = x1;
-        all_particle[i].position.second = x2;
-        all_particle[i].tag = t;
+        vali_positions[i].first = x1;
+        vali_positions[i].second = x2;
     }
     
-   return validation(all_particle, output_name, smoothing_length);
+   return validation(output_name, smoothing_length);
 }
 
 void validation_main(){
+    // allocate memory
+    vali_positions = (vector*)malloc(sizeof(vector) * NUMBER_OF_PARTICLE);
+
     char folder_name[60] = "data_sdt_3959/data-"; //to be changed if the number of particles is different from 3959
     char output_name[60] = "level_set_function_3959/data-"; //to be changed if the number of particles is different from 3959
     char file_name1[60];
@@ -234,6 +233,8 @@ void validation_main(){
       point_of_interest[i] = validate(file_name1, file_name2, 0.01603); //to be changed if the number of particles is different from 3959
     }
     
+    free(vali_positions);
+
     //Output of level set function
     FILE *fp = NULL;
     char final_file[40] = "points_of_interest";

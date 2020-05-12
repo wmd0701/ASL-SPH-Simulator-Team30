@@ -11,13 +11,21 @@ void set_output_path(char* output_path){
 	strcpy(folder_name, output_path);
 }
 
+int get_tag(int i){
+	if(i < N_interior)
+		return 0;
+	else if (i < N_interior + N_repulsive)
+		return 1;
+	else
+		return 2;
+}
+
 /**
  * @brief Write data to a .dat file
  * @param all_particle 
  * @param t_now time now
  */
-void WriteData(Particle* all_particle, double t_now) {
-	Particle this_p;
+void WriteData(double t_now) {
 	char file_name[23];
 	char output_path[60];
 	t_now *= 1000000;
@@ -28,17 +36,16 @@ void WriteData(Particle* all_particle, double t_now) {
 	fp = fopen(output_path,"w");
 	fprintf(fp, "x coord, y coord, tag, u, v, rho, p, a1, a2\n"); 
 	for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-		this_p = all_particle[i];
 		fprintf(fp, "%lf, %lf, %d, %lf, %lf, %lf, %lf, %lf, %lf\n",  
-				this_p.position.first,
-				this_p.position.second,
-				this_p.tag,
-				this_p.velocity.first,
-				this_p.velocity.second,
-				this_p.density,
-				this_p.pressure,
-				this_p.accelerat.first,
-				this_p.accelerat.second);
+				positions[i].first,
+				positions[i].second,
+				get_tag(i),
+				velocities[i].first,
+				velocities[i].second,
+				densities[i],
+				pressures[i],
+				accelerats[i].first,
+				accelerats[i].second);
 	}
 	fclose(fp);
 }
@@ -53,7 +60,7 @@ void WritePerformance() {
 	FILE *fp = NULL;
 	fp = fopen(output_path,"w");
 	fprintf(fp, "interior_p, boundary_p, smoothing_length, cycles_DispBoundar, cycles_SearchNeighbor, cycles_CompGlbDensity, cycles_DensityCorr, cycles_CompPressure, cycles_CompAccelerat, cycles_RepulsiveForce, cycles_TimeIntegral, cycles_all\n"); 
-	fprintf(fp, "%d, %d, %.5lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf\n",
+	fprintf(fp, "%d, %d, %.5lf, %.0lf, %.0lf, %.0lf %.0lf, %.0lf, %.0lf, %.0lf, %.0lf, %.0lf\n",
 			N_interior,
 			N_boundary,
 			H,
@@ -70,14 +77,11 @@ void WritePerformance() {
 }
 
 
-void RecordWaveHeight(Particle* all_particle, FILE *fp, double t_now) {
-	int N = NUMBER_OF_PARTICLE;
+void RecordWaveHeight(FILE *fp, double t_now) {
 	double wave_height = 0;
-	for (int i = 0; i < N; i++) {
-		if (all_particle[i].tag == interior && 
-				all_particle[i].position.first < 0.1 && 
-				all_particle[i].position.second > wave_height) {
-			wave_height = all_particle[i].position.second;
+	for (int i = 0; i < N_interior; i++) {
+		if (positions[i].first < 0.1 && positions[i].second > wave_height) {
+			wave_height = positions[i].second;
 		}
 	}
 	fprintf(fp, "%f, %f\n", t_now, wave_height);

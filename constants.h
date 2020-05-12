@@ -21,7 +21,6 @@ int NUMBER_OF_PARTICLE;
 
 double H;  //!< smoothing length
 double Hinv; // 1 / H
-double H2; // H * 2.0
 double Hradius;
 double factor;
 
@@ -47,7 +46,6 @@ double cycles_all            = 0;
 void set_particles_interior(int N) {
   H = (sqrt(2595. * N + 225.) - 15.) / (50. * N);
   Hinv = 1.0 / H;
-  H2 = 2.0 * H;
   Hradius = 2.0 * H;
   factor = 10. / 7. / M_PI / H / H;
   Nx_interior = round(1.73 / H - 1);
