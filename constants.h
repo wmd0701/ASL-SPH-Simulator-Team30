@@ -3,20 +3,25 @@
 #define CONSTANTS_H
 
 
-int N_interior;  // interior particles
-int Nx_interior; // interior particles in x direction
-int Ny_interior; // interior particles in y direction
+int N_interior; 
+int Nx_interior;
+int Ny_interior;
 
-int N_boundary;  // boundary particles
-int Nx_boundary; // boundary particles in x direction
-int Ny_boundary; // boundary particles in y direction
 int N_repulsive;
+int Nx_repulsive;
+int Ny_repulsive;
+
 int N_ghost;
+int Nx_ghost;
+int Ny_ghost;
+
+int N_boundary;
 int NUMBER_OF_PARTICLE;
 
 
 double H;  //!< smoothing length
 double Hinv; // 1 / H
+double H2; // H * 2.0
 double Hradius;
 double factor;
 
@@ -42,22 +47,23 @@ double cycles_all            = 0;
 void set_particles_interior(int N) {
   H = (sqrt(2595. * N + 225.) - 15.) / (50. * N);
   Hinv = 1.0 / H;
+  H2 = 2.0 * H;
   Hradius = 2.0 * H;
   factor = 10. / 7. / M_PI / H / H;
   Nx_interior = round(1.73 / H - 1);
   Ny_interior = round(0.6 / H);
   N_interior = Nx_interior * Ny_interior;
 
-  Nx_boundary = 2 * round(1.73 / H) + 1;
-  Ny_boundary = 2 * round(1.15 / H) + 1;
-  N_boundary = Nx_boundary + 2 * Ny_boundary + 2 * (Nx_boundary + 4) +
-               2 * 2 * Ny_boundary;
-  N_repulsive = Nx_boundary + 2 * Ny_boundary;
-  N_ghost = N_boundary - N_repulsive;
+  Nx_repulsive = 2 * round(1.73 / H) + 1;
+  Ny_repulsive = 2 * round(1.15 / H) + 1;
+  N_repulsive = Nx_repulsive + 2 * Ny_repulsive;
 
-  N_repulsive = 2 * Ny_boundary + Nx_boundary;
-  N_ghost = N_boundary - N_repulsive;
+  Nx_ghost = Nx_repulsive + 4;
+  Ny_ghost = Ny_repulsive;
+  N_ghost = 2 * Nx_ghost + 4 * Ny_ghost;
 
+  N_boundary = N_repulsive + N_ghost;
+  
   mass = H * H * initial_density;
 
   NUMBER_OF_PARTICLE = N_interior + N_boundary;
