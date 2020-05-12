@@ -22,10 +22,7 @@ double TimeLoop() {
   // Euler
   Set_Integration_Method(EXPLICIT_EULER);
 
-  int N = NUMBER_OF_PARTICLE; // get the number of particles
-
   // Initial steps without moving the boundary, also used for heating up CPU
-  // for (int step = 0; step < 20000; step++) {
   for (int step = 0; step < 5000; step++) {
     SearchNeighbors();
     ComputeGlobalDensity();
@@ -42,12 +39,12 @@ double TimeLoop() {
   //-------------------------------------------------------------------
   // MEASURE FROM HERE
   //-------------------------------------------------------------------
-  int overall_step = 1000;
+  int overall_step = 50000;
   start_all = start_tsc();
   for (int step = 0; step < overall_step; step++) {
     // ------------------------
     start = start_tsc();
-    DisplaceBoundaries(t);
+    // DisplaceBoundaries(t);
     cycles_DispBoundary += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
@@ -83,8 +80,8 @@ double TimeLoop() {
     ClearNeighbors();
 
     //~ // output data to file
-    // if ((step + 1) % 100 == 0)
-       // WriteData(t);
+    if ((step + 1) % 100 == 0)
+       WriteData(t);
     // printf("time t = %f\n", t);
   }
 

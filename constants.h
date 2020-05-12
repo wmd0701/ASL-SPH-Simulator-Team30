@@ -24,6 +24,7 @@ double Hinv; // 1 / H
 double Hradius;
 double factor;
 
+int max_num_neighbors = 100; // maximum number of neighbors that a particle can have
 
 const double dam_height = 0.6;
 const double gravity = 9.81;

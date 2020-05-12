@@ -12,8 +12,9 @@
 */
 double ComputeLocalDensity (int ptc_idx) {
 	double sum = 0;
-    for (int j = 0 ; j < neighbor_counts[j] ; j++)
-        sum += Wijs[ptc_idx][j] * mass;
+    int counts = neighbor_counts[ptc_idx];
+    for (int i = 0 ; i < counts ; i++)
+        sum += Wijs[ptc_idx][i] * mass;
 	return sum;
 }
 
@@ -46,8 +47,10 @@ void DensityAndBCVelocityCorrection () {
 		densities[i] /= sum[i];
     
     // if not interior
-    for (int i = N_interior ; i < NUMBER_OF_PARTICLE ; i++)
-        velocities[i] = vec_div_scalar(velocities[i], -sum[i]);
+    for (int i = N_interior ; i < NUMBER_OF_PARTICLE ; i++){
+        velocities[i].first /= (-sum[i]);
+        velocities[i].second /= (-sum[i]);
+    }
 
 	free(sum);
 }
@@ -121,11 +124,12 @@ void ComputeInteriorLaminarAcceleration(double t) {
     double mu_ij, PI_ij;
     vector zero = {0, 0};
 
+    // only for interior particles
     for (int i = 0; i < N_interior; i++) {
         accelerats[i] = zero;
                 
         for (int j = 0; j < neighbor_counts[i]; j++) {
-            int neighbor    = neighbor_indices[i][j];
+            int neighbor    = neighbor_indices[i][j];      // index of neighbor
             vector gradient = Wij_grads[i][j];
             
             // Pressure force
@@ -178,7 +182,7 @@ void AddRepulsiveForce(double t){
     double d = H;
     for (int i = 0; i < N_interior; i++) {
         for (int j = 0; j < neighbor_counts[i]; j++) {
-            int neighbor = neighbor_indices[i][j];
+            int neighbor = neighbor_indices[i][j];  // index of neighbor
             // if neighbor is repulsive 
             if (neighbor >= N_interior && neighbor < N_interior + N_repulsive) {
                 vector xij = vec_sub_vec(positions[neighbor], positions[i]);

@@ -110,6 +110,10 @@ void KernelAndGradient(vector diff, int par_idx_1, int par_idx_2, double r, int 
   }
 
   int count = neighbor_counts[par_idx_1]++;
+  // TODO: remove following 2 lines
+  if(count >= max_num_neighbors - 1)
+    printf("too much neighbors!!!\n");
+
   Wijs            [par_idx_1][count] = kernel;
   Wij_grads       [par_idx_1][count] = grad;
   neighbor_indices[par_idx_1][count] = par_idx_2;
@@ -140,7 +144,7 @@ void SearchNeighbors() {
   for (int i = 0; i < NUMBER_OF_PARTICLE; ++i)
     KernelAndGradient(zero, i, i, 0.0, 0);
 
-  // secondly, check interior-interior pair
+  // secondly, check interior-other pair
   for (int i = 0; i < N_interior; i++) {
     xi = positions[i];
     for (int j = i + 1; j < NUMBER_OF_PARTICLE; j++) {
@@ -187,13 +191,13 @@ void *Init() {
   pressures  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   accelerats = (vector*)calloc(NUMBER_OF_PARTICLE, sizeof(vector));
   
-  Wijs             = (double**)malloc(sizeof(double*)*NUMBER_OF_PARTICLE);
-  Wij_grads        = (vector**)malloc(sizeof(vector*)*NUMBER_OF_PARTICLE);
-  neighbor_indices = (int**   )malloc(sizeof(int**  )*NUMBER_OF_PARTICLE);
+  Wijs             = (double**)calloc(NUMBER_OF_PARTICLE, sizeof(double*));
+  Wij_grads        = (vector**)calloc(NUMBER_OF_PARTICLE, sizeof(vector*));
+  neighbor_indices = (int**   )calloc(NUMBER_OF_PARTICLE, sizeof(int*));
   for(int i = 0 ; i < NUMBER_OF_PARTICLE ; i++){
-    Wijs[i]             = (double*)malloc(sizeof(double) * 40);
-    Wij_grads[i]        = (vector*)malloc(sizeof(vector) * 40);
-    neighbor_indices[i] = (int*   )malloc(sizeof(int   ) * 40); 
+    Wijs[i]             = (double*)calloc(max_num_neighbors, sizeof(double));
+    Wij_grads[i]        = (vector*)calloc(max_num_neighbors, sizeof(vector));
+    neighbor_indices[i] = (int*   )calloc(max_num_neighbors, sizeof(int)); 
   }
   neighbor_counts = (int*)calloc(NUMBER_OF_PARTICLE, sizeof(int));
 
