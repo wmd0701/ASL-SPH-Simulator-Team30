@@ -1,4 +1,4 @@
-//!  @file data_set.h
+//! @file data_set.h
 #ifndef DATA_SET_H
 #define DATA_SET_H
 
@@ -13,42 +13,8 @@ typedef struct vec {
   double second;
 } vector;
 
-// define mul for vector
-vector vec_mul_scalar(const vector v, const double d) {
-  vector vv = {.first = v.first * d, .second = v.second * d};
-  return vv;
-}
-
-// define inner product between vectors
-double vec_dot_vec(const vector v1, const vector v2) {
-  return v1.first * v2.first + v1.second * v2.second;
-}
-
-// define div for vector
-vector vec_div_scalar(const vector v, const double d) {
-  vector vv = {.first = v.first / d, .second = v.second / d};
-  return vv;
-}
-
-// define add for vector
-vector vec_add_vec(const vector v1, const vector v2) {
-  vector vv = {.first = v1.first + v2.first, .second = v1.second + v2.second};
-  return vv;
-}
-
-// define sub for vector
-vector vec_sub_vec(const vector v1, const vector v2) {
-  vector vv = {.first = v1.first - v2.first, .second = v1.second - v2.second};
-  return vv;
-}
-
-// define Euler distance between vectors
-double vec_distance_vec(const vector v1, const vector v2) {
-  return sqrt(pow((v1.first - v2.first), 2) + pow((v1.second - v2.second), 2));
-}
-
-
-
+// zero vector
+vector zero = {0.0, 0.0};
 
 // instead of using array of structs, use now multiple arrays
 vector* positions;
@@ -138,7 +104,6 @@ void ClearNeighbors(){
 void SearchNeighbors() {
   vector xi, xj, diff;
   double r;
-  vector zero = {0.0, 0.0};
   
   // firstly, each particle is neighbor to itself
   for (int i = 0; i < NUMBER_OF_PARTICLE; ++i)
@@ -149,7 +114,7 @@ void SearchNeighbors() {
     xi = positions[i];
     for (int j = i + 1; j < NUMBER_OF_PARTICLE; j++) {
       xj = positions[j];
-			diff = vec_sub_vec(xi, xj);
+			diff = (vector){xi.first - xj.first, xi.second - xj.second};
       r = sqrt(diff.first * diff.first + diff.second * diff.second);
       if (r < Hradius) {
         KernelAndGradient(diff, i, j, r, 1);
@@ -162,7 +127,7 @@ void SearchNeighbors() {
     xi = positions[i];
     for (int j = N_interior; j < N_interior + N_repulsive; j++) {
       xj = positions[j];
-			diff = vec_sub_vec(xi, xj);
+			diff = (vector){xi.first - xj.first, xi.second - xj.second};
       r = sqrt(diff.first * diff.first + diff.second * diff.second);
       if (r < Hradius) {
         KernelAndGradient(diff, i, j, r, 0);

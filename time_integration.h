@@ -1,4 +1,4 @@
-//!     @file time_integration.h
+//! @file time_integration.h
 #ifndef TIME_INTEGRATION_H
 #define TIME_INTEGRATION_H
 
@@ -18,18 +18,22 @@ enum Integration_Method integration;
 void Explicit_Euler (double dt){
 	for(int i = 0 ; i < N_interior ; i++){
 		
-		positions[i] = vec_add_vec(positions[i], vec_mul_scalar(velocities[i], dt));
+		positions[i] = (vector){positions[i].first  + velocities[i].first  * dt, 
+								positions[i].second + velocities[i].second * dt};
 		
-		velocities[i] = vec_add_vec(velocities[i], vec_mul_scalar(accelerats[i], dt));
+		velocities[i] = (vector){velocities[i].first  + accelerats[i].first  * dt,
+								 velocities[i].second + accelerats[i].second * dt};
 	}
 }
 
 void Leap_Frog (double dt){
 	for(int i = 0 ; i < N_interior ; i++){
 		
-		velocities[i] = vec_add_vec(velocities[i], vec_mul_scalar(accelerats[i], dt));
+		velocities[i] = (vector){velocities[i].first  + accelerats[i].first  * dt,
+								 velocities[i].second + accelerats[i].second * dt};
 
-		positions[i] = vec_add_vec(positions[i], vec_mul_scalar(velocities[i], dt));
+		positions[i] = (vector){positions[i].first  + velocities[i].first  * dt, 
+								positions[i].second + velocities[i].second * dt};
 	}
 }
 

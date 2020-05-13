@@ -1,4 +1,4 @@
-//!  @file rate_of_change.h
+//! @file rate_of_change.h
 #ifndef RATE_OF_CHANGE_H
 #define RATE_OF_CHANGE_H
 
@@ -122,7 +122,6 @@ void ComputeInteriorLaminarAcceleration(double t) {
     double c = sqrt(ComputeSoundSpeedSquared(t));
     double alpha = 0.2;
     double mu_ij, PI_ij;
-    vector zero = {0, 0};
 
     // only for interior particles
     for (int i = 0; i < N_interior; i++) {
@@ -141,11 +140,14 @@ void ComputeInteriorLaminarAcceleration(double t) {
             accelerats[i].second -= constant1 * gradient.second;
 
             // Viscosity force
-            vector xij = vec_sub_vec(positions[neighbor], positions[i]);
-            vector vij = vec_sub_vec(velocities[neighbor], velocities[i]);
+            double xij_first  =  positions[neighbor].first  -  positions[i].first;
+            double xij_second =  positions[neighbor].second -  positions[i].second;
+            double vij_first  = velocities[neighbor].first  - velocities[i].first;
+            double vij_second = velocities[neighbor].second - velocities[i].second;
+            double xij_dot_vij = xij_first * vij_first + xij_second + vij_second;
             
-            if (vec_dot_vec(xij, vij) < 0) {
-                mu_ij = H * vec_dot_vec(xij, vij) / (vec_dot_vec(xij, xij) + 0.01 * H * H);
+            if (xij_dot_vij < 0) {
+                mu_ij = H * xij_dot_vij / ((xij_first*xij_first + xij_second*xij_second) + 0.01 * H * H);
                 PI_ij = - alpha *c * mu_ij / (densities[i] + densities[neighbor]);
                 accelerats[i].first  -= mass * PI_ij * gradient.first;
                 accelerats[i].second -= mass * PI_ij * gradient.second;
@@ -185,8 +187,9 @@ void AddRepulsiveForce(double t){
             int neighbor = neighbor_indices[i][j];  // index of neighbor
             // if neighbor is repulsive 
             if (neighbor >= N_interior && neighbor < N_interior + N_repulsive) {
-                vector xij = vec_sub_vec(positions[neighbor], positions[i]);
-                double r2 = vec_dot_vec(xij, xij);
+                double xij_first  = positions[neighbor].first  - positions[i].first;
+                double xij_second = positions[neighbor].second - positions[i].second;
+                double r2 = xij_first*xij_first + xij_second*xij_second;
                 double r = sqrt(r2);
                 double c2 = ComputeSoundSpeedSquared(t);
                 double eta = r / (0.75 * H);
@@ -194,8 +197,8 @@ void AddRepulsiveForce(double t){
                     double chi = 1 - r / d;
                     double constant = 0.01 * c2 * chi * f(eta) / r2;
                     
-                    accelerats[i].first -= constant * xij.first;
-                    accelerats[i].second -= constant * xij.second;
+                    accelerats[i].first -= constant * xij_first;
+                    accelerats[i].second -= constant * xij_second;
                 }
             }
         }
