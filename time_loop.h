@@ -48,10 +48,10 @@ double TimeLoop() {
   start_all = start_tsc();
   for (int step = 0; step < overall_step; step++) {
     // ------------------------
-    start = start_tsc();
-    if(integration == HEUN || integration == MIDPOINT)
-      Time_Integration_Half(all_particle, dt);
-    cycles_TimeIntegral += (double)stop_tsc(start);
+    //~ start = start_tsc();
+    //~ if(integration == HEUN || integration == MIDPOINT)
+      //~ Time_Integration_Half(all_particle, dt);
+    //~ cycles_TimeIntegral += (double)stop_tsc(start);
     // ------------------------
     start = start_tsc();
     DisplaceBoundaries(all_particle, initial_configuration, t);
