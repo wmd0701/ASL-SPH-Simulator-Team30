@@ -149,9 +149,9 @@ void SearchNeighbors() {
     xi = positions[i];
     for (int j = i + 1; j < NUMBER_OF_PARTICLE; j++) {
       xj = positions[j];
-      r = vec_distance_vec(xi, xj);
+			diff = vec_sub_vec(xi, xj);
+      r = sqrt(diff.first * diff.first + diff.second * diff.second);
       if (r < Hradius) {
-        diff = vec_sub_vec(xi, xj);
         KernelAndGradient(diff, i, j, r, 1);
       }
     }
@@ -162,9 +162,9 @@ void SearchNeighbors() {
     xi = positions[i];
     for (int j = N_interior; j < N_interior + N_repulsive; j++) {
       xj = positions[j];
-      r = vec_distance_vec(xi, xj);
+			diff = vec_sub_vec(xi, xj);
+      r = sqrt(diff.first * diff.first + diff.second * diff.second);
       if (r < Hradius) {
-        diff = vec_sub_vec(xi, xj);
         KernelAndGradient(diff, i, j, r, 0);
       }
     }
