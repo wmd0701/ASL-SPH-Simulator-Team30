@@ -237,38 +237,6 @@ void Destroy(){
   free(init_velocities);
 }
 
-/**
- * 		@brief initialize from existing data file
- * 		@return pointer to all particles
- */
-
-/*
-  !!! comment out Read_Init to simplify work
-
-  Particle *Read_Init(char filename[]) {
-  FILE *fp = fopen(filename, "r");
-  if (!fp)
-    printf("fail to read the file.\n");
-  Particle *all_particle =
-      (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
-  char *str;
-  double x1, x2, v1, v2, m;
-  int t;
-  fgets(str, 99, fp);
-  for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-    fgets(str, 99, fp);
-    sscanf(str, "%lf,%lf,%d,%lf,%lf,%lf", &x1, &x2, &t, &v1, &v2, &m);
-    all_particle[i].position.first = x1;
-    all_particle[i].position.second = x2;
-    all_particle[i].tag = t;
-    all_particle[i].velocity.first = v1;
-    all_particle[i].velocity.second = v2;
-  }
-  SearchNeighbors(all_particle);
-  return all_particle;
-}
-*/
-
 #endif // DATA_SET_H
 
 
