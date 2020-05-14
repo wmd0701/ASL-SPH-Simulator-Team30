@@ -23,7 +23,7 @@ double TimeLoop() {
   Set_Integration_Method(EXPLICIT_EULER);
 
   // Initial steps without moving the boundary, also used for heating up CPU
-  for (int step = 0; step < 5000; step++) {
+  for (int step = 0; step < 2000; step++) {
     SearchNeighbors();
     ComputeGlobalDensity();
     DensityAndBCVelocityCorrection();
@@ -79,10 +79,10 @@ double TimeLoop() {
 
     ClearNeighbors();
 
-    //~ // output data to file
-    // if ((step + 1) % 100 == 0)
-    //   WriteData(t);
-    // printf("time t = %f\n", t);
+    // output data to file
+    //~ if ((step + 1) % 100 == 0)
+      //~ WriteData(t);
+    //~ printf("time t = %f\n", t);
   }
 
   Destroy();

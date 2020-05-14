@@ -144,7 +144,7 @@ void ComputeInteriorLaminarAcceleration(double t) {
             double xij_second =  positions[neighbor].second -  positions[i].second;
             double vij_first  = velocities[neighbor].first  - velocities[i].first;
             double vij_second = velocities[neighbor].second - velocities[i].second;
-            double xij_dot_vij = xij_first * vij_first + xij_second + vij_second;
+            double xij_dot_vij = xij_first * vij_first + xij_second * vij_second;
             
             if (xij_dot_vij < 0) {
                 mu_ij = H * xij_dot_vij / ((xij_first*xij_first + xij_second*xij_second) + 0.01 * H * H);
