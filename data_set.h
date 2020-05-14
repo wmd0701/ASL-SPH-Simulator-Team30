@@ -31,12 +31,6 @@ int* neighbor_counts;
 vector* init_positions;
 vector* init_velocities;
 
-
-
-
-
-
-
 /**
  *      @brief Add neighbors for one/two particle(s), meanwhile compute the kernel and gradient
  *      @param par_idx_1 index of particle_1
@@ -87,7 +81,7 @@ void KernelAndGradient(vector diff, int par_idx_1, int par_idx_2, double r, int 
   if (bi_directional == 1) {
     grad.first = -grad.first;
     grad.second = -grad.second;
-    
+
     count = neighbor_counts[par_idx_2]++;
     Wijs            [par_idx_2][count] = kernel;
     Wij_grads       [par_idx_2][count] = grad;
@@ -104,7 +98,7 @@ void ClearNeighbors(){
 void SearchNeighbors() {
   vector xi, xj, diff;
   double r;
-  
+
   // firstly, each particle is neighbor to itself
   for (int i = 0; i < NUMBER_OF_PARTICLE; ++i)
     KernelAndGradient(zero, i, i, 0.0, 0);
@@ -114,7 +108,7 @@ void SearchNeighbors() {
     xi = positions[i];
     for (int j = i + 1; j < NUMBER_OF_PARTICLE; j++) {
       xj = positions[j];
-			diff = (vector){xi.first - xj.first, xi.second - xj.second};
+      diff = (vector){xi.first - xj.first, xi.second - xj.second};
       r = sqrt(diff.first * diff.first + diff.second * diff.second);
       if (r < Hradius) {
         KernelAndGradient(diff, i, j, r, 1);
@@ -127,7 +121,7 @@ void SearchNeighbors() {
     xi = positions[i];
     for (int j = N_interior; j < N_interior + N_repulsive; j++) {
       xj = positions[j];
-			diff = (vector){xi.first - xj.first, xi.second - xj.second};
+      diff = (vector){xi.first - xj.first, xi.second - xj.second};
       r = sqrt(diff.first * diff.first + diff.second * diff.second);
       if (r < Hradius) {
         KernelAndGradient(diff, i, j, r, 0);
@@ -155,7 +149,7 @@ void *Init() {
   densities  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   pressures  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   accelerats = (vector*)calloc(NUMBER_OF_PARTICLE, sizeof(vector));
-  
+
   Wijs             = (double**)calloc(NUMBER_OF_PARTICLE, sizeof(double*));
   Wij_grads        = (vector**)calloc(NUMBER_OF_PARTICLE, sizeof(vector*));
   neighbor_indices = (int**   )calloc(NUMBER_OF_PARTICLE, sizeof(int*));
@@ -238,9 +232,3 @@ void Destroy(){
 }
 
 #endif // DATA_SET_H
-
-
-	
-
-
- 
