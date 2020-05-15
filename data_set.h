@@ -37,9 +37,8 @@ vector* init_velocities;
  *      @param par_idx_2 index of particle_2
  *      @param diff  position(1) - position(2)
  *      @param r distance of two particles
- *      @param bi_directional: 1 if two particles are neighbor to each other, otherwise 0
  */
-void KernelAndGradient(vector diff, int par_idx_1, int par_idx_2, double r, int bi_directional) {
+void KernelAndGradient_unidirectional(vector diff, int par_idx_1, int par_idx_2, double r) {
   double kernel;
   vector grad;
   double q = r * Hinv;
@@ -62,32 +61,66 @@ void KernelAndGradient(vector diff, int par_idx_1, int par_idx_2, double r, int 
     temp = -factor * 0.75 * c * Hinv / r;
     grad.first = temp * diff.first;
     grad.second = temp * diff.second;
-  } else {
-    printf("Something wrong with SearchnNeighbors.");
-    kernel = 0;
-    grad.first = 0;
-    grad.second = 0;
   }
 
   int count = neighbor_counts[par_idx_1]++;
-  // TODO: remove following 2 lines
-  if(count >= max_num_neighbors - 1)
-    printf("too much neighbors!!!\n");
-
+  
   Wijs            [par_idx_1][count] = kernel;
   Wij_grads       [par_idx_1][count] = grad;
   neighbor_indices[par_idx_1][count] = par_idx_2;
 
-  if (bi_directional == 1) {
-    grad.first = -grad.first;
-    grad.second = -grad.second;
+}
 
-    count = neighbor_counts[par_idx_2]++;
-    Wijs            [par_idx_2][count] = kernel;
-    Wij_grads       [par_idx_2][count] = grad;
-    neighbor_indices[par_idx_2][count] = par_idx_1;
+void KernelAndGradient_bidirectional(vector diff, int par_idx_1, int par_idx_2, double r) {
+  double kernel;
+  vector grad;
+  double q = r * Hinv;
+  double q2 = q * q;
+  double temp, c;
+
+  if (q <= 1.) {
+    kernel = factor * (1. - 1.5 * q2 * (1. - 0.5 * q));
+    if (1.0e-12 <= q) {
+      temp = factor * (-3. * q + 2.25 * q2) * Hinv / r;
+      grad.first = temp * diff.first;
+      grad.second = temp * diff.second;
+    } else {
+      grad.first = 0.;
+      grad.second = 0.;
+    }
+  } else if (1. <= q && q <= 2.) {
+    c = (2.0 - q) * (2.0 - q);
+    kernel = factor * 0.25 * c * (2.0 - q);
+    temp = -factor * 0.75 * c * Hinv / r;
+    grad.first = temp * diff.first;
+    grad.second = temp * diff.second;
   }
 
+  int count = neighbor_counts[par_idx_1]++;
+  
+  Wijs            [par_idx_1][count] = kernel;
+  Wij_grads       [par_idx_1][count] = grad;
+  neighbor_indices[par_idx_1][count] = par_idx_2;
+
+  grad.first = -grad.first;
+  grad.second = -grad.second;
+
+  count = neighbor_counts[par_idx_2]++;
+  Wijs            [par_idx_2][count] = kernel;
+  Wij_grads       [par_idx_2][count] = grad;
+  neighbor_indices[par_idx_2][count] = par_idx_1;
+
+}
+
+void KernelAndGradient_zero(int par_idx_1, int par_idx_2) {
+  double kernel = factor;
+  vector grad   = zero;
+  
+  int count = neighbor_counts[par_idx_1]++;
+  
+  Wijs            [par_idx_1][count] = kernel;
+  Wij_grads       [par_idx_1][count] = grad;
+  neighbor_indices[par_idx_1][count] = par_idx_2;
 }
 
 void ClearNeighbors(){
@@ -101,7 +134,7 @@ void SearchNeighbors() {
 
   // firstly, each particle is neighbor to itself
   for (int i = 0; i < NUMBER_OF_PARTICLE; ++i)
-    KernelAndGradient(zero, i, i, 0.0, 0);
+    KernelAndGradient_zero(i, i);
 
   // secondly, check interior-other pair
   for (int i = 0; i < N_interior; i++) {
@@ -111,7 +144,7 @@ void SearchNeighbors() {
       diff = (vector){xi.first - xj.first, xi.second - xj.second};
       r = sqrt(diff.first * diff.first + diff.second * diff.second);
       if (r < Hradius) {
-        KernelAndGradient(diff, i, j, r, 1);
+        KernelAndGradient_bidirectional(diff, i, j, r);
       }
     }
   }
@@ -124,7 +157,7 @@ void SearchNeighbors() {
       diff = (vector){xi.first - xj.first, xi.second - xj.second};
       r = sqrt(diff.first * diff.first + diff.second * diff.second);
       if (r < Hradius) {
-        KernelAndGradient(diff, i, j, r, 0);
+        KernelAndGradient_unidirectional(diff, i, j, r);
       }
     }
   }
@@ -174,7 +207,7 @@ void *Init() {
   for (int i = 0; i < Nx_repulsive; i++)
     positions[now++] = (vector){i * H / 2., 0};
 
-  for (int j = 0; j < Ny_repulsive; j++)
+  for (int j = 1; j < Ny_repulsive; j++)
     positions[now++] = (vector){0, j * H / 2.};
 
   for (int j = 0; j < Ny_repulsive; j++)
