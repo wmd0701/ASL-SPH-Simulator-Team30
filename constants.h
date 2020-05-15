@@ -40,6 +40,7 @@ void set_particles_interior(int N) {
   Ny_boundary = 2 * round(1.15 / H) + 1;
   N_boundary = Nx_boundary + 2 * Ny_boundary + 2 * (Nx_boundary + 4) +
                2 * 2 * Ny_boundary;
+  N_boundary -= 1;
 
   NUMBER_OF_PARTICLE = N_interior + N_boundary;
   printf("interior particles: %i (x: %i, y: %i)\nboundary particles: "

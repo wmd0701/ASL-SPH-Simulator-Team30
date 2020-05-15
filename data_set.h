@@ -278,7 +278,7 @@ Particle *Init() {
     ++now;
   }
 
-  for (int j = 0; j < Ny_boundary; j++) {
+  for (int j = 1; j < Ny_boundary; j++) {
     particles[now].position.first = 0;
     particles[now].position.second = j * H / 2;
     particles[now].tag = repulsive;
