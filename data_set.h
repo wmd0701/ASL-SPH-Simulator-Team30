@@ -115,8 +115,7 @@ void KernelAndGradient_bidirectional(vector diff, int par_idx_1, int par_idx_2, 
 void KernelAndGradient_zero(int par_idx_1, int par_idx_2) {
   double kernel = factor;
   vector grad   = zero;
-  double temp, c;
-
+  
   int count = neighbor_counts[par_idx_1]++;
   
   Wijs            [par_idx_1][count] = kernel;
