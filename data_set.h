@@ -207,7 +207,7 @@ void *Init() {
   for (int i = 0; i < Nx_repulsive; i++)
     positions[now++] = (vector){i * H / 2., 0};
 
-  for (int j = 0; j < Ny_repulsive; j++)
+  for (int j = 1; j < Ny_repulsive; j++)
     positions[now++] = (vector){0, j * H / 2.};
 
   for (int j = 0; j < Ny_repulsive; j++)
