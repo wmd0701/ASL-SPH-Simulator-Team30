@@ -39,7 +39,7 @@ double TimeLoop() {
   //-------------------------------------------------------------------
   // MEASURE FROM HERE
   //-------------------------------------------------------------------
-  int overall_step = 50000;
+  int overall_step = 1000;
   start_all = start_tsc();
   for (int step = 0; step < overall_step; step++) {
     // ------------------------
@@ -80,8 +80,8 @@ double TimeLoop() {
     ClearNeighbors();
 
     // output data to file
-    if ((step + 1) % 100 == 0)
-       WriteData(t);
+    //~ if ((step + 1) % 100 == 0)
+      //~ WriteData(t);
     //~ printf("time t = %f\n", t);
   }
 
