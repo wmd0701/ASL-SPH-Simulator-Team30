@@ -39,7 +39,7 @@ double TimeLoop() {
   //-------------------------------------------------------------------
   // MEASURE FROM HERE
   //-------------------------------------------------------------------
-  int overall_step = 10000;
+  int overall_step = 50000;
   start_all = start_tsc();
   for (int step = 0; step < overall_step; step++) {
     // ------------------------
