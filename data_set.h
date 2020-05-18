@@ -42,20 +42,21 @@ void KernelAndGradient_unidirectional(vector diff, int par_idx_1, int par_idx_2,
   double kernel;
   vector grad;
   double q = r * Hinv;
-  double q2 = q * q;
+  double q_square = q * q;
   double temp, c;
 
   if (q <= 1.) {
-    kernel = factor * (1. - 1.5 * q2 * (1. - 0.5 * q));
+    kernel = factor * (1. - 1.5 * q_square * (1. - 0.5 * q));
     if (1.0e-12 <= q) {
-      temp = factor * (-3. * q + 2.25 * q2) * Hinv / r;
+      temp = factor * (-3. * q + 2.25 * q_square) * Hinv / r;
       grad.first = temp * diff.first;
       grad.second = temp * diff.second;
     } else {
       grad.first = 0.;
       grad.second = 0.;
     }
-  } else if (1. <= q && q <= 2.) {
+  } 
+  else {
     c = (2.0 - q) * (2.0 - q);
     kernel = factor * 0.25 * c * (2.0 - q);
     temp = -factor * 0.75 * c * Hinv / r;
@@ -75,20 +76,21 @@ void KernelAndGradient_bidirectional(vector diff, int par_idx_1, int par_idx_2, 
   double kernel;
   vector grad;
   double q = r * Hinv;
-  double q2 = q * q;
+  double q_square = q * q;
   double temp, c;
 
   if (q <= 1.) {
-    kernel = factor * (1. - 1.5 * q2 * (1. - 0.5 * q));
+    kernel = factor * (1. - 1.5 * q_square * (1. - 0.5 * q));
     if (1.0e-12 <= q) {
-      temp = factor * (-3. * q + 2.25 * q2) * Hinv / r;
+      temp = factor * (-3. * q + 2.25 * q_square) * Hinv / r;
       grad.first = temp * diff.first;
       grad.second = temp * diff.second;
     } else {
       grad.first = 0.;
       grad.second = 0.;
     }
-  } else if (1. <= q && q <= 2.) {
+  } 
+  else {
     c = (2.0 - q) * (2.0 - q);
     kernel = factor * 0.25 * c * (2.0 - q);
     temp = -factor * 0.75 * c * Hinv / r;
@@ -104,7 +106,6 @@ void KernelAndGradient_bidirectional(vector diff, int par_idx_1, int par_idx_2, 
 
   grad.first = -grad.first;
   grad.second = -grad.second;
-
   count = neighbor_counts[par_idx_2]++;
   Wijs            [par_idx_2][count] = kernel;
   Wij_grads       [par_idx_2][count] = grad;
@@ -112,15 +113,15 @@ void KernelAndGradient_bidirectional(vector diff, int par_idx_1, int par_idx_2, 
 
 }
 
-void KernelAndGradient_zero(int par_idx_1, int par_idx_2) {
+void KernelAndGradient_zero(int par_idx) {
   double kernel = factor;
   vector grad   = zero;
   
-  int count = neighbor_counts[par_idx_1]++;
+  int count = neighbor_counts[par_idx]++;
   
-  Wijs            [par_idx_1][count] = kernel;
-  Wij_grads       [par_idx_1][count] = grad;
-  neighbor_indices[par_idx_1][count] = par_idx_2;
+  Wijs            [par_idx][count] = kernel;
+  Wij_grads       [par_idx][count] = grad;
+  neighbor_indices[par_idx][count] = par_idx;
 }
 
 void ClearNeighbors(){
@@ -131,15 +132,71 @@ void ClearNeighbors(){
 void SearchNeighbors() {
   vector xi, xj, diff;
   double r;
+  int block_size = 30;          // size of block
+  int block_end_i, block_end_j; // end of array that fits into block, e.g. if array size is 230, block size is 50, then block end is 200, 
+                                // the array can be divided into 4 block, with 30 elements left that do not fit into a block
+  int block_i, block_j;         // begin of block
+  int limit_i, limit_j;         //  end  of block
+  
 
+  //---------------------------------------------------------------------------
   // firstly, each particle is neighbor to itself
   for (int i = 0; i < NUMBER_OF_PARTICLE; ++i)
-    KernelAndGradient_zero(i, i);
-
+    KernelAndGradient_zero(i);
+  //---------------------------------------------------------------------------
   // secondly, check interior-other pair
-  for (int i = 0; i < N_interior; i++) {
+  block_end_i = N_interior - N_interior % block_size;
+  block_end_j = NUMBER_OF_PARTICLE - NUMBER_OF_PARTICLE % block_size;
+  for (block_i = 0 ; block_i < block_end_i ; block_i += block_size){
+    // search neighbor inside a block
+    limit_i = block_i + block_size;
+    limit_j = limit_i;
+    for (int i = block_i ; i < limit_i ; i++){
+      xi = positions[i];
+      for (int j = i + 1 ; j < limit_j ; j++){
+        xj = positions[j];
+        diff = (vector){xi.first - xj.first, xi.second - xj.second};
+        r = sqrt(diff.first * diff.first + diff.second * diff.second);
+        if (r < Hradius) {
+          KernelAndGradient_bidirectional(diff, i, j, r);
+        }
+      }
+    }
+
+    // search neighbor between two blocks
+    for (block_j = block_i + block_size ; block_j < block_end_j ; block_j += block_size){
+      limit_j = block_j + block_size;
+      for (int i = block_i ; i < limit_i ; i++){
+        xi = positions[i];
+        for (int j = block_j ; j < limit_j ; j++){
+          xj = positions[j];
+          diff = (vector){xi.first - xj.first, xi.second - xj.second};
+          r = sqrt(diff.first * diff.first + diff.second * diff.second);
+          if (r < Hradius) {
+            KernelAndGradient_bidirectional(diff, i, j, r);
+          }
+        }
+      }
+    }
+
+    // rest part that does not fit into block_j
+    for (int i = block_i ; i < limit_i ; i++){
+      xi = positions[i];
+      for (int j = block_end_j ; j < NUMBER_OF_PARTICLE ; j++){
+        xj = positions[j];
+        diff = (vector){xi.first - xj.first, xi.second - xj.second};
+        r = sqrt(diff.first * diff.first + diff.second * diff.second);
+        if (r < Hradius) {
+          KernelAndGradient_bidirectional(diff, i, j, r);
+        }
+      }
+    }
+
+  }
+  // rest part that does not fit into block_i
+  for(int i = block_end_i ; i < N_interior ; i++){
     xi = positions[i];
-    for (int j = i + 1; j < NUMBER_OF_PARTICLE; j++) {
+    for (int j = i + 1 ; j < NUMBER_OF_PARTICLE ; j++){
       xj = positions[j];
       diff = (vector){xi.first - xj.first, xi.second - xj.second};
       r = sqrt(diff.first * diff.first + diff.second * diff.second);
@@ -148,11 +205,47 @@ void SearchNeighbors() {
       }
     }
   }
-
+  //---------------------------------------------------------------------------
   // lastly, check repulsive-ghost pair
-  for (int i = N_interior + N_repulsive; i < NUMBER_OF_PARTICLE; i++) {
+  block_end_i = NUMBER_OF_PARTICLE - N_ghost % block_size;
+  block_end_j = N_interior + N_repulsive - N_repulsive % block_size;
+  for (block_i = N_interior + N_repulsive ; block_i < block_end_i ; block_i += block_size){
+    limit_i = block_i + block_size;
+    
+    // search neighbor between two blocks
+    for (block_j = N_interior ; block_j < block_end_j ; block_j += block_size){
+      limit_j = block_j + block_size;
+      for (int i = block_i ; i < limit_i ; i++){
+        xi = positions[i];
+        for (int j = block_j ; j < limit_j ; j++){
+          xj = positions[j];
+          diff = (vector){xi.first - xj.first, xi.second - xj.second};
+          r = sqrt(diff.first * diff.first + diff.second * diff.second);
+          if (r < Hradius) {
+            KernelAndGradient_unidirectional(diff, i, j, r);
+          }
+        }
+      }
+    }
+
+    // rest part that does not fit into block_j
+    for (int i = block_i ; i < limit_i ; i++){
+      xi = positions[i];
+      for (int j = block_end_j ; j < N_interior + N_repulsive ; j++){
+        xj = positions[j];
+        diff = (vector){xi.first - xj.first, xi.second - xj.second};
+        r = sqrt(diff.first * diff.first + diff.second * diff.second);
+        if (r < Hradius) {
+          KernelAndGradient_unidirectional(diff, i, j, r);
+        }
+      }
+    }
+
+  }
+  // rest part that does not fit into block_i
+  for(int i = block_end_i ; i < NUMBER_OF_PARTICLE ; i++){
     xi = positions[i];
-    for (int j = N_interior; j < N_interior + N_repulsive; j++) {
+    for (int j = N_interior ; j < N_interior + N_repulsive ; j++){
       xj = positions[j];
       diff = (vector){xi.first - xj.first, xi.second - xj.second};
       r = sqrt(diff.first * diff.first + diff.second * diff.second);
@@ -161,6 +254,8 @@ void SearchNeighbors() {
       }
     }
   }
+
+  
 }
 
 
