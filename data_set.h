@@ -140,18 +140,18 @@ void SearchNeighbors() {
   
 
   //---------------------------------------------------------------------------
-  // firstly, each particle is neighbor to itself
-  for (int i = 0; i < NUMBER_OF_PARTICLE; ++i)
-    KernelAndGradient_zero(i);
-  //---------------------------------------------------------------------------
-  // secondly, check interior-other pair
+  // firstly, check interior-interior pair
   block_end_i = N_interior - N_interior % block_size;
-  block_end_j = NUMBER_OF_PARTICLE - NUMBER_OF_PARTICLE % block_size;
+  // block_end_j = NUMBER_OF_PARTICLE - NUMBER_OF_PARTICLE % block_size;
+  block_end_j = block_end_i;
   for (block_i = 0 ; block_i < block_end_i ; block_i += block_size){
     // search neighbor inside a block
     limit_i = block_i + block_size;
     limit_j = limit_i;
     for (int i = block_i ; i < limit_i ; i++){
+      // each particle is neighbor to itself
+      KernelAndGradient_zero(i);
+
       xi = positions[i];
       for (int j = i + 1 ; j < limit_j ; j++){
         xj = positions[j];
@@ -182,7 +182,7 @@ void SearchNeighbors() {
     // rest part that does not fit into block_j
     for (int i = block_i ; i < limit_i ; i++){
       xi = positions[i];
-      for (int j = block_end_j ; j < NUMBER_OF_PARTICLE ; j++){
+      for (int j = block_end_j ; j < N_interior ; j++){
         xj = positions[j];
         diff = (vector){xi.first - xj.first, xi.second - xj.second};
         r = sqrt(diff.first * diff.first + diff.second * diff.second);
@@ -195,8 +195,11 @@ void SearchNeighbors() {
   }
   // rest part that does not fit into block_i
   for(int i = block_end_i ; i < N_interior ; i++){
+    // each particle is neighbor to itself
+    KernelAndGradient_zero(i);
+
     xi = positions[i];
-    for (int j = i + 1 ; j < NUMBER_OF_PARTICLE ; j++){
+    for (int j = i + 1 ; j < N_interior ; j++){
       xj = positions[j];
       diff = (vector){xi.first - xj.first, xi.second - xj.second};
       r = sqrt(diff.first * diff.first + diff.second * diff.second);
@@ -206,7 +209,62 @@ void SearchNeighbors() {
     }
   }
   //---------------------------------------------------------------------------
-  // lastly, check repulsive-ghost pair
+  // secondly, check boundary-interior pair, here boundary = repulsive + ghost
+  block_end_i = NUMBER_OF_PARTICLE - (N_repulsive + N_ghost) % block_size;
+  block_end_j = N_interior - N_interior % block_size;
+  for (block_i = N_interior ; block_i < block_end_i ; block_i += block_size){
+    limit_i = block_i + block_size;
+    
+    // search neighbor between two blocks
+    for (block_j = 0 ; block_j < block_end_j ; block_j += block_size){
+      limit_j = block_j + block_size;
+      for (int i = block_i ; i < limit_i ; i++){
+        // each particle is neighbor to itself
+        KernelAndGradient_zero(i);
+
+        xi = positions[i];
+        for (int j = block_j ; j < limit_j ; j++){
+          xj = positions[j];
+          diff = (vector){xi.first - xj.first, xi.second - xj.second};
+          r = sqrt(diff.first * diff.first + diff.second * diff.second);
+          if (r < Hradius) {
+            KernelAndGradient_bidirectional(diff, i, j, r);
+          }
+        }
+      }
+    }
+
+    // rest part that does not fit into block_j
+    for (int i = block_i ; i < limit_i ; i++){
+      xi = positions[i];
+      for (int j = block_end_j ; j < N_interior ; j++){
+        xj = positions[j];
+        diff = (vector){xi.first - xj.first, xi.second - xj.second};
+        r = sqrt(diff.first * diff.first + diff.second * diff.second);
+        if (r < Hradius) {
+          KernelAndGradient_bidirectional(diff, i, j, r);
+        }
+      }
+    }
+
+  }
+  // rest part that does not fit into block_i
+  for(int i = block_end_i ; i < NUMBER_OF_PARTICLE ; i++){
+    // each particle is neighbor to itself
+    KernelAndGradient_zero(i);
+
+    xi = positions[i];
+    for (int j = 0 ; j < N_interior ; j++){
+      xj = positions[j];
+      diff = (vector){xi.first - xj.first, xi.second - xj.second};
+      r = sqrt(diff.first * diff.first + diff.second * diff.second);
+      if (r < Hradius) {
+        KernelAndGradient_bidirectional(diff, i, j, r);
+      }
+    }
+  }
+  //---------------------------------------------------------------------------
+  // thirdly, check ghost-repulsive pair
   block_end_i = NUMBER_OF_PARTICLE - N_ghost % block_size;
   block_end_j = N_interior + N_repulsive - N_repulsive % block_size;
   for (block_i = N_interior + N_repulsive ; block_i < block_end_i ; block_i += block_size){
