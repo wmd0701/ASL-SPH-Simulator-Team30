@@ -706,7 +706,7 @@ void SearchNeighbors() {
     xi = positions[i];
 
     // unrolling with factor 2
-    for (j = block_end_j ; j <= unrolling_limit ; j += unrolling_factor2){
+    for (j = N_interior ; j <= unrolling_limit ; j += unrolling_factor2){
       xj1 = positions[j];
       xj2 = positions[j + 1];
       xj3 = positions[j + 2];
