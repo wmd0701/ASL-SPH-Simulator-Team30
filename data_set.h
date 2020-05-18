@@ -132,7 +132,7 @@ void ClearNeighbors(){
 void SearchNeighbors() {
   vector xi, xj, diff;
   double r;
-  int block_size = 30;          // size of block
+  int block_size = 60;          // size of block
   int block_end_i, block_end_j; // end of array that fits into block, e.g. if array size is 230, block size is 50, then block end is 200, 
                                 // the array can be divided into 4 block, with 30 elements left that do not fit into a block
   int block_i, block_j;         // begin of block
