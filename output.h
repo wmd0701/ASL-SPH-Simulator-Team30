@@ -37,15 +37,15 @@ void WriteData(double t_now) {
 	fprintf(fp, "x coord, y coord, tag, u, v, rho, p, a1, a2\n"); 
 	for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
 		fprintf(fp, "%lf, %lf, %d, %lf, %lf, %lf, %lf, %lf, %lf\n",  
-				positions[i].first,
-				positions[i].second,
+				x_positions[i],
+				y_positions[i],
 				get_tag(i),
-				velocities[i].first,
-				velocities[i].second,
+				x_velocities[i],
+				y_velocities[i],
 				densities[i],
 				pressures[i],
-				accelerats[i].first,
-				accelerats[i].second);
+				x_accelerats[i],
+				y_accelerats[i]);
 	}
 	fclose(fp);
 }
@@ -74,18 +74,6 @@ void WritePerformance() {
 			cycles_TimeIntegral,
 			cycles_all	);
 	fclose(fp);
-}
-
-
-void RecordWaveHeight(FILE *fp, double t_now) {
-	double wave_height = 0;
-	for (int i = 0; i < N_interior; i++) {
-		if (positions[i].first < 0.1 && positions[i].second > wave_height) {
-			wave_height = positions[i].second;
-		}
-	}
-	fprintf(fp, "%f, %f\n", t_now, wave_height);
-	return;
 }
 
 #endif // OUTPUT_H

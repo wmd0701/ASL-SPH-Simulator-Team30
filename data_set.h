@@ -7,38 +7,35 @@
 #include <math.h>
 #include "constants.h"
 
-// struct for position, velocity, grad
-typedef struct vec {
-  double first;
-  double second;
-} vector;
-
-// zero vector
-vector zero = {0.0, 0.0};
-
 // instead of using array of structs, use now multiple arrays
-vector* positions;
-vector* velocities;
+double* x_positions;
+double* y_positions;
+double* x_velocities;
+double* y_velocities;
 double* densities;
 double* pressures;
-vector* accelerats;
+double* x_accelerats;
+double* y_accelerats;
 double** Wijs;
-vector** Wij_grads;
+double** x_Wij_grads;
+double** y_Wij_grads;
 int** neighbor_indices;
 int* neighbor_counts;
 
 // initial positions and velocities of boundary particles, used for DisplaceBoundaries in rate_of_change.h
-vector* init_positions;
-vector* init_velocities;
+double* x_init_positions;
+double* y_init_positions;
+double* x_init_velocities;
+double* y_init_velocities;
 
 void KernelAndGradient_zero(int par_idx) {
   double kernel = factor;
-  vector grad   = zero;
   
   int count = neighbor_counts[par_idx]++;
   
   Wijs            [par_idx][count] = kernel;
-  Wij_grads       [par_idx][count] = grad;
+  x_Wij_grads     [par_idx][count] = 0.;
+  y_Wij_grads     [par_idx][count] = 0.;
   neighbor_indices[par_idx][count] = par_idx;
 }
 
@@ -51,75 +48,70 @@ void KernelAndGradient_zero(int par_idx) {
  */
 void KernelAndGradient_unidirectional(double x_diff, double y_diff, int par_idx_1, int par_idx_2, double r) {
   double kernel;
-  vector grad;
+  double x_grad;
+  double y_grad;
   double q = r * Hinv;
   double q_square = q * q;
   double temp, c;
 
   if (q <= 1.) {
     kernel = factor * (1. - 1.5 * q_square * (1. - 0.5 * q));
-    if (1.0e-12 <= q) {
-      temp = factor * (-3. * q + 2.25 * q_square) * Hinv / r;
-      grad.first = temp * x_diff;
-      grad.second = temp * y_diff;
-    } else {
-      grad.first = 0.;
-      grad.second = 0.;
-    }
+    temp = factor * (-3. * q + 2.25 * q_square) * Hinv / r;
+    x_grad = temp * x_diff;
+    y_grad = temp * y_diff;
   } 
   else {
     c = (2.0 - q) * (2.0 - q);
     kernel = factor * 0.25 * c * (2.0 - q);
     temp = -factor * 0.75 * c * Hinv / r;
-    grad.first = temp * x_diff;
-    grad.second = temp * y_diff;
+    x_grad = temp * x_diff;
+    y_grad = temp * y_diff;
   }
 
   int count = neighbor_counts[par_idx_1]++;
   
   Wijs            [par_idx_1][count] = kernel;
-  Wij_grads       [par_idx_1][count] = grad;
+  x_Wij_grads     [par_idx_1][count] = x_grad;
+  y_Wij_grads     [par_idx_1][count] = y_grad;
   neighbor_indices[par_idx_1][count] = par_idx_2;
 
 }
 
 void KernelAndGradient_bidirectional(double x_diff, double y_diff, int par_idx_1, int par_idx_2, double r) {
   double kernel;
-  vector grad;
+  double x_grad;
+  double y_grad;
   double q = r * Hinv;
   double q_square = q * q;
   double temp, c;
 
   if (q <= 1.) {
     kernel = factor * (1. - 1.5 * q_square * (1. - 0.5 * q));
-    if (1.0e-12 <= q) {
-      temp = factor * (-3. * q + 2.25 * q_square) * Hinv / r;
-      grad.first = temp * x_diff;
-      grad.second = temp * y_diff;
-    } else {
-      grad.first = 0.;
-      grad.second = 0.;
-    }
+    temp = factor * (-3. * q + 2.25 * q_square) * Hinv / r;
+    x_grad = temp * x_diff;
+    y_grad = temp * y_diff;
   } 
   else {
     c = (2.0 - q) * (2.0 - q);
     kernel = factor * 0.25 * c * (2.0 - q);
     temp = -factor * 0.75 * c * Hinv / r;
-    grad.first = temp * x_diff;
-    grad.second = temp * y_diff;
+    x_grad = temp * x_diff;
+    y_grad = temp * y_diff;
   }
 
   int count = neighbor_counts[par_idx_1]++;
   
   Wijs            [par_idx_1][count] = kernel;
-  Wij_grads       [par_idx_1][count] = grad;
+  x_Wij_grads     [par_idx_1][count] = x_grad;
+  y_Wij_grads     [par_idx_1][count] = y_grad;
   neighbor_indices[par_idx_1][count] = par_idx_2;
 
-  grad.first = -grad.first;
-  grad.second = -grad.second;
+  x_grad = -x_grad;
+  y_grad = -y_grad;
   count = neighbor_counts[par_idx_2]++;
   Wijs            [par_idx_2][count] = kernel;
-  Wij_grads       [par_idx_2][count] = grad;
+  x_Wij_grads     [par_idx_2][count] = x_grad;
+  y_Wij_grads     [par_idx_2][count] = y_grad;
   neighbor_indices[par_idx_2][count] = par_idx_1;
 
 }
@@ -148,16 +140,6 @@ void SearchNeighbors() {
   int unrolling_limit;          // unrolling limit
   int i, j;
   
-  //--------------------------------------------------------------------
-  // Copy the positions in two arrays: x_positions, y_positions
-  double x_positions[NUMBER_OF_PARTICLE];
-  double y_positions[NUMBER_OF_PARTICLE];
-  for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
-      vector position = positions[i];
-      x_positions[i] = position.first;
-      y_positions[i] = position.second;
-  }
-
   //---------------------------------------------------------------------------
   // firstly, check interior-interior pair
   block_end_i = N_interior - N_interior % block_size;
@@ -944,91 +926,122 @@ void SearchNeighbors() {
  */
 void *Init() {
   // use calloc instead of malloc, so that initial values are set to 0 by default
-  positions  = (vector*)calloc(NUMBER_OF_PARTICLE, sizeof(vector));
-  velocities = (vector*)calloc(NUMBER_OF_PARTICLE, sizeof(vector));
+  x_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
+  y_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
+  x_velocities = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
+  y_velocities = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   densities  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   pressures  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
-  accelerats = (vector*)calloc(NUMBER_OF_PARTICLE, sizeof(vector));
+  x_accelerats = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
+  y_accelerats = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
 
   Wijs             = (double**)calloc(NUMBER_OF_PARTICLE, sizeof(double*));
-  Wij_grads        = (vector**)calloc(NUMBER_OF_PARTICLE, sizeof(vector*));
+  x_Wij_grads      = (double**)calloc(NUMBER_OF_PARTICLE, sizeof(double*));
+  y_Wij_grads      = (double**)calloc(NUMBER_OF_PARTICLE, sizeof(double*));
   neighbor_indices = (int**   )calloc(NUMBER_OF_PARTICLE, sizeof(int*));
   for(int i = 0 ; i < NUMBER_OF_PARTICLE ; i++){
     Wijs[i]             = (double*)calloc(max_num_neighbors, sizeof(double));
-    Wij_grads[i]        = (vector*)calloc(max_num_neighbors, sizeof(vector));
+    x_Wij_grads[i]      = (double*)calloc(max_num_neighbors, sizeof(double));
+    y_Wij_grads[i]      = (double*)calloc(max_num_neighbors, sizeof(double));
     neighbor_indices[i] = (int*   )calloc(max_num_neighbors, sizeof(int)); 
   }
   neighbor_counts = (int*)calloc(NUMBER_OF_PARTICLE, sizeof(int));
 
-  init_positions  = (vector*)calloc(N_boundary, sizeof(vector));
-  init_velocities = (vector*)calloc(N_boundary, sizeof(vector));
+  x_init_positions  = (double*)calloc(N_boundary, sizeof(double));
+  y_init_positions  = (double*)calloc(N_boundary, sizeof(double));
+  x_init_velocities = (double*)calloc(N_boundary, sizeof(double));
+  y_init_velocities = (double*)calloc(N_boundary, sizeof(double));
 
   int now = 0;
 
   // Set interior particles
-  for (int i = 0; i < Nx_interior; ++i)
-    for (int j = 0; j < Ny_interior; ++j)
-      positions[now++] = (vector){(i + 1) * H, (j + 1) * H};
+  for (int i = 0; i < Nx_interior; ++i){
+    for (int j = 0; j < Ny_interior; ++j){
+      x_positions[now] = (i + 1) * H;
+      y_positions[now++] = (j + 1) * H;
+    }
+  }
 
   // Set repulsive particles
-  for (int i = 0; i < Nx_repulsive; i++)
-    positions[now++] = (vector){i * H / 2., 0};
+  for (int i = 0; i < Nx_repulsive; i++){
+    x_positions[now] = i * H / 2.;
+    y_positions[now++] = 0;
+  }
 
-  for (int j = 1; j < Ny_repulsive; j++)
-    positions[now++] = (vector){0, j * H / 2.};
+  for (int j = 1; j < Ny_repulsive; j++){
+    x_positions[now] = 0;
+    y_positions[now++] = j * H / 2.;
+  }
 
-  for (int j = 0; j < Ny_repulsive; j++)
-    positions[now++] = (vector){(Nx_interior + 1) * H, j * H / 2.};
+  for (int j = 0; j < Ny_repulsive; j++){
+    x_positions[now] = (Nx_interior + 1) * H;
+    y_positions[now++] = j * H / 2.;
+  }
 
   // Set ghost particles
   for (int i = -2; i < Nx_repulsive + 2; i++) {
-    positions[now++] = (vector){i * H / 2., -H / 2.};
-    positions[now++] = (vector){i * H / 2., -H};
+    x_positions[now] = i * H / 2.;
+    y_positions[now++] = -H / 2.;
+    x_positions[now] = i * H / 2.;
+    y_positions[now++] = -H;
   }
 
   for (int j = 0; j < Ny_repulsive; j++) {
-    positions[now++] = (vector){-H, j * H / 2.};
-    positions[now++] = (vector){-H / 2., j * H / 2.};
-    positions[now++] = (vector){(Nx_interior + 1.5) * H, j * H / 2.};
-    positions[now++] = (vector){(Nx_interior + 2.) * H, j * H / 2.};
+    x_positions[now] = -H;
+    y_positions[now++] = j * H / 2.;
+    x_positions[now] = -H / 2.;
+    y_positions[now++] = j * H / 2.;
+    x_positions[now] = (Nx_interior + 1.5) * H;
+    y_positions[now++] = j * H / 2.;
+    x_positions[now] = (Nx_interior + 2.) * H;
+    y_positions[now++] = j * H / 2.;
   }
 
   if (NUMBER_OF_PARTICLE != now)
     printf("number of particles doesn't match with init,\n");
 
   for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
-    positions[i].first += amplitude;
+    x_positions[i] += amplitude;
     densities[i] = initial_density;
     pressures[i] = 1.;
   }
 
   // copy initial values
   for(int i = 0 ; i < N_boundary ; i++){
-    init_positions [i] = positions [i + N_interior];
-    init_velocities[i] = velocities[i + N_interior];
+    x_init_positions[i] = x_positions[i + N_interior];
+    y_init_positions[i] = y_positions[i + N_interior];
+    x_init_velocities[i] = x_velocities[i + N_interior];
+    y_init_velocities[i] = y_velocities[i + N_interior];
   }
 
 }
 
 void Destroy(){
-  free(positions);
-  free(velocities);
+  free(x_positions);
+  free(y_positions);
+  free(x_velocities);
+  free(y_velocities);
   free(densities);
   free(pressures);
-  free(accelerats);
+  free(x_accelerats);
+  free(y_accelerats);
 
   for(int i = 0 ; i < NUMBER_OF_PARTICLE ; i++){
     free(Wijs[i]);
-    free(Wij_grads[i]);
+    free(x_Wij_grads[i]);
+    free(y_Wij_grads[i]);
     free(neighbor_indices[i]);
   }
   free(Wijs);
-  free(Wij_grads);
+  free(x_Wij_grads);
+  free(y_Wij_grads);
   free(neighbor_indices);
   free(neighbor_counts);
 
-  free(init_positions);
-  free(init_velocities);
+  free(x_init_positions);
+  free(y_init_positions);
+  free(x_init_velocities);
+  free(y_init_velocities);
 }
 
 #endif // DATA_SET_H
