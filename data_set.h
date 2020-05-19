@@ -138,11 +138,10 @@ void SearchNeighbors() {
   int block_i, block_j;         // begin of block
   int limit_i, limit_j;         //  end  of block
   
-  vector xi, xj1, xj2, xj3, xj4, xj5, xj6, xj7, xj8, xj9, xj10, xj11, xj12, xj13, xj14, xj15, xj16,
-         diff1, diff2, diff3, diff4, diff5, diff6, diff7, diff8, diff9, diff10, diff11, diff12, 
+  vector diff1, diff2, diff3, diff4, diff5, diff6, diff7, diff8, diff9, diff10, diff11, diff12, 
          diff13, diff14, diff15, diff16;
   double r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16;
-  double _xi, _xj1, _xj2, _xj3, _xj4, _xj5, _xj6, _xj7, _xj8, _xj9, _xj10, _xj11, _xj12, _xj13, _xj14, _xj15, _xj16;
+  double xi, xj1, xj2, xj3, xj4, xj5, xj6, xj7, xj8, xj9, xj10, xj11, xj12, xj13, xj14, xj15, xj16;
   double yi, yj1, yj2, yj3, yj4, yj5, yj6, yj7, yj8, yj9, yj10, yj11, yj12, yj13, yj14, yj15, yj16;
   int unrolling_limit;          // unrolling limit
   int i, j;
@@ -170,23 +169,23 @@ void SearchNeighbors() {
       // each particle is neighbor to itself
       KernelAndGradient_zero(i);
 
-      _xi = x_positions[i];
+      xi = x_positions[i];
       yi = y_positions[i];
       
       // unrolling with factor 2
       for (j = i + 1 ; j <= unrolling_limit ; j += unrolling_factor2){
-        _xj1 = x_positions[j];
-        _xj2 = x_positions[j + 1];
-        _xj3 = x_positions[j + 2];
-        _xj4 = x_positions[j + 3];
+        xj1 = x_positions[j];
+        xj2 = x_positions[j + 1];
+        xj3 = x_positions[j + 2];
+        xj4 = x_positions[j + 3];
         yj1 = y_positions[j];
         yj2 = y_positions[j + 1];
         yj3 = y_positions[j + 2];
         yj4 = y_positions[j + 3];
-        diff1 = (vector){_xi - _xj1, yi - yj1};
-        diff2 = (vector){_xi - _xj2, yi - yj2};
-        diff3 = (vector){_xi - _xj3, yi - yj3};
-        diff4 = (vector){_xi - _xj4, yi - yj4};
+        diff1 = (vector){xi - xj1, yi - yj1};
+        diff2 = (vector){xi - xj2, yi - yj2};
+        diff3 = (vector){xi - xj3, yi - yj3};
+        diff4 = (vector){xi - xj4, yi - yj4};
         r1 = diff1.first * diff1.first + diff1.second * diff1.second;
         r2 = diff2.first * diff2.first + diff2.second * diff2.second;
         r3 = diff3.first * diff3.first + diff3.second * diff3.second;
@@ -204,9 +203,9 @@ void SearchNeighbors() {
 
       // the particles left which do not fit into unrolling factor 2
       for (; j < limit_j; j++){
-        _xj1 = x_positions[j];
+        xj1 = x_positions[j];
         yj1 = y_positions[j];
-        diff1 = (vector){_xi - _xj1, yi - yj1};
+        diff1 = (vector){xi - xj1, yi - yj1};
         r1 = sqrt(diff1.first * diff1.first + diff1.second * diff1.second);
         if(r1 < Hradius)
           KernelAndGradient_bidirectional(diff1, i, j, r1);
@@ -218,42 +217,59 @@ void SearchNeighbors() {
     for (block_j = block_i + block_size ; block_j < block_end_j ; block_j += block_size){
       limit_j = block_j + block_size;
       for (i = block_i ; i < limit_i ; i++){
-        xi = positions[i];
+        xi = x_positions[i];
+        yi = y_positions[i];
         
         // unrolling with factor 1
         for (j = block_j ; j != limit_j ; j += unrolling_factor1){
-          xj1  = positions[j];
-          xj2  = positions[j + 1];
-          xj3  = positions[j + 2];
-          xj4  = positions[j + 3];
-          xj5  = positions[j + 4];
-          xj6  = positions[j + 5];
-          xj7  = positions[j + 6];
-          xj8  = positions[j + 7];
-          xj9  = positions[j + 8];
-          xj10 = positions[j + 9];
-          xj11 = positions[j + 10];
-          xj12 = positions[j + 11];
-          xj13 = positions[j + 12];
-          xj14 = positions[j + 13];
-          xj15 = positions[j + 14];
-          xj16 = positions[j + 15];
-          diff1  = (vector){xi.first - xj1.first, xi.second - xj1.second};
-          diff2  = (vector){xi.first - xj2.first, xi.second - xj2.second};
-          diff3  = (vector){xi.first - xj3.first, xi.second - xj3.second};
-          diff4  = (vector){xi.first - xj4.first, xi.second - xj4.second};
-          diff5  = (vector){xi.first - xj5.first, xi.second - xj5.second};
-          diff6  = (vector){xi.first - xj6.first, xi.second - xj6.second};
-          diff7  = (vector){xi.first - xj7.first, xi.second - xj7.second};
-          diff8  = (vector){xi.first - xj8.first, xi.second - xj8.second};
-          diff9  = (vector){xi.first - xj9.first, xi.second - xj9.second};
-          diff10 = (vector){xi.first - xj10.first, xi.second - xj10.second};
-          diff11 = (vector){xi.first - xj11.first, xi.second - xj11.second};
-          diff12 = (vector){xi.first - xj12.first, xi.second - xj12.second};
-          diff13 = (vector){xi.first - xj13.first, xi.second - xj13.second};
-          diff14 = (vector){xi.first - xj14.first, xi.second - xj14.second};
-          diff15 = (vector){xi.first - xj15.first, xi.second - xj15.second};
-          diff16 = (vector){xi.first - xj16.first, xi.second - xj16.second};
+          xj1  = x_positions[j];
+          xj2  = x_positions[j + 1];
+          xj3  = x_positions[j + 2];
+          xj4  = x_positions[j + 3];
+          xj5  = x_positions[j + 4];
+          xj6  = x_positions[j + 5];
+          xj7  = x_positions[j + 6];
+          xj8  = x_positions[j + 7];
+          xj9  = x_positions[j + 8];
+          xj10 = x_positions[j + 9];
+          xj11 = x_positions[j + 10];
+          xj12 = x_positions[j + 11];
+          xj13 = x_positions[j + 12];
+          xj14 = x_positions[j + 13];
+          xj15 = x_positions[j + 14];
+          xj16 = x_positions[j + 15];
+          yj1  = y_positions[j];
+          yj2  = y_positions[j + 1];
+          yj3  = y_positions[j + 2];
+          yj4  = y_positions[j + 3];
+          yj5  = y_positions[j + 4];
+          yj6  = y_positions[j + 5];
+          yj7  = y_positions[j + 6];
+          yj8  = y_positions[j + 7];
+          yj9  = y_positions[j + 8];
+          yj10 = y_positions[j + 9];
+          yj11 = y_positions[j + 10];
+          yj12 = y_positions[j + 11];
+          yj13 = y_positions[j + 12];
+          yj14 = y_positions[j + 13];
+          yj15 = y_positions[j + 14];
+          yj16 = y_positions[j + 15];
+          diff1  = (vector){xi - xj1, yi - yj1};
+          diff2  = (vector){xi - xj2, yi - yj2};
+          diff3  = (vector){xi - xj3, yi - yj3};
+          diff4  = (vector){xi - xj4, yi - yj4};
+          diff5  = (vector){xi - xj5, yi - yj5};
+          diff6  = (vector){xi - xj6, yi - yj6};
+          diff7  = (vector){xi - xj7, yi - yj7};
+          diff8  = (vector){xi - xj8, yi - yj8};
+          diff9  = (vector){xi - xj9, yi - yj9};
+          diff10 = (vector){xi - xj10, yi - yj10};
+          diff11 = (vector){xi - xj11, yi - yj11};
+          diff12 = (vector){xi - xj12, yi - yj12};
+          diff13 = (vector){xi - xj13, yi - yj13};
+          diff14 = (vector){xi - xj14, yi - yj14};
+          diff15 = (vector){xi - xj15, yi - yj15};
+          diff16 = (vector){xi - xj16, yi - yj16};
           r1  = diff1.first  * diff1.first  + diff1.second  * diff1.second;
           r2  = diff2.first  * diff2.first  + diff2.second  * diff2.second;
           r3  = diff3.first  * diff3.first  + diff3.second  * diff3.second;
@@ -310,18 +326,23 @@ void SearchNeighbors() {
     // rest part that does not fit into block_j
     unrolling_limit = N_interior - unrolling_factor2;
     for (i = block_i ; i < limit_i ; i++){
-      xi = positions[i];
+      xi = x_positions[i];
+      yi = y_positions[i];
       
       // unrolling with factor 2
       for (j = block_end_j ; j <= unrolling_limit ; j += unrolling_factor2){
-        xj1 = positions[j];
-        xj2 = positions[j + 1];
-        xj3 = positions[j + 2];
-        xj4 = positions[j + 3];
-        diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
-        diff2 = (vector){xi.first - xj2.first, xi.second - xj2.second};
-        diff3 = (vector){xi.first - xj3.first, xi.second - xj3.second};
-        diff4 = (vector){xi.first - xj4.first, xi.second - xj4.second};
+        xj1 = x_positions[j];
+        xj2 = x_positions[j + 1];
+        xj3 = x_positions[j + 2];
+        xj4 = x_positions[j + 3];
+        yj1 = y_positions[j];
+        yj2 = y_positions[j + 1];
+        yj3 = y_positions[j + 2];
+        yj4 = y_positions[j + 3];
+        diff1 = (vector){xi - xj1, yi - yj1};
+        diff2 = (vector){xi - xj2, yi - yj2};
+        diff3 = (vector){xi - xj3, yi - yj3};
+        diff4 = (vector){xi - xj4, yi - yj4};
         r1 = diff1.first * diff1.first + diff1.second * diff1.second;
         r2 = diff2.first * diff2.first + diff2.second * diff2.second;
         r3 = diff3.first * diff3.first + diff3.second * diff3.second;
@@ -338,8 +359,9 @@ void SearchNeighbors() {
 
       // particles left that do not fit into unrolling factor 2
       for (; j < N_interior; j++){
-        xj1 = positions[j];
-        diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
+        xj1 = x_positions[j];
+        yj1 = y_positions[j];
+        diff1 = (vector){xi - xj1, yi - yj1};
         r1 = sqrt(diff1.first * diff1.first + diff1.second * diff1.second);
         if(r1 < Hradius)
           KernelAndGradient_bidirectional(diff1, i, j, r1);
@@ -354,18 +376,23 @@ void SearchNeighbors() {
     // each particle is neighbor to itself
     KernelAndGradient_zero(i);
 
-    xi = positions[i];
+    xi = x_positions[i];
+    yi = y_positions[i];
 
     // unrolling with factor 2
     for (j = i + 1 ; j <= unrolling_limit ; j += unrolling_factor2){
-      xj1 = positions[j];
-      xj2 = positions[j + 1];
-      xj3 = positions[j + 2];
-      xj4 = positions[j + 3];
-      diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
-      diff2 = (vector){xi.first - xj2.first, xi.second - xj2.second};
-      diff3 = (vector){xi.first - xj3.first, xi.second - xj3.second};
-      diff4 = (vector){xi.first - xj4.first, xi.second - xj4.second};
+      xj1 = x_positions[j];
+      xj2 = x_positions[j + 1];
+      xj3 = x_positions[j + 2];
+      xj4 = x_positions[j + 3];
+      yj1 = y_positions[j];
+      yj2 = y_positions[j + 1];
+      yj3 = y_positions[j + 2];
+      yj4 = y_positions[j + 3];
+      diff1 = (vector){xi - xj1, yi - yj1};
+      diff2 = (vector){xi - xj2, yi - yj2};
+      diff3 = (vector){xi - xj3, yi - yj3};
+      diff4 = (vector){xi - xj4, yi - yj4};
       r1 = diff1.first * diff1.first + diff1.second * diff1.second;
       r2 = diff2.first * diff2.first + diff2.second * diff2.second;
       r3 = diff3.first * diff3.first + diff3.second * diff3.second;
@@ -382,8 +409,9 @@ void SearchNeighbors() {
 
     // particles left that do not fit into unrolling factor 2
     for (; j < N_interior; j++){
-        xj1 = positions[j];
-        diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
+        xj1 = x_positions[j];
+        yj1 = y_positions[j];
+        diff1 = (vector){xi - xj1, yi - yj1};
         r1 = sqrt(diff1.first * diff1.first + diff1.second * diff1.second);
         if(r1 < Hradius)
           KernelAndGradient_bidirectional(diff1, i, j, r1);
@@ -405,42 +433,59 @@ void SearchNeighbors() {
     for (block_j = 0 ; block_j < block_end_j ; block_j += block_size){
       limit_j = block_j + block_size;
       for (i = block_i ; i < limit_i ; i++){
-        xi = positions[i];
+        xi = x_positions[i];
+        yi = y_positions[i];
         
         // unrolling with factor 1
         for (j = block_j ; j != limit_j ; j += unrolling_factor1){
-          xj1  = positions[j];
-          xj2  = positions[j + 1];
-          xj3  = positions[j + 2];
-          xj4  = positions[j + 3];
-          xj5  = positions[j + 4];
-          xj6  = positions[j + 5];
-          xj7  = positions[j + 6];
-          xj8  = positions[j + 7];
-          xj9  = positions[j + 8];
-          xj10 = positions[j + 9];
-          xj11 = positions[j + 10];
-          xj12 = positions[j + 11];
-          xj13 = positions[j + 12];
-          xj14 = positions[j + 13];
-          xj15 = positions[j + 14];
-          xj16 = positions[j + 15];
-          diff1  = (vector){xi.first - xj1.first, xi.second - xj1.second};
-          diff2  = (vector){xi.first - xj2.first, xi.second - xj2.second};
-          diff3  = (vector){xi.first - xj3.first, xi.second - xj3.second};
-          diff4  = (vector){xi.first - xj4.first, xi.second - xj4.second};
-          diff5  = (vector){xi.first - xj5.first, xi.second - xj5.second};
-          diff6  = (vector){xi.first - xj6.first, xi.second - xj6.second};
-          diff7  = (vector){xi.first - xj7.first, xi.second - xj7.second};
-          diff8  = (vector){xi.first - xj8.first, xi.second - xj8.second};
-          diff9  = (vector){xi.first - xj9.first, xi.second - xj9.second};
-          diff10 = (vector){xi.first - xj10.first, xi.second - xj10.second};
-          diff11 = (vector){xi.first - xj11.first, xi.second - xj11.second};
-          diff12 = (vector){xi.first - xj12.first, xi.second - xj12.second};
-          diff13 = (vector){xi.first - xj13.first, xi.second - xj13.second};
-          diff14 = (vector){xi.first - xj14.first, xi.second - xj14.second};
-          diff15 = (vector){xi.first - xj15.first, xi.second - xj15.second};
-          diff16 = (vector){xi.first - xj16.first, xi.second - xj16.second};
+          xj1  = x_positions[j];
+          xj2  = x_positions[j + 1];
+          xj3  = x_positions[j + 2];
+          xj4  = x_positions[j + 3];
+          xj5  = x_positions[j + 4];
+          xj6  = x_positions[j + 5];
+          xj7  = x_positions[j + 6];
+          xj8  = x_positions[j + 7];
+          xj9  = x_positions[j + 8];
+          xj10 = x_positions[j + 9];
+          xj11 = x_positions[j + 10];
+          xj12 = x_positions[j + 11];
+          xj13 = x_positions[j + 12];
+          xj14 = x_positions[j + 13];
+          xj15 = x_positions[j + 14];
+          xj16 = x_positions[j + 15];
+          yj1  = y_positions[j];
+          yj2  = y_positions[j + 1];
+          yj3  = y_positions[j + 2];
+          yj4  = y_positions[j + 3];
+          yj5  = y_positions[j + 4];
+          yj6  = y_positions[j + 5];
+          yj7  = y_positions[j + 6];
+          yj8  = y_positions[j + 7];
+          yj9  = y_positions[j + 8];
+          yj10 = y_positions[j + 9];
+          yj11 = y_positions[j + 10];
+          yj12 = y_positions[j + 11];
+          yj13 = y_positions[j + 12];
+          yj14 = y_positions[j + 13];
+          yj15 = y_positions[j + 14];
+          yj16 = y_positions[j + 15];
+          diff1  = (vector){xi - xj1, yi - yj1};
+          diff2  = (vector){xi - xj2, yi - yj2};
+          diff3  = (vector){xi - xj3, yi - yj3};
+          diff4  = (vector){xi - xj4, yi - yj4};
+          diff5  = (vector){xi - xj5, yi - yj5};
+          diff6  = (vector){xi - xj6, yi - yj6};
+          diff7  = (vector){xi - xj7, yi - yj7};
+          diff8  = (vector){xi - xj8, yi - yj8};
+          diff9  = (vector){xi - xj9, yi - yj9};
+          diff10 = (vector){xi - xj10, yi - yj10};
+          diff11 = (vector){xi - xj11, yi - yj11};
+          diff12 = (vector){xi - xj12, yi - yj12};
+          diff13 = (vector){xi - xj13, yi - yj13};
+          diff14 = (vector){xi - xj14, yi - yj14};
+          diff15 = (vector){xi - xj15, yi - yj15};
+          diff16 = (vector){xi - xj16, yi - yj16};
           r1  = diff1.first  * diff1.first  + diff1.second  * diff1.second;
           r2  = diff2.first  * diff2.first  + diff2.second  * diff2.second;
           r3  = diff3.first  * diff3.first  + diff3.second  * diff3.second;
@@ -497,18 +542,23 @@ void SearchNeighbors() {
     // rest part that does not fit into block_j
     unrolling_limit = N_interior - unrolling_factor2;
     for (i = block_i ; i < limit_i ; i++){
-      xi = positions[i];
+      xi = x_positions[i];
+      yi = y_positions[i];
 
       // unrolling with factor 2
       for (j = block_end_j ; j <= unrolling_limit ; j += unrolling_factor2){
-        xj1 = positions[j];
-        xj2 = positions[j + 1];
-        xj3 = positions[j + 2];
-        xj4 = positions[j + 3];
-        diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
-        diff2 = (vector){xi.first - xj2.first, xi.second - xj2.second};
-        diff3 = (vector){xi.first - xj3.first, xi.second - xj3.second};
-        diff4 = (vector){xi.first - xj4.first, xi.second - xj4.second};
+        xj1 = x_positions[j];
+        xj2 = x_positions[j + 1];
+        xj3 = x_positions[j + 2];
+        xj4 = x_positions[j + 3];
+        yj1 = y_positions[j];
+        yj2 = y_positions[j + 1];
+        yj3 = y_positions[j + 2];
+        yj4 = y_positions[j + 3];
+        diff1 = (vector){xi - xj1, yi - yj1};
+        diff2 = (vector){xi - xj2, yi - yj2};
+        diff3 = (vector){xi - xj3, yi - yj3};
+        diff4 = (vector){xi - xj4, yi - yj4};
         r1 = diff1.first * diff1.first + diff1.second * diff1.second;
         r2 = diff2.first * diff2.first + diff2.second * diff2.second;
         r3 = diff3.first * diff3.first + diff3.second * diff3.second;
@@ -525,8 +575,9 @@ void SearchNeighbors() {
 
       // particles left that do not fit into unrolling factor 2
       for (; j < N_interior; j++){
-        xj1 = positions[j];
-        diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
+        xj1 = x_positions[j];
+        yj1 = y_positions[j];
+        diff1 = (vector){xi - xj1, yi - yj1};
         r1 = sqrt(diff1.first * diff1.first + diff1.second * diff1.second);
         if(r1 < Hradius)
           KernelAndGradient_bidirectional(diff1, i, j, r1);
@@ -540,18 +591,23 @@ void SearchNeighbors() {
     // each particle is neighbor to itself
     KernelAndGradient_zero(i);
 
-    xi = positions[i];
+    xi = x_positions[i];
+    yi = y_positions[i];
 
     // unrolling with factor 2
     for (j = 0 ; j <= unrolling_limit ; j += unrolling_factor2){
-      xj1 = positions[j];
-      xj2 = positions[j + 1];
-      xj3 = positions[j + 2];
-      xj4 = positions[j + 3];
-      diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
-      diff2 = (vector){xi.first - xj2.first, xi.second - xj2.second};
-      diff3 = (vector){xi.first - xj3.first, xi.second - xj3.second};
-      diff4 = (vector){xi.first - xj4.first, xi.second - xj4.second};
+      xj1 = x_positions[j];
+      xj2 = x_positions[j + 1];
+      xj3 = x_positions[j + 2];
+      xj4 = x_positions[j + 3];
+      yj1 = y_positions[j];
+      yj2 = y_positions[j + 1];
+      yj3 = y_positions[j + 2];
+      yj4 = y_positions[j + 3];
+      diff1 = (vector){xi - xj1, yi - yj1};
+      diff2 = (vector){xi - xj2, yi - yj2};
+      diff3 = (vector){xi - xj3, yi - yj3};
+      diff4 = (vector){xi - xj4, yi - yj4};
       r1 = diff1.first * diff1.first + diff1.second * diff1.second;
       r2 = diff2.first * diff2.first + diff2.second * diff2.second;
       r3 = diff3.first * diff3.first + diff3.second * diff3.second;
@@ -568,8 +624,9 @@ void SearchNeighbors() {
 
     // particles left that do not fit into unrolling factor 2
     for (; j < N_interior; j++){
-      xj1 = positions[j];
-      diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
+      xj1 = x_positions[j];
+      yj1 = y_positions[j];
+      diff1 = (vector){xi - xj1, yi - yj1};
       r1 = sqrt(diff1.first * diff1.first + diff1.second * diff1.second);
       if(r1 < Hradius)
         KernelAndGradient_bidirectional(diff1, i, j, r1);
@@ -587,42 +644,59 @@ void SearchNeighbors() {
     for (block_j = N_interior ; block_j < block_end_j ; block_j += block_size){
       limit_j = block_j + block_size;
       for (i = block_i ; i < limit_i ; i++){
-        xi = positions[i];
+        xi = x_positions[i];
+        yi = y_positions[i];
 
         // unrolling
         for (j = block_j ; j != limit_j ; j += unrolling_factor1){
-          xj1  = positions[j];
-          xj2  = positions[j + 1];
-          xj3  = positions[j + 2];
-          xj4  = positions[j + 3];
-          xj5  = positions[j + 4];
-          xj6  = positions[j + 5];
-          xj7  = positions[j + 6];
-          xj8  = positions[j + 7];
-          xj9  = positions[j + 8];
-          xj10 = positions[j + 9];
-          xj11 = positions[j + 10];
-          xj12 = positions[j + 11];
-          xj13 = positions[j + 12];
-          xj14 = positions[j + 13];
-          xj15 = positions[j + 14];
-          xj16 = positions[j + 15];
-          diff1  = (vector){xi.first - xj1.first, xi.second - xj1.second};
-          diff2  = (vector){xi.first - xj2.first, xi.second - xj2.second};
-          diff3  = (vector){xi.first - xj3.first, xi.second - xj3.second};
-          diff4  = (vector){xi.first - xj4.first, xi.second - xj4.second};
-          diff5  = (vector){xi.first - xj5.first, xi.second - xj5.second};
-          diff6  = (vector){xi.first - xj6.first, xi.second - xj6.second};
-          diff7  = (vector){xi.first - xj7.first, xi.second - xj7.second};
-          diff8  = (vector){xi.first - xj8.first, xi.second - xj8.second};
-          diff9  = (vector){xi.first - xj9.first, xi.second - xj9.second};
-          diff10 = (vector){xi.first - xj10.first, xi.second - xj10.second};
-          diff11 = (vector){xi.first - xj11.first, xi.second - xj11.second};
-          diff12 = (vector){xi.first - xj12.first, xi.second - xj12.second};
-          diff13 = (vector){xi.first - xj13.first, xi.second - xj13.second};
-          diff14 = (vector){xi.first - xj14.first, xi.second - xj14.second};
-          diff15 = (vector){xi.first - xj15.first, xi.second - xj15.second};
-          diff16 = (vector){xi.first - xj16.first, xi.second - xj16.second};
+          xj1  = x_positions[j];
+          xj2  = x_positions[j + 1];
+          xj3  = x_positions[j + 2];
+          xj4  = x_positions[j + 3];
+          xj5  = x_positions[j + 4];
+          xj6  = x_positions[j + 5];
+          xj7  = x_positions[j + 6];
+          xj8  = x_positions[j + 7];
+          xj9  = x_positions[j + 8];
+          xj10 = x_positions[j + 9];
+          xj11 = x_positions[j + 10];
+          xj12 = x_positions[j + 11];
+          xj13 = x_positions[j + 12];
+          xj14 = x_positions[j + 13];
+          xj15 = x_positions[j + 14];
+          xj16 = x_positions[j + 15];
+          yj1  = y_positions[j];
+          yj2  = y_positions[j + 1];
+          yj3  = y_positions[j + 2];
+          yj4  = y_positions[j + 3];
+          yj5  = y_positions[j + 4];
+          yj6  = y_positions[j + 5];
+          yj7  = y_positions[j + 6];
+          yj8  = y_positions[j + 7];
+          yj9  = y_positions[j + 8];
+          yj10 = y_positions[j + 9];
+          yj11 = y_positions[j + 10];
+          yj12 = y_positions[j + 11];
+          yj13 = y_positions[j + 12];
+          yj14 = y_positions[j + 13];
+          yj15 = y_positions[j + 14];
+          yj16 = y_positions[j + 15];
+          diff1  = (vector){xi - xj1, yi - yj1};
+          diff2  = (vector){xi - xj2, yi - yj2};
+          diff3  = (vector){xi - xj3, yi - yj3};
+          diff4  = (vector){xi - xj4, yi - yj4};
+          diff5  = (vector){xi - xj5, yi - yj5};
+          diff6  = (vector){xi - xj6, yi - yj6};
+          diff7  = (vector){xi - xj7, yi - yj7};
+          diff8  = (vector){xi - xj8, yi - yj8};
+          diff9  = (vector){xi - xj9, yi - yj9};
+          diff10 = (vector){xi - xj10, yi - yj10};
+          diff11 = (vector){xi - xj11, yi - yj11};
+          diff12 = (vector){xi - xj12, yi - yj12};
+          diff13 = (vector){xi - xj13, yi - yj13};
+          diff14 = (vector){xi - xj14, yi - yj14};
+          diff15 = (vector){xi - xj15, yi - yj15};
+          diff16 = (vector){xi - xj16, yi - yj16};
           r1  = diff1.first  * diff1.first  + diff1.second  * diff1.second;
           r2  = diff2.first  * diff2.first  + diff2.second  * diff2.second;
           r3  = diff3.first  * diff3.first  + diff3.second  * diff3.second;
@@ -679,18 +753,23 @@ void SearchNeighbors() {
     // rest part that does not fit into block_j
     unrolling_limit = N_interior + N_repulsive - unrolling_factor2;
     for (i = block_i ; i < limit_i ; i++){
-      xi = positions[i];
+      xi = x_positions[i];
+      yi = y_positions[i];
 
       // unrolling with factor 2
       for (j = block_end_j ; j <= unrolling_limit ; j += unrolling_factor2){
-        xj1 = positions[j];
-        xj2 = positions[j + 1];
-        xj3 = positions[j + 2];
-        xj4 = positions[j + 3];
-        diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
-        diff2 = (vector){xi.first - xj2.first, xi.second - xj2.second};
-        diff3 = (vector){xi.first - xj3.first, xi.second - xj3.second};
-        diff4 = (vector){xi.first - xj4.first, xi.second - xj4.second};
+        xj1 = x_positions[j];
+        xj2 = x_positions[j + 1];
+        xj3 = x_positions[j + 2];
+        xj4 = x_positions[j + 3];
+        yj1 = y_positions[j];
+        yj2 = y_positions[j + 1];
+        yj3 = y_positions[j + 2];
+        yj4 = y_positions[j + 3];
+        diff1 = (vector){xi - xj1, yi - yj1};
+        diff2 = (vector){xi - xj2, yi - yj2};
+        diff3 = (vector){xi - xj3, yi - yj3};
+        diff4 = (vector){xi - xj4, yi - yj4};
         r1 = diff1.first * diff1.first + diff1.second * diff1.second;
         r2 = diff2.first * diff2.first + diff2.second * diff2.second;
         r3 = diff3.first * diff3.first + diff3.second * diff3.second;
@@ -707,8 +786,9 @@ void SearchNeighbors() {
 
       // particles left that do not fit into unrolling factor 2
       for (; j < N_interior + N_repulsive ; j++){
-        xj1 = positions[j];
-        diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
+        xj1 = x_positions[j];
+        yj1 = y_positions[j];
+        diff1 = (vector){xi - xj1, yi - yj1};
         r1 = sqrt(diff1.first * diff1.first + diff1.second * diff1.second);
         if(r1 < Hradius)
           KernelAndGradient_unidirectional(diff1, i, j, r1);
@@ -720,18 +800,23 @@ void SearchNeighbors() {
   // rest part that does not fit into block_i
   unrolling_limit = N_interior + N_repulsive - unrolling_factor2;
   for(i = block_end_i ; i < NUMBER_OF_PARTICLE ; i++){
-    xi = positions[i];
+    xi = x_positions[i];
+    yi = y_positions[i];
 
     // unrolling with factor 2
     for (j = N_interior ; j <= unrolling_limit ; j += unrolling_factor2){
-      xj1 = positions[j];
-      xj2 = positions[j + 1];
-      xj3 = positions[j + 2];
-      xj4 = positions[j + 3];
-      diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
-      diff2 = (vector){xi.first - xj2.first, xi.second - xj2.second};
-      diff3 = (vector){xi.first - xj3.first, xi.second - xj3.second};
-      diff4 = (vector){xi.first - xj4.first, xi.second - xj4.second};
+      xj1 = x_positions[j];
+      xj2 = x_positions[j + 1];
+      xj3 = x_positions[j + 2];
+      xj4 = x_positions[j + 3];
+      yj1 = y_positions[j];
+      yj2 = y_positions[j + 1];
+      yj3 = y_positions[j + 2];
+      yj4 = y_positions[j + 3];
+      diff1 = (vector){xi - xj1, yi - yj1};
+      diff2 = (vector){xi - xj2, yi - yj2};
+      diff3 = (vector){xi - xj3, yi - yj3};
+      diff4 = (vector){xi - xj4, yi - yj4};
       r1 = diff1.first * diff1.first + diff1.second * diff1.second;
       r2 = diff2.first * diff2.first + diff2.second * diff2.second;
       r3 = diff3.first * diff3.first + diff3.second * diff3.second;
@@ -748,8 +833,9 @@ void SearchNeighbors() {
 
     // particles left that do not fit into unrolling factor 2
     for (; j < N_interior + N_repulsive ; j++){
-      xj1 = positions[j];
-      diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
+      xj1 = x_positions[j];
+      yj1 = y_positions[j];
+      diff1 = (vector){xi - xj1, yi - yj1};
       r1 = sqrt(diff1.first * diff1.first + diff1.second * diff1.second);
       if(r1 < Hradius)
         KernelAndGradient_unidirectional(diff1, i, j, r1);
