@@ -160,18 +160,40 @@ void SearchNeighbors() {
       yi_vec = _mm256_broadcast_sd(y_positions+i);
       
       // unrolling with factor 2
+      double r[4], x_diff[4], y_diff[4];
       for (j = i + 1 ; j <= unrolling_limit ; j += unrolling_factor2){
         xj_vec = _mm256_load_pd(x_positions + j);
         yj_vec = _mm256_load_pd(y_positions + j);
         x_diff_vec = _mm256_sub_pd(xi_vec, xj_vec);
         y_diff_vec = _mm256_sub_pd(yi_vec, yj_vec);
-        temp2_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
-        r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp2_vec);
-        r_vec = _mm256_sqrt_pd(r_vec);
-        if(r_vec[0] < Hradius) KernelAndGradient_bidirectional(x_diff_vec[0], y_diff_vec[0], i, j    , r_vec[0]);
-        if(r_vec[1] < Hradius) KernelAndGradient_bidirectional(x_diff_vec[1], y_diff_vec[1], i, j + 1, r_vec[1]);
-        if(r_vec[2] < Hradius) KernelAndGradient_bidirectional(x_diff_vec[2], y_diff_vec[2], i, j + 2, r_vec[2]);
-        if(r_vec[3] < Hradius) KernelAndGradient_bidirectional(x_diff_vec[3], y_diff_vec[3], i, j + 3, r_vec[3]);
+        
+        _mm256_store_pd(x_diff, x_diff_vec);
+        _mm256_store_pd(y_diff, y_diff_vec);
+        
+        r1 = x_diff[0] * x_diff[0] + y_diff[0] * y_diff[0];
+        r2 = x_diff[1] * x_diff[1] + y_diff[1] * y_diff[1];
+        r3 = x_diff[2] * x_diff[2] + y_diff[2] * y_diff[2];
+        r4 = x_diff[3] * x_diff[3] + y_diff[3] * y_diff[3];
+        r1 = sqrt(r1);
+        r2 = sqrt(r2);
+        r3 = sqrt(r3);
+        r4 = sqrt(r4);
+        if(r1 < Hradius) KernelAndGradient_bidirectional(x_diff[0], y_diff[0], i, j    , r1);
+        if(r2 < Hradius) KernelAndGradient_bidirectional(x_diff[1], y_diff[1], i, j + 1, r2);
+        if(r3 < Hradius) KernelAndGradient_bidirectional(x_diff[2], y_diff[2], i, j + 2, r3);
+        if(r4 < Hradius) KernelAndGradient_bidirectional(x_diff[3], y_diff[3], i, j + 3, r4);
+
+        
+        //~ temp2_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
+        //~ r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp2_vec);
+        //~ r_vec = _mm256_sqrt_pd(r_vec);
+        //~ _mm256_store_pd(r, r_vec);
+        //~ _mm256_store_pd(x_diff, x_diff_vec);
+        //~ _mm256_store_pd(y_diff, y_diff_vec);
+        //~ if(r[0] < Hradius) KernelAndGradient_bidirectional(x_diff[0], y_diff[0], i, j    , r[0]);
+        //~ if(r[1] < Hradius) KernelAndGradient_bidirectional(x_diff[1], y_diff[1], i, j + 1, r[1]);
+        //~ if(r[2] < Hradius) KernelAndGradient_bidirectional(x_diff[2], y_diff[2], i, j + 2, r[2]);
+        //~ if(r[3] < Hradius) KernelAndGradient_bidirectional(x_diff[3], y_diff[3], i, j + 3, r[3]);
         
       }
 
