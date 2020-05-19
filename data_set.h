@@ -142,9 +142,20 @@ void SearchNeighbors() {
          diff1, diff2, diff3, diff4, diff5, diff6, diff7, diff8, diff9, diff10, diff11, diff12, 
          diff13, diff14, diff15, diff16;
   double r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15, r16;
+  double _xi, _xj1, _xj2, _xj3, _xj4, _xj5, _xj6, _xj7, _xj8, _xj9, _xj10, _xj11, _xj12, _xj13, _xj14, _xj15, _xj16;
+  double yi, yj1, yj2, yj3, yj4, yj5, yj6, yj7, yj8, yj9, yj10, yj11, yj12, yj13, yj14, yj15, yj16;
   int unrolling_limit;          // unrolling limit
   int i, j;
   
+  //--------------------------------------------------------------------
+  // Copy the positions in two arrays: x_positions, y_positions
+  double x_positions[NUMBER_OF_PARTICLE];
+  double y_positions[NUMBER_OF_PARTICLE];
+  for(int i = 0; i < NUMBER_OF_PARTICLE; ++i){
+      vector position = positions[i];
+      x_positions[i] = position.first;
+      y_positions[i] = position.second;
+  }
 
   //---------------------------------------------------------------------------
   // firstly, check interior-interior pair
@@ -159,18 +170,23 @@ void SearchNeighbors() {
       // each particle is neighbor to itself
       KernelAndGradient_zero(i);
 
-      xi = positions[i];
+      _xi = x_positions[i];
+      yi = y_positions[i];
       
       // unrolling with factor 2
       for (j = i + 1 ; j <= unrolling_limit ; j += unrolling_factor2){
-        xj1 = positions[j];
-        xj2 = positions[j + 1];
-        xj3 = positions[j + 2];
-        xj4 = positions[j + 3];
-        diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
-        diff2 = (vector){xi.first - xj2.first, xi.second - xj2.second};
-        diff3 = (vector){xi.first - xj3.first, xi.second - xj3.second};
-        diff4 = (vector){xi.first - xj4.first, xi.second - xj4.second};
+        _xj1 = x_positions[j];
+        _xj2 = x_positions[j + 1];
+        _xj3 = x_positions[j + 2];
+        _xj4 = x_positions[j + 3];
+        yj1 = y_positions[j];
+        yj2 = y_positions[j + 1];
+        yj3 = y_positions[j + 2];
+        yj4 = y_positions[j + 3];
+        diff1 = (vector){_xi - _xj1, yi - yj1};
+        diff2 = (vector){_xi - _xj2, yi - yj2};
+        diff3 = (vector){_xi - _xj3, yi - yj3};
+        diff4 = (vector){_xi - _xj4, yi - yj4};
         r1 = diff1.first * diff1.first + diff1.second * diff1.second;
         r2 = diff2.first * diff2.first + diff2.second * diff2.second;
         r3 = diff3.first * diff3.first + diff3.second * diff3.second;
@@ -188,8 +204,9 @@ void SearchNeighbors() {
 
       // the particles left which do not fit into unrolling factor 2
       for (; j < limit_j; j++){
-        xj1 = positions[j];
-        diff1 = (vector){xi.first - xj1.first, xi.second - xj1.second};
+        _xj1 = x_positions[j];
+        yj1 = y_positions[j];
+        diff1 = (vector){_xi - _xj1, yi - yj1};
         r1 = sqrt(diff1.first * diff1.first + diff1.second * diff1.second);
         if(r1 < Hradius)
           KernelAndGradient_bidirectional(diff1, i, j, r1);
