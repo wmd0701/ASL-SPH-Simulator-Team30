@@ -6,6 +6,7 @@
 #include <stdio.h>
 #include <math.h>
 #include "constants.h"
+#include <immintrin.h>
 
 // instead of using array of structs, use now multiple arrays
 double* x_positions;
@@ -149,43 +150,28 @@ void SearchNeighbors() {
     limit_i = block_i + block_size;
     limit_j = limit_i;
     unrolling_limit = limit_j - unrolling_factor2;
+    
+    __m256d xi_vec, yi_vec, xj_vec, yj_vec, x_diff_vec, y_diff_vec, r_vec, temp1_vec, temp2_vec;
     for (i = block_i ; i < limit_i ; i++){
       // each particle is neighbor to itself
       KernelAndGradient_zero(i);
 
-      xi = x_positions[i];
-      yi = y_positions[i];
+      xi_vec = _mm256_broadcast_sd(x_positions+i);
+      yi_vec = _mm256_broadcast_sd(y_positions+i);
       
       // unrolling with factor 2
       for (j = i + 1 ; j <= unrolling_limit ; j += unrolling_factor2){
-        xj1 = x_positions[j];
-        xj2 = x_positions[j + 1];
-        xj3 = x_positions[j + 2];
-        xj4 = x_positions[j + 3];
-        yj1 = y_positions[j];
-        yj2 = y_positions[j + 1];
-        yj3 = y_positions[j + 2];
-        yj4 = y_positions[j + 3];
-        x_diff1 = xi - xj1;
-        y_diff1 = yi - yj1;
-        x_diff2 = xi - xj2;
-        y_diff2 = yi - yj2;
-        x_diff3 = xi - xj3;
-        y_diff3 = yi - yj3;
-        x_diff4 = xi - xj4;
-        y_diff4 = yi - yj4;
-        r1 = x_diff1 * x_diff1 + y_diff1 * y_diff1;
-        r2 = x_diff2 * x_diff2 + y_diff2 * y_diff2;
-        r3 = x_diff3 * x_diff3 + y_diff3 * y_diff3;
-        r4 = x_diff4 * x_diff4 + y_diff4 * y_diff4;
-        r1 = sqrt(r1);
-        r2 = sqrt(r2);
-        r3 = sqrt(r3);
-        r4 = sqrt(r4);
-        if(r1 < Hradius) KernelAndGradient_bidirectional(x_diff1, y_diff1, i, j    , r1);
-        if(r2 < Hradius) KernelAndGradient_bidirectional(x_diff2, y_diff2, i, j + 1, r2);
-        if(r3 < Hradius) KernelAndGradient_bidirectional(x_diff3, y_diff3, i, j + 2, r3);
-        if(r4 < Hradius) KernelAndGradient_bidirectional(x_diff4, y_diff4, i, j + 3, r4);
+        xj_vec = _mm256_load_pd(x_positions + j);
+        yj_vec = _mm256_load_pd(y_positions + j);
+        x_diff_vec = _mm256_sub_pd(xi_vec, xj_vec);
+        y_diff_vec = _mm256_sub_pd(yi_vec, yj_vec);
+        temp2_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
+        r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp2_vec);
+        r_vec = _mm256_sqrt_pd(r_vec);
+        if(r_vec[0] < Hradius) KernelAndGradient_bidirectional(x_diff_vec[0], y_diff_vec[0], i, j    , r_vec[0]);
+        if(r_vec[1] < Hradius) KernelAndGradient_bidirectional(x_diff_vec[1], y_diff_vec[1], i, j + 1, r_vec[1]);
+        if(r_vec[2] < Hradius) KernelAndGradient_bidirectional(x_diff_vec[2], y_diff_vec[2], i, j + 2, r_vec[2]);
+        if(r_vec[3] < Hradius) KernelAndGradient_bidirectional(x_diff_vec[3], y_diff_vec[3], i, j + 3, r_vec[3]);
         
       }
 
