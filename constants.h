@@ -55,13 +55,13 @@ void set_particles_interior(int N) {
 
   Nx_repulsive = 2 * round(1.73 / H) + 1;
   Ny_repulsive = 2 * round(1.15 / H) + 1;
-  N_repulsive = Nx_repulsive + 2 * Ny_repulsive;
+  N_repulsive = Nx_repulsive + 2 * Ny_repulsive - 1;
 
   Nx_ghost = Nx_repulsive + 4;
   Ny_ghost = Ny_repulsive;
   N_ghost = 2 * Nx_ghost + 4 * Ny_ghost;
 
-  N_boundary = N_repulsive + N_ghost - 1;
+  N_boundary = N_repulsive + N_ghost;
   
   mass = H * H * initial_density;
 
