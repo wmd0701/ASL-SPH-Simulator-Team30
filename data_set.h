@@ -123,6 +123,14 @@ void ClearNeighbors(){
 }
 
 void SearchNeighbors() {
+  double r_bidirectional[9*N_interior];
+  double x_diff_bidirectional[9*N_interior];
+  double y_diff_bidirectional[9*N_interior];
+  int count_bidirectional;
+  double r_unidirectional[9*N_ghost];
+  double x_diff_unidirectional[9*N_ghost];
+  double y_diff_unidirectional[9*N_ghost];
+  int count_unidirectional;
    
   int block_size = 64;          // size of block
   int unrolling_factor1 = 16;   // unrolling factor 1
@@ -147,6 +155,7 @@ void SearchNeighbors() {
           r1_vec, r2_vec, r3_vec, r4_vec, temp1_vec, temp2_vec, temp3_vec, temp4_vec;
   double r[4], x_diff[4], y_diff[4];
   double radii[16], x_diffe[16], y_diffe[16]; 
+  __m256d Hradius_vec = _mm256_broadcast_pd(&Hradius);
   //---------------------------------------------------------------------------
   // firstly, check interior-interior pair
   block_end_i = N_interior - N_interior % block_size;
