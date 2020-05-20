@@ -1,4 +1,5 @@
 //! @file rate_of_change.h
+//! @file rate_of_change.h
 #ifndef RATE_OF_CHANGE_H
 #define RATE_OF_CHANGE_H
 
@@ -48,8 +49,8 @@ void DensityAndBCVelocityCorrection () {
     
     // if not interior
     for (int i = N_interior ; i < NUMBER_OF_PARTICLE ; i++){
-        velocities[i].first /= (-sum[i]);
-        velocities[i].second /= (-sum[i]);
+        x_velocities[i] /= (-sum[i]);
+        y_velocities[i] /= (-sum[i]);
     }
 
 	free(sum);
@@ -125,37 +126,39 @@ void ComputeInteriorLaminarAcceleration(double t) {
 
     // only for interior particles
     for (int i = 0; i < N_interior; i++) {
-        accelerats[i] = zero;
+        x_accelerats[i] = 0.;
+        y_accelerats[i] = 0.;
                 
         for (int j = 0; j < neighbor_counts[i]; j++) {
             int neighbor    = neighbor_indices[i][j];      // index of neighbor
-            vector gradient = Wij_grads[i][j];
+            double x_gradient = x_Wij_grads[i][j];
+            double y_gradient = y_Wij_grads[i][j];
             
             // Pressure force
             double constant1 =
                 mass * (pressures[i] / (densities[i] * densities[i]) +
                         pressures[neighbor] / (densities[neighbor] * densities[neighbor]));
             
-            accelerats[i].first -= constant1 * gradient.first;
-            accelerats[i].second -= constant1 * gradient.second;
+            x_accelerats[i] -= constant1 * x_gradient;
+            y_accelerats[i] -= constant1 * y_gradient;
 
             // Viscosity force
-            double xij_first  =  positions[neighbor].first  -  positions[i].first;
-            double xij_second =  positions[neighbor].second -  positions[i].second;
-            double vij_first  = velocities[neighbor].first  - velocities[i].first;
-            double vij_second = velocities[neighbor].second - velocities[i].second;
+            double xij_first  = x_positions[neighbor] - x_positions[i];
+            double xij_second = y_positions[neighbor] - y_positions[i];
+            double vij_first  = x_velocities[neighbor] - x_velocities[i];
+            double vij_second = y_velocities[neighbor] - y_velocities[i];
             double xij_dot_vij = xij_first * vij_first + xij_second * vij_second;
             
             if (xij_dot_vij < 0) {
                 mu_ij = H * xij_dot_vij / ((xij_first*xij_first + xij_second*xij_second) + 0.01 * H * H);
                 PI_ij = - alpha *c * mu_ij / (densities[i] + densities[neighbor]);
-                accelerats[i].first  -= mass * PI_ij * gradient.first;
-                accelerats[i].second -= mass * PI_ij * gradient.second;
+                x_accelerats[i] -= mass * PI_ij * x_gradient;
+                y_accelerats[i] -= mass * PI_ij * y_gradient;
             }
         }
 
         // Gravity
-        accelerats[i].second -= gravity;
+        y_accelerats[i] -= gravity;
     }
     
 }
@@ -187,8 +190,8 @@ void AddRepulsiveForce(double t){
             int neighbor = neighbor_indices[i][j];  // index of neighbor
             // if neighbor is repulsive 
             if (neighbor >= N_interior && neighbor < N_interior + N_repulsive) {
-                double xij_first  = positions[neighbor].first  - positions[i].first;
-                double xij_second = positions[neighbor].second - positions[i].second;
+                double xij_first  = x_positions[neighbor] - x_positions[i];
+                double xij_second = y_positions[neighbor] - y_positions[i];
                 double r2 = xij_first*xij_first + xij_second*xij_second;
                 double r = sqrt(r2);
                 double c2 = ComputeSoundSpeedSquared(t);
@@ -197,8 +200,8 @@ void AddRepulsiveForce(double t){
                     double chi = 1 - r / d;
                     double constant = 0.01 * c2 * chi * f(eta) / r2;
                     
-                    accelerats[i].first -= constant * xij_first;
-                    accelerats[i].second -= constant * xij_second;
+                    x_accelerats[i] -= constant * xij_first;
+                    y_accelerats[i] -= constant * xij_second;
                 }
             }
         }
@@ -215,8 +218,8 @@ void DisplaceBoundaries(double t){
 	double A = amplitude;
 	double T = period;
 	for(int i = 0; i < N_boundary; ++i){
-        positions [i + N_interior].first = init_positions[i].first + (A*cos(2*M_PI*t/T) - A); 
-        velocities[i + N_interior].first = - 2 * M_PI * A * sin(2 * M_PI * t / T) / T;
+        x_positions[i + N_interior] = x_init_positions[i] + (A*cos(2*M_PI*t/T) - A); 
+        x_velocities[i + N_interior] = - 2 * M_PI * A * sin(2 * M_PI * t / T) / T;
 	}
 }
 

@@ -18,22 +18,22 @@ enum Integration_Method integration;
 void Explicit_Euler (double dt){
 	for(int i = 0 ; i < N_interior ; i++){
 		
-		positions[i] = (vector){positions[i].first  + velocities[i].first  * dt, 
-								positions[i].second + velocities[i].second * dt};
+		x_positions[i] = x_positions[i] + x_velocities[i] * dt; 
+		y_positions[i] = y_positions[i] + y_velocities[i] * dt;
 		
-		velocities[i] = (vector){velocities[i].first  + accelerats[i].first  * dt,
-								 velocities[i].second + accelerats[i].second * dt};
+		x_velocities[i] = x_velocities[i] + x_accelerats[i] * dt,
+		y_velocities[i] = y_velocities[i] + y_accelerats[i] * dt;
 	}
 }
 
 void Leap_Frog (double dt){
 	for(int i = 0 ; i < N_interior ; i++){
 		
-		velocities[i] = (vector){velocities[i].first  + accelerats[i].first  * dt,
-								 velocities[i].second + accelerats[i].second * dt};
+		x_velocities[i] = x_velocities[i] + x_accelerats[i] * dt;
+		y_velocities[i] = y_velocities[i] + y_accelerats[i]* dt;
 
-		positions[i] = (vector){positions[i].first  + velocities[i].first  * dt, 
-								positions[i].second + velocities[i].second * dt};
+		x_positions[i] = x_positions[i] + x_velocities[i] * dt; 
+		y_positions[i] = y_positions[i] + y_velocities[i] * dt;
 	}
 }
 
