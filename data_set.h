@@ -639,10 +639,8 @@ void SearchNeighbors() {
  */
 void *Init() {
   // use calloc instead of malloc, so that initial values are set to 0 by default
-  //~ x_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
-  //~ y_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
-  posix_memalign((void**)&x_positions, 32, NUMBER_OF_PARTICLE*sizeof(double));
-  posix_memalign((void**)&y_positions, 32, NUMBER_OF_PARTICLE*sizeof(double));
+  x_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
+  y_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   x_velocities = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   y_velocities = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   densities  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
