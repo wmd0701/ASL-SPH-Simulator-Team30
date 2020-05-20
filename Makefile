@@ -1,5 +1,5 @@
 
-CFLAGS = -O3 -lm
+CFLAGS = -O3 -lm -mavx -mfma
 
 run: main.c time_loop.h time_integration.h data_set.h constants.h validation.h
 	gcc main.c -o simulation $(CFLAGS)
