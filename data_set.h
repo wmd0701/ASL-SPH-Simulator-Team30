@@ -123,6 +123,7 @@ void ClearNeighbors(){
 }
 
 void SearchNeighbors() {
+   
   int block_size = 64;          // size of block
   int unrolling_factor1 = 16;   // unrolling factor 1
   int unrolling_factor2 = 4;    // unrolling factor 2
@@ -140,7 +141,12 @@ void SearchNeighbors() {
   double yi, yj1, yj2, yj3, yj4, yj5, yj6, yj7, yj8, yj9, yj10, yj11, yj12, yj13, yj14, yj15, yj16;
   int unrolling_limit;          // unrolling limit
   int i, j;
-  
+  __m256d xi_vec, yi_vec, xj_vec, yj_vec, x_diff_vec, y_diff_vec, r_vec, temp_vec;
+  __m256d xj1_vec, xj2_vec, xj3_vec, xj4_vec, yj1_vec, yj2_vec, yj3_vec, yj4_vec, x_diff1_vec, 
+          x_diff2_vec, x_diff3_vec, x_diff4_vec, y_diff1_vec, y_diff2_vec, y_diff3_vec, y_diff4_vec,
+          r1_vec, r2_vec, r3_vec, r4_vec, temp1_vec, temp2_vec, temp3_vec, temp4_vec;
+  double r[4], x_diff[4], y_diff[4];
+  double radii[16], x_diffe[16], y_diffe[16]; 
   //---------------------------------------------------------------------------
   // firstly, check interior-interior pair
   block_end_i = N_interior - N_interior % block_size;
@@ -151,53 +157,36 @@ void SearchNeighbors() {
     limit_j = limit_i;
     unrolling_limit = limit_j - unrolling_factor2;
     
-    __m256d xi_vec, yi_vec, xj_vec, yj_vec, x_diff_vec, y_diff_vec, r_vec, temp1_vec, temp2_vec;
     for (i = block_i ; i < limit_i ; i++){
       // each particle is neighbor to itself
       KernelAndGradient_zero(i);
-
-      xi_vec = _mm256_broadcast_sd(x_positions+i);
-      yi_vec = _mm256_broadcast_sd(y_positions+i);
+      
+      xi_vec = _mm256_broadcast_sd(x_positions + i);
+      yi_vec = _mm256_broadcast_sd(y_positions + i);
       
       // unrolling with factor 2
-      double r[4], x_diff[4], y_diff[4];
       for (j = i + 1 ; j <= unrolling_limit ; j += unrolling_factor2){
         xj_vec = _mm256_load_pd(x_positions + j);
         yj_vec = _mm256_load_pd(y_positions + j);
+        
         x_diff_vec = _mm256_sub_pd(xi_vec, xj_vec);
         y_diff_vec = _mm256_sub_pd(yi_vec, yj_vec);
-        
+        temp_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
+        r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp_vec);
+        r_vec = _mm256_sqrt_pd(r_vec);
+        _mm256_store_pd(r, r_vec);
         _mm256_store_pd(x_diff, x_diff_vec);
         _mm256_store_pd(y_diff, y_diff_vec);
-        
-        r1 = x_diff[0] * x_diff[0] + y_diff[0] * y_diff[0];
-        r2 = x_diff[1] * x_diff[1] + y_diff[1] * y_diff[1];
-        r3 = x_diff[2] * x_diff[2] + y_diff[2] * y_diff[2];
-        r4 = x_diff[3] * x_diff[3] + y_diff[3] * y_diff[3];
-        r1 = sqrt(r1);
-        r2 = sqrt(r2);
-        r3 = sqrt(r3);
-        r4 = sqrt(r4);
-        if(r1 < Hradius) KernelAndGradient_bidirectional(x_diff[0], y_diff[0], i, j    , r1);
-        if(r2 < Hradius) KernelAndGradient_bidirectional(x_diff[1], y_diff[1], i, j + 1, r2);
-        if(r3 < Hradius) KernelAndGradient_bidirectional(x_diff[2], y_diff[2], i, j + 2, r3);
-        if(r4 < Hradius) KernelAndGradient_bidirectional(x_diff[3], y_diff[3], i, j + 3, r4);
-
-        
-        //~ temp2_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
-        //~ r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp2_vec);
-        //~ r_vec = _mm256_sqrt_pd(r_vec);
-        //~ _mm256_store_pd(r, r_vec);
-        //~ _mm256_store_pd(x_diff, x_diff_vec);
-        //~ _mm256_store_pd(y_diff, y_diff_vec);
-        //~ if(r[0] < Hradius) KernelAndGradient_bidirectional(x_diff[0], y_diff[0], i, j    , r[0]);
-        //~ if(r[1] < Hradius) KernelAndGradient_bidirectional(x_diff[1], y_diff[1], i, j + 1, r[1]);
-        //~ if(r[2] < Hradius) KernelAndGradient_bidirectional(x_diff[2], y_diff[2], i, j + 2, r[2]);
-        //~ if(r[3] < Hradius) KernelAndGradient_bidirectional(x_diff[3], y_diff[3], i, j + 3, r[3]);
+        if(r[0] < Hradius) KernelAndGradient_bidirectional(x_diff[0], y_diff[0], i, j    , r[0]);
+        if(r[1] < Hradius) KernelAndGradient_bidirectional(x_diff[1], y_diff[1], i, j + 1, r[1]);
+        if(r[2] < Hradius) KernelAndGradient_bidirectional(x_diff[2], y_diff[2], i, j + 2, r[2]);
+        if(r[3] < Hradius) KernelAndGradient_bidirectional(x_diff[3], y_diff[3], i, j + 3, r[3]);
         
       }
 
       // the particles left which do not fit into unrolling factor 2
+      xi = x_positions[i];
+      yi = y_positions[i];
       for (; j < limit_j; j++){
         xj1 = x_positions[j];
         yj1 = y_positions[j];
@@ -209,128 +198,77 @@ void SearchNeighbors() {
       }
 
     }
-
+    
     // search neighbor between two blocks
     for (block_j = block_i + block_size ; block_j < block_end_j ; block_j += block_size){
       limit_j = block_j + block_size;
       for (i = block_i ; i < limit_i ; i++){
-        xi = x_positions[i];
-        yi = y_positions[i];
+        xi_vec = _mm256_broadcast_sd(x_positions + i);
+        yi_vec = _mm256_broadcast_sd(y_positions + i);
         
         // unrolling with factor 1
         for (j = block_j ; j != limit_j ; j += unrolling_factor1){
-          xj1  = x_positions[j];
-          xj2  = x_positions[j + 1];
-          xj3  = x_positions[j + 2];
-          xj4  = x_positions[j + 3];
-          xj5  = x_positions[j + 4];
-          xj6  = x_positions[j + 5];
-          xj7  = x_positions[j + 6];
-          xj8  = x_positions[j + 7];
-          xj9  = x_positions[j + 8];
-          xj10 = x_positions[j + 9];
-          xj11 = x_positions[j + 10];
-          xj12 = x_positions[j + 11];
-          xj13 = x_positions[j + 12];
-          xj14 = x_positions[j + 13];
-          xj15 = x_positions[j + 14];
-          xj16 = x_positions[j + 15];
-          yj1  = y_positions[j];
-          yj2  = y_positions[j + 1];
-          yj3  = y_positions[j + 2];
-          yj4  = y_positions[j + 3];
-          yj5  = y_positions[j + 4];
-          yj6  = y_positions[j + 5];
-          yj7  = y_positions[j + 6];
-          yj8  = y_positions[j + 7];
-          yj9  = y_positions[j + 8];
-          yj10 = y_positions[j + 9];
-          yj11 = y_positions[j + 10];
-          yj12 = y_positions[j + 11];
-          yj13 = y_positions[j + 12];
-          yj14 = y_positions[j + 13];
-          yj15 = y_positions[j + 14];
-          yj16 = y_positions[j + 15];
-          x_diff1 = xi - xj1;
-          y_diff1 = yi - yj1;
-          x_diff2 = xi - xj2;
-          y_diff2 = yi - yj2;
-          x_diff3 = xi - xj3;
-          y_diff3 = yi - yj3;
-          x_diff4 = xi - xj4;
-          y_diff4 = yi - yj4;
-          x_diff5 = xi - xj5;
-          y_diff5 = yi - yj5;
-          x_diff6 = xi - xj6;
-          y_diff6 = yi - yj6;
-          x_diff7 = xi - xj7;
-          y_diff7 = yi - yj7;
-          x_diff8 = xi - xj8;
-          y_diff8 = yi - yj8;
-          x_diff9 = xi - xj9;
-          y_diff9 = yi - yj9;
-          x_diff10 = xi - xj10;
-          y_diff10 = yi - yj10;
-          x_diff11 = xi - xj11;
-          y_diff11 = yi - yj11;
-          x_diff12 = xi - xj12;
-          y_diff12 = yi - yj12;
-          x_diff13 = xi - xj13;
-          y_diff13 = yi - yj13;
-          x_diff14 = xi - xj14;
-          y_diff14 = yi - yj14;
-          x_diff15 = xi - xj15;
-          y_diff15 = yi - yj15;
-          x_diff16 = xi - xj16;
-          y_diff16 = yi - yj16;
-          r1  = x_diff1  * x_diff1  + y_diff1  * y_diff1;
-          r2  = x_diff2  * x_diff2  + y_diff2  * y_diff2;
-          r3  = x_diff3  * x_diff3  + y_diff3  * y_diff3;
-          r4  = x_diff4  * x_diff4  + y_diff4  * y_diff4;
-          r5  = x_diff5  * x_diff5  + y_diff5  * y_diff5;
-          r6  = x_diff6  * x_diff6  + y_diff6  * y_diff6;
-          r7  = x_diff7  * x_diff7  + y_diff7  * y_diff7;
-          r8  = x_diff8  * x_diff8  + y_diff8  * y_diff8;
-          r9  = x_diff9  * x_diff9  + y_diff9  * y_diff9;
-          r10 = x_diff10 * x_diff10 + y_diff10 * y_diff10;
-          r11 = x_diff11 * x_diff11 + y_diff11 * y_diff11;
-          r12 = x_diff12 * x_diff12 + y_diff12 * y_diff12;
-          r13 = x_diff13 * x_diff13 + y_diff13 * y_diff13;
-          r14 = x_diff14 * x_diff14 + y_diff14 * y_diff14;
-          r15 = x_diff15 * x_diff15 + y_diff15 * y_diff15;
-          r16 = x_diff16 * x_diff16 + y_diff16 * y_diff16;
-          r1  = sqrt(r1);
-          r2  = sqrt(r2);
-          r3  = sqrt(r3);
-          r4  = sqrt(r4);
-          r5  = sqrt(r5);
-          r6  = sqrt(r6);
-          r7  = sqrt(r7);
-          r8  = sqrt(r8);
-          r9  = sqrt(r9);
-          r10 = sqrt(r10);
-          r11 = sqrt(r11);
-          r12 = sqrt(r12);
-          r13 = sqrt(r13);
-          r14 = sqrt(r14);
-          r15 = sqrt(r15);
-          r16 = sqrt(r16);
-          if(r1  < Hradius) KernelAndGradient_bidirectional(x_diff1, y_diff1, i, j    , r1);
-          if(r2  < Hradius) KernelAndGradient_bidirectional(x_diff2, y_diff2, i, j + 1, r2);
-          if(r3  < Hradius) KernelAndGradient_bidirectional(x_diff3, y_diff3, i, j + 2, r3);
-          if(r4  < Hradius) KernelAndGradient_bidirectional(x_diff4, y_diff4, i, j + 3, r4);
-          if(r5  < Hradius) KernelAndGradient_bidirectional(x_diff5, y_diff5, i, j + 4, r5);
-          if(r6  < Hradius) KernelAndGradient_bidirectional(x_diff6, y_diff6, i, j + 5, r6);
-          if(r7  < Hradius) KernelAndGradient_bidirectional(x_diff7, y_diff7, i, j + 6, r7);
-          if(r8  < Hradius) KernelAndGradient_bidirectional(x_diff8, y_diff8, i, j + 7, r8);
-          if(r9  < Hradius) KernelAndGradient_bidirectional(x_diff9, y_diff9, i, j + 8, r9);
-          if(r10 < Hradius) KernelAndGradient_bidirectional(x_diff10, y_diff10, i, j + 9, r10);
-          if(r11 < Hradius) KernelAndGradient_bidirectional(x_diff11, y_diff11, i, j + 10, r11);
-          if(r12 < Hradius) KernelAndGradient_bidirectional(x_diff12, y_diff12, i, j + 11, r12);
-          if(r13 < Hradius) KernelAndGradient_bidirectional(x_diff13, y_diff13, i, j + 12, r13);
-          if(r14 < Hradius) KernelAndGradient_bidirectional(x_diff14, y_diff14, i, j + 13, r14);
-          if(r15 < Hradius) KernelAndGradient_bidirectional(x_diff15, y_diff15, i, j + 14, r15);
-          if(r16 < Hradius) KernelAndGradient_bidirectional(x_diff16, y_diff16, i, j + 15, r16);
+          xj1_vec = _mm256_load_pd(x_positions + j);
+          xj2_vec = _mm256_load_pd(x_positions + j + 4);
+          xj3_vec = _mm256_load_pd(x_positions + j + 8);
+          xj4_vec = _mm256_load_pd(x_positions + j + 12);
+          yj1_vec = _mm256_load_pd(y_positions + j);
+          yj2_vec = _mm256_load_pd(y_positions + j + 4);
+          yj3_vec = _mm256_load_pd(y_positions + j + 8);
+          yj4_vec = _mm256_load_pd(y_positions + j + 12);
+          
+          x_diff1_vec = _mm256_sub_pd(xi_vec, xj1_vec);
+          y_diff1_vec = _mm256_sub_pd(yi_vec, yj1_vec);
+          x_diff2_vec = _mm256_sub_pd(xi_vec, xj2_vec);
+          y_diff2_vec = _mm256_sub_pd(yi_vec, yj2_vec);
+          x_diff3_vec = _mm256_sub_pd(xi_vec, xj3_vec);
+          y_diff3_vec = _mm256_sub_pd(yi_vec, yj3_vec);
+          x_diff4_vec = _mm256_sub_pd(xi_vec, xj4_vec);
+          y_diff4_vec = _mm256_sub_pd(yi_vec, yj4_vec);
+          
+          temp1_vec = _mm256_mul_pd(y_diff1_vec, y_diff1_vec);
+          r1_vec = _mm256_fmadd_pd(x_diff1_vec, x_diff1_vec, temp1_vec);
+          r1_vec = _mm256_sqrt_pd(r1_vec);
+          temp2_vec = _mm256_mul_pd(y_diff2_vec, y_diff2_vec);
+          r2_vec = _mm256_fmadd_pd(x_diff2_vec, x_diff2_vec, temp2_vec);
+          r2_vec = _mm256_sqrt_pd(r2_vec);
+          temp3_vec = _mm256_mul_pd(y_diff3_vec, y_diff3_vec);
+          r3_vec = _mm256_fmadd_pd(x_diff3_vec, x_diff3_vec, temp3_vec);
+          r3_vec = _mm256_sqrt_pd(r3_vec);
+          temp4_vec = _mm256_mul_pd(y_diff4_vec, y_diff4_vec);
+          r4_vec = _mm256_fmadd_pd(x_diff4_vec, x_diff4_vec, temp4_vec);
+          r4_vec = _mm256_sqrt_pd(r4_vec);
+          
+          _mm256_store_pd(radii, r1_vec);
+          _mm256_store_pd(x_diffe, x_diff1_vec);
+          _mm256_store_pd(y_diffe, y_diff1_vec);
+          _mm256_store_pd(radii + 4, r2_vec);
+          _mm256_store_pd(x_diffe + 4, x_diff2_vec);
+          _mm256_store_pd(y_diffe + 4, y_diff2_vec);
+          _mm256_store_pd(radii + 8, r3_vec);
+          _mm256_store_pd(x_diffe + 8, x_diff3_vec);
+          _mm256_store_pd(y_diffe + 8, y_diff3_vec);
+          _mm256_store_pd(radii + 12, r4_vec);
+          _mm256_store_pd(x_diffe + 12, x_diff4_vec);
+          _mm256_store_pd(y_diffe + 12, y_diff4_vec);
+          
+          
+          if(radii[0]  < Hradius) KernelAndGradient_bidirectional(x_diffe[0], y_diffe[0], i, j    , radii[0]);
+          if(radii[1]  < Hradius) KernelAndGradient_bidirectional(x_diffe[1], y_diffe[1], i, j + 1, radii[1]);
+          if(radii[2]  < Hradius) KernelAndGradient_bidirectional(x_diffe[2], y_diffe[2], i, j + 2, radii[2]);
+          if(radii[3]  < Hradius) KernelAndGradient_bidirectional(x_diffe[3], y_diffe[3], i, j + 3, radii[3]);
+          if(radii[4]  < Hradius) KernelAndGradient_bidirectional(x_diffe[4], y_diffe[4], i, j + 4, radii[4]);
+          if(radii[5]  < Hradius) KernelAndGradient_bidirectional(x_diffe[5], y_diffe[5], i, j + 5, radii[5]);
+          if(radii[6]  < Hradius) KernelAndGradient_bidirectional(x_diffe[6], y_diffe[6], i, j + 6, radii[6]);
+          if(radii[7]  < Hradius) KernelAndGradient_bidirectional(x_diffe[7], y_diffe[7], i, j + 7, radii[7]);
+          if(radii[8]  < Hradius) KernelAndGradient_bidirectional(x_diffe[8], y_diffe[8], i, j + 8, radii[8]);
+          if(radii[9]  < Hradius) KernelAndGradient_bidirectional(x_diffe[9], y_diffe[9], i, j + 9, radii[9]);
+          if(radii[10] < Hradius) KernelAndGradient_bidirectional(x_diffe[10], y_diffe[10], i, j + 10, radii[10]);
+          if(radii[11] < Hradius) KernelAndGradient_bidirectional(x_diffe[11], y_diffe[11], i, j + 11, radii[11]);
+          if(radii[12] < Hradius) KernelAndGradient_bidirectional(x_diffe[12], y_diffe[12], i, j + 12, radii[12]);
+          if(radii[13] < Hradius) KernelAndGradient_bidirectional(x_diffe[13], y_diffe[13], i, j + 13, radii[13]);
+          if(radii[14] < Hradius) KernelAndGradient_bidirectional(x_diffe[14], y_diffe[14], i, j + 14, radii[14]);
+          if(radii[15] < Hradius) KernelAndGradient_bidirectional(x_diffe[15], y_diffe[15], i, j + 15, radii[15]);
         }
 
       }
@@ -339,42 +277,31 @@ void SearchNeighbors() {
     // rest part that does not fit into block_j
     unrolling_limit = N_interior - unrolling_factor2;
     for (i = block_i ; i < limit_i ; i++){
-      xi = x_positions[i];
-      yi = y_positions[i];
+      xi_vec = _mm256_broadcast_sd(x_positions + i);
+      yi_vec = _mm256_broadcast_sd(y_positions + i);
       
       // unrolling with factor 2
       for (j = block_end_j ; j <= unrolling_limit ; j += unrolling_factor2){
-        xj1 = x_positions[j];
-        xj2 = x_positions[j + 1];
-        xj3 = x_positions[j + 2];
-        xj4 = x_positions[j + 3];
-        yj1 = y_positions[j];
-        yj2 = y_positions[j + 1];
-        yj3 = y_positions[j + 2];
-        yj4 = y_positions[j + 3];
-        x_diff1 = xi - xj1;
-        y_diff1 = yi - yj1;
-        x_diff2 = xi - xj2;
-        y_diff2 = yi - yj2;
-        x_diff3 = xi - xj3;
-        y_diff3 = yi - yj3;
-        x_diff4 = xi - xj4;
-        y_diff4 = yi - yj4;
-        r1 = x_diff1 * x_diff1 + y_diff1 * y_diff1;
-        r2 = x_diff2 * x_diff2 + y_diff2 * y_diff2;
-        r3 = x_diff3 * x_diff3 + y_diff3 * y_diff3;
-        r4 = x_diff4 * x_diff4 + y_diff4 * y_diff4;
-        r1 = sqrt(r1);
-        r2 = sqrt(r2);
-        r3 = sqrt(r3);
-        r4 = sqrt(r4);
-        if(r1 < Hradius) KernelAndGradient_bidirectional(x_diff1, y_diff1, i, j    , r1);
-        if(r2 < Hradius) KernelAndGradient_bidirectional(x_diff2, y_diff2, i, j + 1, r2);
-        if(r3 < Hradius) KernelAndGradient_bidirectional(x_diff3, y_diff3, i, j + 2, r3);
-        if(r4 < Hradius) KernelAndGradient_bidirectional(x_diff4, y_diff4, i, j + 3, r4);
+        xj_vec = _mm256_load_pd(x_positions + j);
+        yj_vec = _mm256_load_pd(y_positions + j);
+        
+        x_diff_vec = _mm256_sub_pd(xi_vec, xj_vec);
+        y_diff_vec = _mm256_sub_pd(yi_vec, yj_vec);
+        temp_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
+        r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp_vec);
+        r_vec = _mm256_sqrt_pd(r_vec);
+        _mm256_store_pd(r, r_vec);
+        _mm256_store_pd(x_diff, x_diff_vec);
+        _mm256_store_pd(y_diff, y_diff_vec);
+        if(r[0] < Hradius) KernelAndGradient_bidirectional(x_diff[0], y_diff[0], i, j    , r[0]);
+        if(r[1] < Hradius) KernelAndGradient_bidirectional(x_diff[1], y_diff[1], i, j + 1, r[1]);
+        if(r[2] < Hradius) KernelAndGradient_bidirectional(x_diff[2], y_diff[2], i, j + 2, r[2]);
+        if(r[3] < Hradius) KernelAndGradient_bidirectional(x_diff[3], y_diff[3], i, j + 3, r[3]);
       }
 
       // particles left that do not fit into unrolling factor 2
+      xi = x_positions[i];
+      yi = y_positions[i];
       for (; j < N_interior; j++){
         xj1 = x_positions[j];
         yj1 = y_positions[j];
@@ -394,42 +321,31 @@ void SearchNeighbors() {
     // each particle is neighbor to itself
     KernelAndGradient_zero(i);
 
-    xi = x_positions[i];
-    yi = y_positions[i];
+    xi_vec = _mm256_broadcast_sd(x_positions+i);
+    yi_vec = _mm256_broadcast_sd(y_positions+i);
 
     // unrolling with factor 2
     for (j = i + 1 ; j <= unrolling_limit ; j += unrolling_factor2){
-      xj1 = x_positions[j];
-      xj2 = x_positions[j + 1];
-      xj3 = x_positions[j + 2];
-      xj4 = x_positions[j + 3];
-      yj1 = y_positions[j];
-      yj2 = y_positions[j + 1];
-      yj3 = y_positions[j + 2];
-      yj4 = y_positions[j + 3];
-      x_diff1 = xi - xj1;
-      y_diff1 = yi - yj1;
-      x_diff2 = xi - xj2;
-      y_diff2 = yi - yj2;
-      x_diff3 = xi - xj3;
-      y_diff3 = yi - yj3;
-      x_diff4 = xi - xj4;
-      y_diff4 = yi - yj4;
-      r1 = x_diff1 * x_diff1 + y_diff1 * y_diff1;
-      r2 = x_diff2 * x_diff2 + y_diff2 * y_diff2;
-      r3 = x_diff3 * x_diff3 + y_diff3 * y_diff3;
-      r4 = x_diff4 * x_diff4 + y_diff4 * y_diff4;
-      r1 = sqrt(r1);
-      r2 = sqrt(r2);
-      r3 = sqrt(r3);
-      r4 = sqrt(r4);
-      if(r1 < Hradius) KernelAndGradient_bidirectional(x_diff1, y_diff1, i, j    , r1);
-      if(r2 < Hradius) KernelAndGradient_bidirectional(x_diff2, y_diff2, i, j + 1, r2);
-      if(r3 < Hradius) KernelAndGradient_bidirectional(x_diff3, y_diff3, i, j + 2, r3);
-      if(r4 < Hradius) KernelAndGradient_bidirectional(x_diff4, y_diff4, i, j + 3, r4);
+      xj_vec = _mm256_load_pd(x_positions + j);
+      yj_vec = _mm256_load_pd(y_positions + j);
+        
+      x_diff_vec = _mm256_sub_pd(xi_vec, xj_vec);
+      y_diff_vec = _mm256_sub_pd(yi_vec, yj_vec);
+      temp_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
+      r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp_vec);
+      r_vec = _mm256_sqrt_pd(r_vec);
+      _mm256_store_pd(r, r_vec);
+      _mm256_store_pd(x_diff, x_diff_vec);
+      _mm256_store_pd(y_diff, y_diff_vec);
+      if(r[0] < Hradius) KernelAndGradient_bidirectional(x_diff[0], y_diff[0], i, j    , r[0]);
+      if(r[1] < Hradius) KernelAndGradient_bidirectional(x_diff[1], y_diff[1], i, j + 1, r[1]);
+      if(r[2] < Hradius) KernelAndGradient_bidirectional(x_diff[2], y_diff[2], i, j + 2, r[2]);
+      if(r[3] < Hradius) KernelAndGradient_bidirectional(x_diff[3], y_diff[3], i, j + 3, r[3]);
     }
 
     // particles left that do not fit into unrolling factor 2
+    xi = x_positions[i];
+    yi = y_positions[i];
     for (; j < N_interior; j++){
         xj1 = x_positions[j];
         yj1 = y_positions[j];
@@ -456,123 +372,72 @@ void SearchNeighbors() {
     for (block_j = 0 ; block_j < block_end_j ; block_j += block_size){
       limit_j = block_j + block_size;
       for (i = block_i ; i < limit_i ; i++){
-        xi = x_positions[i];
-        yi = y_positions[i];
+        xi_vec = _mm256_broadcast_sd(x_positions + i);
+        yi_vec = _mm256_broadcast_sd(y_positions + i);
         
         // unrolling with factor 1
         for (j = block_j ; j != limit_j ; j += unrolling_factor1){
-          xj1  = x_positions[j];
-          xj2  = x_positions[j + 1];
-          xj3  = x_positions[j + 2];
-          xj4  = x_positions[j + 3];
-          xj5  = x_positions[j + 4];
-          xj6  = x_positions[j + 5];
-          xj7  = x_positions[j + 6];
-          xj8  = x_positions[j + 7];
-          xj9  = x_positions[j + 8];
-          xj10 = x_positions[j + 9];
-          xj11 = x_positions[j + 10];
-          xj12 = x_positions[j + 11];
-          xj13 = x_positions[j + 12];
-          xj14 = x_positions[j + 13];
-          xj15 = x_positions[j + 14];
-          xj16 = x_positions[j + 15];
-          yj1  = y_positions[j];
-          yj2  = y_positions[j + 1];
-          yj3  = y_positions[j + 2];
-          yj4  = y_positions[j + 3];
-          yj5  = y_positions[j + 4];
-          yj6  = y_positions[j + 5];
-          yj7  = y_positions[j + 6];
-          yj8  = y_positions[j + 7];
-          yj9  = y_positions[j + 8];
-          yj10 = y_positions[j + 9];
-          yj11 = y_positions[j + 10];
-          yj12 = y_positions[j + 11];
-          yj13 = y_positions[j + 12];
-          yj14 = y_positions[j + 13];
-          yj15 = y_positions[j + 14];
-          yj16 = y_positions[j + 15];
-          x_diff1 = xi - xj1;
-          y_diff1 = yi - yj1;
-          x_diff2 = xi - xj2;
-          y_diff2 = yi - yj2;
-          x_diff3 = xi - xj3;
-          y_diff3 = yi - yj3;
-          x_diff4 = xi - xj4;
-          y_diff4 = yi - yj4;
-          x_diff5 = xi - xj5;
-          y_diff5 = yi - yj5;
-          x_diff6 = xi - xj6;
-          y_diff6 = yi - yj6;
-          x_diff7 = xi - xj7;
-          y_diff7 = yi - yj7;
-          x_diff8 = xi - xj8;
-          y_diff8 = yi - yj8;
-          x_diff9 = xi - xj9;
-          y_diff9 = yi - yj9;
-          x_diff10 = xi - xj10;
-          y_diff10 = yi - yj10;
-          x_diff11 = xi - xj11;
-          y_diff11 = yi - yj11;
-          x_diff12 = xi - xj12;
-          y_diff12 = yi - yj12;
-          x_diff13 = xi - xj13;
-          y_diff13 = yi - yj13;
-          x_diff14 = xi - xj14;
-          y_diff14 = yi - yj14;
-          x_diff15 = xi - xj15;
-          y_diff15 = yi - yj15;
-          x_diff16 = xi - xj16;
-          y_diff16 = yi - yj16;
-          r1  = x_diff1  * x_diff1  + y_diff1  * y_diff1;
-          r2  = x_diff2  * x_diff2  + y_diff2  * y_diff2;
-          r3  = x_diff3  * x_diff3  + y_diff3  * y_diff3;
-          r4  = x_diff4  * x_diff4  + y_diff4  * y_diff4;
-          r5  = x_diff5  * x_diff5  + y_diff5  * y_diff5;
-          r6  = x_diff6  * x_diff6  + y_diff6  * y_diff6;
-          r7  = x_diff7  * x_diff7  + y_diff7  * y_diff7;
-          r8  = x_diff8  * x_diff8  + y_diff8  * y_diff8;
-          r9  = x_diff9  * x_diff9  + y_diff9  * y_diff9;
-          r10 = x_diff10 * x_diff10 + y_diff10 * y_diff10;
-          r11 = x_diff11 * x_diff11 + y_diff11 * y_diff11;
-          r12 = x_diff12 * x_diff12 + y_diff12 * y_diff12;
-          r13 = x_diff13 * x_diff13 + y_diff13 * y_diff13;
-          r14 = x_diff14 * x_diff14 + y_diff14 * y_diff14;
-          r15 = x_diff15 * x_diff15 + y_diff15 * y_diff15;
-          r16 = x_diff16 * x_diff16 + y_diff16 * y_diff16;
-          r1  = sqrt(r1);
-          r2  = sqrt(r2);
-          r3  = sqrt(r3);
-          r4  = sqrt(r4);
-          r5  = sqrt(r5);
-          r6  = sqrt(r6);
-          r7  = sqrt(r7);
-          r8  = sqrt(r8);
-          r9  = sqrt(r9);
-          r10 = sqrt(r10);
-          r11 = sqrt(r11);
-          r12 = sqrt(r12);
-          r13 = sqrt(r13);
-          r14 = sqrt(r14);
-          r15 = sqrt(r15);
-          r16 = sqrt(r16);
-          if(r1  < Hradius) KernelAndGradient_bidirectional(x_diff1, y_diff1, i, j    , r1);
-          if(r2  < Hradius) KernelAndGradient_bidirectional(x_diff2, y_diff2, i, j + 1, r2);
-          if(r3  < Hradius) KernelAndGradient_bidirectional(x_diff3, y_diff3, i, j + 2, r3);
-          if(r4  < Hradius) KernelAndGradient_bidirectional(x_diff4, y_diff4, i, j + 3, r4);
-          if(r5  < Hradius) KernelAndGradient_bidirectional(x_diff5, y_diff5, i, j + 4, r5);
-          if(r6  < Hradius) KernelAndGradient_bidirectional(x_diff6, y_diff6, i, j + 5, r6);
-          if(r7  < Hradius) KernelAndGradient_bidirectional(x_diff7, y_diff7, i, j + 6, r7);
-          if(r8  < Hradius) KernelAndGradient_bidirectional(x_diff8, y_diff8, i, j + 7, r8);
-          if(r9  < Hradius) KernelAndGradient_bidirectional(x_diff9, y_diff9, i, j + 8, r9);
-          if(r10 < Hradius) KernelAndGradient_bidirectional(x_diff10, y_diff10, i, j + 9, r10);
-          if(r11 < Hradius) KernelAndGradient_bidirectional(x_diff11, y_diff11, i, j + 10, r11);
-          if(r12 < Hradius) KernelAndGradient_bidirectional(x_diff12, y_diff12, i, j + 11, r12);
-          if(r13 < Hradius) KernelAndGradient_bidirectional(x_diff13, y_diff13, i, j + 12, r13);
-          if(r14 < Hradius) KernelAndGradient_bidirectional(x_diff14, y_diff14, i, j + 13, r14);
-          if(r15 < Hradius) KernelAndGradient_bidirectional(x_diff15, y_diff15, i, j + 14, r15);
-          if(r16 < Hradius) KernelAndGradient_bidirectional(x_diff16, y_diff16, i, j + 15, r16);
+          xj1_vec = _mm256_load_pd(x_positions + j);
+          xj2_vec = _mm256_load_pd(x_positions + j + 4);
+          xj3_vec = _mm256_load_pd(x_positions + j + 8);
+          xj4_vec = _mm256_load_pd(x_positions + j + 12);
+          yj1_vec = _mm256_load_pd(y_positions + j);
+          yj2_vec = _mm256_load_pd(y_positions + j + 4);
+          yj3_vec = _mm256_load_pd(y_positions + j + 8);
+          yj4_vec = _mm256_load_pd(y_positions + j + 12);
+          
+          x_diff1_vec = _mm256_sub_pd(xi_vec, xj1_vec);
+          y_diff1_vec = _mm256_sub_pd(yi_vec, yj1_vec);
+          x_diff2_vec = _mm256_sub_pd(xi_vec, xj2_vec);
+          y_diff2_vec = _mm256_sub_pd(yi_vec, yj2_vec);
+          x_diff3_vec = _mm256_sub_pd(xi_vec, xj3_vec);
+          y_diff3_vec = _mm256_sub_pd(yi_vec, yj3_vec);
+          x_diff4_vec = _mm256_sub_pd(xi_vec, xj4_vec);
+          y_diff4_vec = _mm256_sub_pd(yi_vec, yj4_vec);
+          
+          temp1_vec = _mm256_mul_pd(y_diff1_vec, y_diff1_vec);
+          r1_vec = _mm256_fmadd_pd(x_diff1_vec, x_diff1_vec, temp1_vec);
+          r1_vec = _mm256_sqrt_pd(r1_vec);
+          temp2_vec = _mm256_mul_pd(y_diff2_vec, y_diff2_vec);
+          r2_vec = _mm256_fmadd_pd(x_diff2_vec, x_diff2_vec, temp2_vec);
+          r2_vec = _mm256_sqrt_pd(r2_vec);
+          temp3_vec = _mm256_mul_pd(y_diff3_vec, y_diff3_vec);
+          r3_vec = _mm256_fmadd_pd(x_diff3_vec, x_diff3_vec, temp3_vec);
+          r3_vec = _mm256_sqrt_pd(r3_vec);
+          temp4_vec = _mm256_mul_pd(y_diff4_vec, y_diff4_vec);
+          r4_vec = _mm256_fmadd_pd(x_diff4_vec, x_diff4_vec, temp4_vec);
+          r4_vec = _mm256_sqrt_pd(r4_vec);
+          
+          _mm256_store_pd(radii, r1_vec);
+          _mm256_store_pd(x_diffe, x_diff1_vec);
+          _mm256_store_pd(y_diffe, y_diff1_vec);
+          _mm256_store_pd(radii + 4, r2_vec);
+          _mm256_store_pd(x_diffe + 4, x_diff2_vec);
+          _mm256_store_pd(y_diffe + 4, y_diff2_vec);
+          _mm256_store_pd(radii + 8, r3_vec);
+          _mm256_store_pd(x_diffe + 8, x_diff3_vec);
+          _mm256_store_pd(y_diffe + 8, y_diff3_vec);
+          _mm256_store_pd(radii + 12, r4_vec);
+          _mm256_store_pd(x_diffe + 12, x_diff4_vec);
+          _mm256_store_pd(y_diffe + 12, y_diff4_vec);
+          
+          
+          if(radii[0]  < Hradius) KernelAndGradient_bidirectional(x_diffe[0], y_diffe[0], i, j    , radii[0]);
+          if(radii[1]  < Hradius) KernelAndGradient_bidirectional(x_diffe[1], y_diffe[1], i, j + 1, radii[1]);
+          if(radii[2]  < Hradius) KernelAndGradient_bidirectional(x_diffe[2], y_diffe[2], i, j + 2, radii[2]);
+          if(radii[3]  < Hradius) KernelAndGradient_bidirectional(x_diffe[3], y_diffe[3], i, j + 3, radii[3]);
+          if(radii[4]  < Hradius) KernelAndGradient_bidirectional(x_diffe[4], y_diffe[4], i, j + 4, radii[4]);
+          if(radii[5]  < Hradius) KernelAndGradient_bidirectional(x_diffe[5], y_diffe[5], i, j + 5, radii[5]);
+          if(radii[6]  < Hradius) KernelAndGradient_bidirectional(x_diffe[6], y_diffe[6], i, j + 6, radii[6]);
+          if(radii[7]  < Hradius) KernelAndGradient_bidirectional(x_diffe[7], y_diffe[7], i, j + 7, radii[7]);
+          if(radii[8]  < Hradius) KernelAndGradient_bidirectional(x_diffe[8], y_diffe[8], i, j + 8, radii[8]);
+          if(radii[9]  < Hradius) KernelAndGradient_bidirectional(x_diffe[9], y_diffe[9], i, j + 9, radii[9]);
+          if(radii[10] < Hradius) KernelAndGradient_bidirectional(x_diffe[10], y_diffe[10], i, j + 10, radii[10]);
+          if(radii[11] < Hradius) KernelAndGradient_bidirectional(x_diffe[11], y_diffe[11], i, j + 11, radii[11]);
+          if(radii[12] < Hradius) KernelAndGradient_bidirectional(x_diffe[12], y_diffe[12], i, j + 12, radii[12]);
+          if(radii[13] < Hradius) KernelAndGradient_bidirectional(x_diffe[13], y_diffe[13], i, j + 13, radii[13]);
+          if(radii[14] < Hradius) KernelAndGradient_bidirectional(x_diffe[14], y_diffe[14], i, j + 14, radii[14]);
+          if(radii[15] < Hradius) KernelAndGradient_bidirectional(x_diffe[15], y_diffe[15], i, j + 15, radii[15]);
         }
 
       }
@@ -581,42 +446,31 @@ void SearchNeighbors() {
     // rest part that does not fit into block_j
     unrolling_limit = N_interior - unrolling_factor2;
     for (i = block_i ; i < limit_i ; i++){
-      xi = x_positions[i];
-      yi = y_positions[i];
+      xi_vec = _mm256_broadcast_sd(x_positions + i);
+      yi_vec = _mm256_broadcast_sd(y_positions + i);
 
       // unrolling with factor 2
       for (j = block_end_j ; j <= unrolling_limit ; j += unrolling_factor2){
-        xj1 = x_positions[j];
-        xj2 = x_positions[j + 1];
-        xj3 = x_positions[j + 2];
-        xj4 = x_positions[j + 3];
-        yj1 = y_positions[j];
-        yj2 = y_positions[j + 1];
-        yj3 = y_positions[j + 2];
-        yj4 = y_positions[j + 3];
-        x_diff1 = xi - xj1;
-        y_diff1 = yi - yj1;
-        x_diff2 = xi - xj2;
-        y_diff2 = yi - yj2;
-        x_diff3 = xi - xj3;
-        y_diff3 = yi - yj3;
-        x_diff4 = xi - xj4;
-        y_diff4 = yi - yj4;
-        r1 = x_diff1 * x_diff1 + y_diff1 * y_diff1;
-        r2 = x_diff2 * x_diff2 + y_diff2 * y_diff2;
-        r3 = x_diff3 * x_diff3 + y_diff3 * y_diff3;
-        r4 = x_diff4 * x_diff4 + y_diff4 * y_diff4;
-        r1 = sqrt(r1);
-        r2 = sqrt(r2);
-        r3 = sqrt(r3);
-        r4 = sqrt(r4);
-        if(r1 < Hradius) KernelAndGradient_bidirectional(x_diff1, y_diff1, i, j    , r1);
-        if(r2 < Hradius) KernelAndGradient_bidirectional(x_diff2, y_diff2, i, j + 1, r2);
-        if(r3 < Hradius) KernelAndGradient_bidirectional(x_diff3, y_diff3, i, j + 2, r3);
-        if(r4 < Hradius) KernelAndGradient_bidirectional(x_diff4, y_diff4, i, j + 3, r4);
+        xj_vec = _mm256_load_pd(x_positions + j);
+        yj_vec = _mm256_load_pd(y_positions + j);
+        
+        x_diff_vec = _mm256_sub_pd(xi_vec, xj_vec);
+        y_diff_vec = _mm256_sub_pd(yi_vec, yj_vec);
+        temp_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
+        r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp_vec);
+        r_vec = _mm256_sqrt_pd(r_vec);
+        _mm256_store_pd(r, r_vec);
+        _mm256_store_pd(x_diff, x_diff_vec);
+        _mm256_store_pd(y_diff, y_diff_vec);
+        if(r[0] < Hradius) KernelAndGradient_bidirectional(x_diff[0], y_diff[0], i, j    , r[0]);
+        if(r[1] < Hradius) KernelAndGradient_bidirectional(x_diff[1], y_diff[1], i, j + 1, r[1]);
+        if(r[2] < Hradius) KernelAndGradient_bidirectional(x_diff[2], y_diff[2], i, j + 2, r[2]);
+        if(r[3] < Hradius) KernelAndGradient_bidirectional(x_diff[3], y_diff[3], i, j + 3, r[3]);
       }
 
       // particles left that do not fit into unrolling factor 2
+      xi = x_positions[i];
+      yi = y_positions[i];
       for (; j < N_interior; j++){
         xj1 = x_positions[j];
         yj1 = y_positions[j];
@@ -635,42 +489,31 @@ void SearchNeighbors() {
     // each particle is neighbor to itself
     KernelAndGradient_zero(i);
 
-    xi = x_positions[i];
-    yi = y_positions[i];
+    xi_vec = _mm256_broadcast_sd(x_positions + i);
+    yi_vec = _mm256_broadcast_sd(y_positions + i);
 
     // unrolling with factor 2
     for (j = 0 ; j <= unrolling_limit ; j += unrolling_factor2){
-      xj1 = x_positions[j];
-      xj2 = x_positions[j + 1];
-      xj3 = x_positions[j + 2];
-      xj4 = x_positions[j + 3];
-      yj1 = y_positions[j];
-      yj2 = y_positions[j + 1];
-      yj3 = y_positions[j + 2];
-      yj4 = y_positions[j + 3];
-      x_diff1 = xi - xj1;
-      y_diff1 = yi - yj1;
-      x_diff2 = xi - xj2;
-      y_diff2 = yi - yj2;
-      x_diff3 = xi - xj3;
-      y_diff3 = yi - yj3;
-      x_diff4 = xi - xj4;
-      y_diff4 = yi - yj4;
-      r1 = x_diff1 * x_diff1 + y_diff1 * y_diff1;
-      r2 = x_diff2 * x_diff2 + y_diff2 * y_diff2;
-      r3 = x_diff3 * x_diff3 + y_diff3 * y_diff3;
-      r4 = x_diff4 * x_diff4 + y_diff4 * y_diff4;
-      r1 = sqrt(r1);
-      r2 = sqrt(r2);
-      r3 = sqrt(r3);
-      r4 = sqrt(r4);
-      if(r1 < Hradius) KernelAndGradient_bidirectional(x_diff1, y_diff1, i, j    , r1);
-      if(r2 < Hradius) KernelAndGradient_bidirectional(x_diff2, y_diff2, i, j + 1, r2);
-      if(r3 < Hradius) KernelAndGradient_bidirectional(x_diff3, y_diff3, i, j + 2, r3);
-      if(r4 < Hradius) KernelAndGradient_bidirectional(x_diff4, y_diff4, i, j + 3, r4);
+      xj_vec = _mm256_load_pd(x_positions + j);
+      yj_vec = _mm256_load_pd(y_positions + j);
+        
+      x_diff_vec = _mm256_sub_pd(xi_vec, xj_vec);
+      y_diff_vec = _mm256_sub_pd(yi_vec, yj_vec);
+      temp_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
+      r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp_vec);
+      r_vec = _mm256_sqrt_pd(r_vec);
+      _mm256_store_pd(r, r_vec);
+      _mm256_store_pd(x_diff, x_diff_vec);
+      _mm256_store_pd(y_diff, y_diff_vec);
+      if(r[0] < Hradius) KernelAndGradient_bidirectional(x_diff[0], y_diff[0], i, j    , r[0]);
+      if(r[1] < Hradius) KernelAndGradient_bidirectional(x_diff[1], y_diff[1], i, j + 1, r[1]);
+      if(r[2] < Hradius) KernelAndGradient_bidirectional(x_diff[2], y_diff[2], i, j + 2, r[2]);
+      if(r[3] < Hradius) KernelAndGradient_bidirectional(x_diff[3], y_diff[3], i, j + 3, r[3]);
     }
 
     // particles left that do not fit into unrolling factor 2
+    xi = x_positions[i];
+    yi = y_positions[i];
     for (; j < N_interior; j++){
       xj1 = x_positions[j];
       yj1 = y_positions[j];
@@ -693,123 +536,72 @@ void SearchNeighbors() {
     for (block_j = N_interior ; block_j < block_end_j ; block_j += block_size){
       limit_j = block_j + block_size;
       for (i = block_i ; i < limit_i ; i++){
-        xi = x_positions[i];
-        yi = y_positions[i];
+        xi_vec = _mm256_broadcast_sd(x_positions + i);
+        yi_vec = _mm256_broadcast_sd(y_positions + i);
 
         // unrolling
         for (j = block_j ; j != limit_j ; j += unrolling_factor1){
-          xj1  = x_positions[j];
-          xj2  = x_positions[j + 1];
-          xj3  = x_positions[j + 2];
-          xj4  = x_positions[j + 3];
-          xj5  = x_positions[j + 4];
-          xj6  = x_positions[j + 5];
-          xj7  = x_positions[j + 6];
-          xj8  = x_positions[j + 7];
-          xj9  = x_positions[j + 8];
-          xj10 = x_positions[j + 9];
-          xj11 = x_positions[j + 10];
-          xj12 = x_positions[j + 11];
-          xj13 = x_positions[j + 12];
-          xj14 = x_positions[j + 13];
-          xj15 = x_positions[j + 14];
-          xj16 = x_positions[j + 15];
-          yj1  = y_positions[j];
-          yj2  = y_positions[j + 1];
-          yj3  = y_positions[j + 2];
-          yj4  = y_positions[j + 3];
-          yj5  = y_positions[j + 4];
-          yj6  = y_positions[j + 5];
-          yj7  = y_positions[j + 6];
-          yj8  = y_positions[j + 7];
-          yj9  = y_positions[j + 8];
-          yj10 = y_positions[j + 9];
-          yj11 = y_positions[j + 10];
-          yj12 = y_positions[j + 11];
-          yj13 = y_positions[j + 12];
-          yj14 = y_positions[j + 13];
-          yj15 = y_positions[j + 14];
-          yj16 = y_positions[j + 15];
-          x_diff1 = xi - xj1;
-          y_diff1 = yi - yj1;
-          x_diff2 = xi - xj2;
-          y_diff2 = yi - yj2;
-          x_diff3 = xi - xj3;
-          y_diff3 = yi - yj3;
-          x_diff4 = xi - xj4;
-          y_diff4 = yi - yj4;
-          x_diff5 = xi - xj5;
-          y_diff5 = yi - yj5;
-          x_diff6 = xi - xj6;
-          y_diff6 = yi - yj6;
-          x_diff7 = xi - xj7;
-          y_diff7 = yi - yj7;
-          x_diff8 = xi - xj8;
-          y_diff8 = yi - yj8;
-          x_diff9 = xi - xj9;
-          y_diff9 = yi - yj9;
-          x_diff10 = xi - xj10;
-          y_diff10 = yi - yj10;
-          x_diff11 = xi - xj11;
-          y_diff11 = yi - yj11;
-          x_diff12 = xi - xj12;
-          y_diff12 = yi - yj12;
-          x_diff13 = xi - xj13;
-          y_diff13 = yi - yj13;
-          x_diff14 = xi - xj14;
-          y_diff14 = yi - yj14;
-          x_diff15 = xi - xj15;
-          y_diff15 = yi - yj15;
-          x_diff16 = xi - xj16;
-          y_diff16 = yi - yj16;
-          r1  = x_diff1  * x_diff1  + y_diff1  * y_diff1;
-          r2  = x_diff2  * x_diff2  + y_diff2  * y_diff2;
-          r3  = x_diff3  * x_diff3  + y_diff3  * y_diff3;
-          r4  = x_diff4  * x_diff4  + y_diff4  * y_diff4;
-          r5  = x_diff5  * x_diff5  + y_diff5  * y_diff5;
-          r6  = x_diff6  * x_diff6  + y_diff6  * y_diff6;
-          r7  = x_diff7  * x_diff7  + y_diff7  * y_diff7;
-          r8  = x_diff8  * x_diff8  + y_diff8  * y_diff8;
-          r9  = x_diff9  * x_diff9  + y_diff9  * y_diff9;
-          r10 = x_diff10 * x_diff10 + y_diff10 * y_diff10;
-          r11 = x_diff11 * x_diff11 + y_diff11 * y_diff11;
-          r12 = x_diff12 * x_diff12 + y_diff12 * y_diff12;
-          r13 = x_diff13 * x_diff13 + y_diff13 * y_diff13;
-          r14 = x_diff14 * x_diff14 + y_diff14 * y_diff14;
-          r15 = x_diff15 * x_diff15 + y_diff15 * y_diff15;
-          r16 = x_diff16 * x_diff16 + y_diff16 * y_diff16;
-          r1  = sqrt(r1);
-          r2  = sqrt(r2);
-          r3  = sqrt(r3);
-          r4  = sqrt(r4);
-          r5  = sqrt(r5);
-          r6  = sqrt(r6);
-          r7  = sqrt(r7);
-          r8  = sqrt(r8);
-          r9  = sqrt(r9);
-          r10 = sqrt(r10);
-          r11 = sqrt(r11);
-          r12 = sqrt(r12);
-          r13 = sqrt(r13);
-          r14 = sqrt(r14);
-          r15 = sqrt(r15);
-          r16 = sqrt(r16);
-          if(r1  < Hradius) KernelAndGradient_unidirectional(x_diff1, y_diff1, i, j    , r1);
-          if(r2  < Hradius) KernelAndGradient_unidirectional(x_diff2, y_diff2, i, j + 1, r2);
-          if(r3  < Hradius) KernelAndGradient_unidirectional(x_diff3, y_diff3, i, j + 2, r3);
-          if(r4  < Hradius) KernelAndGradient_unidirectional(x_diff4, y_diff4, i, j + 3, r4);
-          if(r5  < Hradius) KernelAndGradient_unidirectional(x_diff5, y_diff5, i, j + 4, r5);
-          if(r6  < Hradius) KernelAndGradient_unidirectional(x_diff6, y_diff6, i, j + 5, r6);
-          if(r7  < Hradius) KernelAndGradient_unidirectional(x_diff7, y_diff7, i, j + 6, r7);
-          if(r8  < Hradius) KernelAndGradient_unidirectional(x_diff8, y_diff8, i, j + 7, r8);
-          if(r9  < Hradius) KernelAndGradient_unidirectional(x_diff9, y_diff9, i, j + 8, r9);
-          if(r10 < Hradius) KernelAndGradient_unidirectional(x_diff10, y_diff10, i, j + 9, r10);
-          if(r11 < Hradius) KernelAndGradient_unidirectional(x_diff11, y_diff11, i, j + 10, r11);
-          if(r12 < Hradius) KernelAndGradient_unidirectional(x_diff12, y_diff12, i, j + 11, r12);
-          if(r13 < Hradius) KernelAndGradient_unidirectional(x_diff13, y_diff13, i, j + 12, r13);
-          if(r14 < Hradius) KernelAndGradient_unidirectional(x_diff14, y_diff14, i, j + 13, r14);
-          if(r15 < Hradius) KernelAndGradient_unidirectional(x_diff15, y_diff15, i, j + 14, r15);
-          if(r16 < Hradius) KernelAndGradient_unidirectional(x_diff16, y_diff16, i, j + 15, r16);
+          xj1_vec = _mm256_load_pd(x_positions + j);
+          xj2_vec = _mm256_load_pd(x_positions + j + 4);
+          xj3_vec = _mm256_load_pd(x_positions + j + 8);
+          xj4_vec = _mm256_load_pd(x_positions + j + 12);
+          yj1_vec = _mm256_load_pd(y_positions + j);
+          yj2_vec = _mm256_load_pd(y_positions + j + 4);
+          yj3_vec = _mm256_load_pd(y_positions + j + 8);
+          yj4_vec = _mm256_load_pd(y_positions + j + 12);
+          
+          x_diff1_vec = _mm256_sub_pd(xi_vec, xj1_vec);
+          y_diff1_vec = _mm256_sub_pd(yi_vec, yj1_vec);
+          x_diff2_vec = _mm256_sub_pd(xi_vec, xj2_vec);
+          y_diff2_vec = _mm256_sub_pd(yi_vec, yj2_vec);
+          x_diff3_vec = _mm256_sub_pd(xi_vec, xj3_vec);
+          y_diff3_vec = _mm256_sub_pd(yi_vec, yj3_vec);
+          x_diff4_vec = _mm256_sub_pd(xi_vec, xj4_vec);
+          y_diff4_vec = _mm256_sub_pd(yi_vec, yj4_vec);
+          
+          temp1_vec = _mm256_mul_pd(y_diff1_vec, y_diff1_vec);
+          r1_vec = _mm256_fmadd_pd(x_diff1_vec, x_diff1_vec, temp1_vec);
+          r1_vec = _mm256_sqrt_pd(r1_vec);
+          temp2_vec = _mm256_mul_pd(y_diff2_vec, y_diff2_vec);
+          r2_vec = _mm256_fmadd_pd(x_diff2_vec, x_diff2_vec, temp2_vec);
+          r2_vec = _mm256_sqrt_pd(r2_vec);
+          temp3_vec = _mm256_mul_pd(y_diff3_vec, y_diff3_vec);
+          r3_vec = _mm256_fmadd_pd(x_diff3_vec, x_diff3_vec, temp3_vec);
+          r3_vec = _mm256_sqrt_pd(r3_vec);
+          temp4_vec = _mm256_mul_pd(y_diff4_vec, y_diff4_vec);
+          r4_vec = _mm256_fmadd_pd(x_diff4_vec, x_diff4_vec, temp4_vec);
+          r4_vec = _mm256_sqrt_pd(r4_vec);
+          
+          _mm256_store_pd(radii, r1_vec);
+          _mm256_store_pd(x_diffe, x_diff1_vec);
+          _mm256_store_pd(y_diffe, y_diff1_vec);
+          _mm256_store_pd(radii + 4, r2_vec);
+          _mm256_store_pd(x_diffe + 4, x_diff2_vec);
+          _mm256_store_pd(y_diffe + 4, y_diff2_vec);
+          _mm256_store_pd(radii + 8, r3_vec);
+          _mm256_store_pd(x_diffe + 8, x_diff3_vec);
+          _mm256_store_pd(y_diffe + 8, y_diff3_vec);
+          _mm256_store_pd(radii + 12, r4_vec);
+          _mm256_store_pd(x_diffe + 12, x_diff4_vec);
+          _mm256_store_pd(y_diffe + 12, y_diff4_vec);
+          
+          
+          if(radii[0]  < Hradius) KernelAndGradient_unidirectional(x_diffe[0], y_diffe[0], i, j    , radii[0]);
+          if(radii[1]  < Hradius) KernelAndGradient_unidirectional(x_diffe[1], y_diffe[1], i, j + 1, radii[1]);
+          if(radii[2]  < Hradius) KernelAndGradient_unidirectional(x_diffe[2], y_diffe[2], i, j + 2, radii[2]);
+          if(radii[3]  < Hradius) KernelAndGradient_unidirectional(x_diffe[3], y_diffe[3], i, j + 3, radii[3]);
+          if(radii[4]  < Hradius) KernelAndGradient_unidirectional(x_diffe[4], y_diffe[4], i, j + 4, radii[4]);
+          if(radii[5]  < Hradius) KernelAndGradient_unidirectional(x_diffe[5], y_diffe[5], i, j + 5, radii[5]);
+          if(radii[6]  < Hradius) KernelAndGradient_unidirectional(x_diffe[6], y_diffe[6], i, j + 6, radii[6]);
+          if(radii[7]  < Hradius) KernelAndGradient_unidirectional(x_diffe[7], y_diffe[7], i, j + 7, radii[7]);
+          if(radii[8]  < Hradius) KernelAndGradient_unidirectional(x_diffe[8], y_diffe[8], i, j + 8, radii[8]);
+          if(radii[9]  < Hradius) KernelAndGradient_unidirectional(x_diffe[9], y_diffe[9], i, j + 9, radii[9]);
+          if(radii[10] < Hradius) KernelAndGradient_unidirectional(x_diffe[10], y_diffe[10], i, j + 10, radii[10]);
+          if(radii[11] < Hradius) KernelAndGradient_unidirectional(x_diffe[11], y_diffe[11], i, j + 11, radii[11]);
+          if(radii[12] < Hradius) KernelAndGradient_unidirectional(x_diffe[12], y_diffe[12], i, j + 12, radii[12]);
+          if(radii[13] < Hradius) KernelAndGradient_unidirectional(x_diffe[13], y_diffe[13], i, j + 13, radii[13]);
+          if(radii[14] < Hradius) KernelAndGradient_unidirectional(x_diffe[14], y_diffe[14], i, j + 14, radii[14]);
+          if(radii[15] < Hradius) KernelAndGradient_unidirectional(x_diffe[15], y_diffe[15], i, j + 15, radii[15]);
         }
 
       }
@@ -818,42 +610,31 @@ void SearchNeighbors() {
     // rest part that does not fit into block_j
     unrolling_limit = N_interior + N_repulsive - unrolling_factor2;
     for (i = block_i ; i < limit_i ; i++){
-      xi = x_positions[i];
-      yi = y_positions[i];
+      xi_vec = _mm256_broadcast_sd(x_positions + i);
+      yi_vec = _mm256_broadcast_sd(y_positions + i);
 
       // unrolling with factor 2
       for (j = block_end_j ; j <= unrolling_limit ; j += unrolling_factor2){
-        xj1 = x_positions[j];
-        xj2 = x_positions[j + 1];
-        xj3 = x_positions[j + 2];
-        xj4 = x_positions[j + 3];
-        yj1 = y_positions[j];
-        yj2 = y_positions[j + 1];
-        yj3 = y_positions[j + 2];
-        yj4 = y_positions[j + 3];
-        x_diff1 = xi - xj1;
-        y_diff1 = yi - yj1;
-        x_diff2 = xi - xj2;
-        y_diff2 = yi - yj2;
-        x_diff3 = xi - xj3;
-        y_diff3 = yi - yj3;
-        x_diff4 = xi - xj4;
-        y_diff4 = yi - yj4;
-        r1 = x_diff1 * x_diff1 + y_diff1 * y_diff1;
-        r2 = x_diff2 * x_diff2 + y_diff2 * y_diff2;
-        r3 = x_diff3 * x_diff3 + y_diff3 * y_diff3;
-        r4 = x_diff4 * x_diff4 + y_diff4 * y_diff4;
-        r1 = sqrt(r1);
-        r2 = sqrt(r2);
-        r3 = sqrt(r3);
-        r4 = sqrt(r4);
-        if(r1 < Hradius) KernelAndGradient_unidirectional(x_diff1, y_diff1, i, j    , r1);
-        if(r2 < Hradius) KernelAndGradient_unidirectional(x_diff2, y_diff2, i, j + 1, r2);
-        if(r3 < Hradius) KernelAndGradient_unidirectional(x_diff3, y_diff3, i, j + 2, r3);
-        if(r4 < Hradius) KernelAndGradient_unidirectional(x_diff4, y_diff4, i, j + 3, r4);
+        xj_vec = _mm256_load_pd(x_positions + j);
+        yj_vec = _mm256_load_pd(y_positions + j);
+        
+        x_diff_vec = _mm256_sub_pd(xi_vec, xj_vec);
+        y_diff_vec = _mm256_sub_pd(yi_vec, yj_vec);
+        temp_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
+        r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp_vec);
+        r_vec = _mm256_sqrt_pd(r_vec);
+        _mm256_store_pd(r, r_vec);
+        _mm256_store_pd(x_diff, x_diff_vec);
+        _mm256_store_pd(y_diff, y_diff_vec);
+        if(r[0] < Hradius) KernelAndGradient_unidirectional(x_diff[0], y_diff[0], i, j    , r[0]);
+        if(r[1] < Hradius) KernelAndGradient_unidirectional(x_diff[1], y_diff[1], i, j + 1, r[1]);
+        if(r[2] < Hradius) KernelAndGradient_unidirectional(x_diff[2], y_diff[2], i, j + 2, r[2]);
+        if(r[3] < Hradius) KernelAndGradient_unidirectional(x_diff[3], y_diff[3], i, j + 3, r[3]);
       }
 
       // particles left that do not fit into unrolling factor 2
+      xi = x_positions[i];
+      yi = y_positions[i];
       for (; j < N_interior + N_repulsive ; j++){
         xj1 = x_positions[j];
         yj1 = y_positions[j];
@@ -870,42 +651,31 @@ void SearchNeighbors() {
   // rest part that does not fit into block_i
   unrolling_limit = N_interior + N_repulsive - unrolling_factor2;
   for(i = block_end_i ; i < NUMBER_OF_PARTICLE ; i++){
-    xi = x_positions[i];
-    yi = y_positions[i];
+    xi_vec = _mm256_broadcast_sd(x_positions + i);
+    yi_vec = _mm256_broadcast_sd(y_positions + i);
 
     // unrolling with factor 2
     for (j = N_interior ; j <= unrolling_limit ; j += unrolling_factor2){
-      xj1 = x_positions[j];
-      xj2 = x_positions[j + 1];
-      xj3 = x_positions[j + 2];
-      xj4 = x_positions[j + 3];
-      yj1 = y_positions[j];
-      yj2 = y_positions[j + 1];
-      yj3 = y_positions[j + 2];
-      yj4 = y_positions[j + 3];
-      x_diff1 = xi - xj1;
-      y_diff1 = yi - yj1;
-      x_diff2 = xi - xj2;
-      y_diff2 = yi - yj2;
-      x_diff3 = xi - xj3;
-      y_diff3 = yi - yj3;
-      x_diff4 = xi - xj4;
-      y_diff4 = yi - yj4;
-      r1 = x_diff1 * x_diff1 + y_diff1 * y_diff1;
-      r2 = x_diff2 * x_diff2 + y_diff2 * y_diff2;
-      r3 = x_diff3 * x_diff3 + y_diff3 * y_diff3;
-      r4 = x_diff4 * x_diff4 + y_diff4 * y_diff4;
-      r1 = sqrt(r1);
-      r2 = sqrt(r2);
-      r3 = sqrt(r3);
-      r4 = sqrt(r4);
-      if(r1 < Hradius) KernelAndGradient_unidirectional(x_diff1, y_diff1, i, j    , r1);
-      if(r2 < Hradius) KernelAndGradient_unidirectional(x_diff2, y_diff2, i, j + 1, r2);
-      if(r3 < Hradius) KernelAndGradient_unidirectional(x_diff3, y_diff3, i, j + 2, r3);
-      if(r4 < Hradius) KernelAndGradient_unidirectional(x_diff4, y_diff4, i, j + 3, r4);
+      xj_vec = _mm256_load_pd(x_positions + j);
+      yj_vec = _mm256_load_pd(y_positions + j);
+        
+      x_diff_vec = _mm256_sub_pd(xi_vec, xj_vec);
+      y_diff_vec = _mm256_sub_pd(yi_vec, yj_vec);
+      temp_vec = _mm256_mul_pd(y_diff_vec, y_diff_vec);
+      r_vec = _mm256_fmadd_pd(x_diff_vec, x_diff_vec, temp_vec);
+      r_vec = _mm256_sqrt_pd(r_vec);
+      _mm256_store_pd(r, r_vec);
+      _mm256_store_pd(x_diff, x_diff_vec);
+      _mm256_store_pd(y_diff, y_diff_vec);
+      if(r[0] < Hradius) KernelAndGradient_unidirectional(x_diff[0], y_diff[0], i, j    , r[0]);
+      if(r[1] < Hradius) KernelAndGradient_unidirectional(x_diff[1], y_diff[1], i, j + 1, r[1]);
+      if(r[2] < Hradius) KernelAndGradient_unidirectional(x_diff[2], y_diff[2], i, j + 2, r[2]);
+      if(r[3] < Hradius) KernelAndGradient_unidirectional(x_diff[3], y_diff[3], i, j + 3, r[3]);
     }
 
     // particles left that do not fit into unrolling factor 2
+    xi = x_positions[i];
+    yi = y_positions[i];
     for (; j < N_interior + N_repulsive ; j++){
       xj1 = x_positions[j];
       yj1 = y_positions[j];
@@ -934,8 +704,10 @@ void SearchNeighbors() {
  */
 void *Init() {
   // use calloc instead of malloc, so that initial values are set to 0 by default
-  x_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
-  y_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
+  //~ x_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
+  //~ y_positions  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
+  posix_memalign((void**)&x_positions, 32, NUMBER_OF_PARTICLE*sizeof(double));
+  posix_memalign((void**)&y_positions, 32, NUMBER_OF_PARTICLE*sizeof(double));
   x_velocities = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   y_velocities = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
   densities  = (double*)calloc(NUMBER_OF_PARTICLE, sizeof(double));
