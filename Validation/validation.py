@@ -35,16 +35,17 @@ def plot_experimental_data():
     
     plt.figure()
     plt.plot(t1, displacement1, color='red', label='Experimental data')
-    plt.plot(t2, displacement2, color='blue', label='SPH simulation base')
-    plt.plot(t2, displacement3, color='green', label='SPH simulation optimization')
+    plt.plot(t2, displacement2, color='blue', label='SPH simulation, base version')
+    plt.plot(t2, displacement3, color='navy', linestyle='--', label='SPH simulation, optimization3')
     plt.xlabel('Time [s]')
     plt.xlim(0, 20)
     plt.xticks(np.arange(0, 21, 2))
     plt.ylabel('Wave amplitude near the left wall [m]')
     plt.ylim(-0.3, 0.5)
-    plt.title('Validation, 3959 interior particles') #To be changed if number of particles different from 3959
-    plt.legend(frameon=False, loc=1, bbox_to_anchor=(0.83,1))
-    plt.savefig('Validation_3959.png')	#To be changed if number of particles different from 3959
+    plt.title('Validation, 2407 interior particles')
+    plt.legend(frameon=False, loc=1, bbox_to_anchor=(0.89,1), prop={'size': 8})
+    plt.savefig('Validation.pdf')
+    plt.savefig('Validation.png')
     
 if __name__ == "__main__":
     plot_experimental_data()
