@@ -2,6 +2,19 @@
 #include <stdio.h>
 #include "data_set.h"
 
+//----------------------------------------------------------------------
+//----------------------------- INFOS ----------------------------------
+//----------------------------------------------------------------------
+// This code is not "for general usage". It's purpose is the validation 
+// of our algorithm. This code works only for a specific setup of data:
+// the simulation are for 2407 interior particles (3599 particles in total),
+// the simulation are runned for 20s and data are saved every 2000 timesteps.
+// Data must be saved into folder "Validation/data_master_2000" and
+// "data_optimization3_2000".
+//----------------------------------------------------------------------
+
+
+int number_of_particle = 3599;
 
 vector index_from_coord(vector particle_pos, double x_min, int N, int M, double dx, double dy){
     double x = particle_pos.first;
@@ -19,7 +32,7 @@ vector index_from_coord(vector particle_pos, double x_min, int N, int M, double 
 
 double displace_to_origin(Particle* all_particle){
     double x_min = 100.;
-    for (int i = 1; i < NUMBER_OF_PARTICLE; ++i){
+    for (int i = 1; i < number_of_particle; ++i){
         if(all_particle[i].tag == repulsive){
             if(all_particle[i].position.first < x_min){
                 x_min = all_particle[i].position.first;
@@ -27,7 +40,7 @@ double displace_to_origin(Particle* all_particle){
         }
     }
     
-    for (int i = 1; i < NUMBER_OF_PARTICLE; ++i){
+    for (int i = 1; i < number_of_particle; ++i){
         all_particle[i].position.first -= x_min;
     }
     
@@ -69,7 +82,7 @@ double validation(Particle* all_particle, char output_name[], double smoothing_l
 	double* den = (double*) malloc(sizeof(double)*N*M);
 	
 	//Compute the values of x_avrg_num, r_avrg_num and den
-	for(int p = 0; p < NUMBER_OF_PARTICLE; ++p){
+	for(int p = 0; p < number_of_particle; ++p){
         if(all_particle[p].tag == interior){
             vector particle_pos = all_particle[p].position;
             vector init_cell = index_from_coord(particle_pos, x_min, N, M, dx, dy);
@@ -172,12 +185,12 @@ double validate(char filename[], char output_name[], double smoothing_length){
     FILE *fp = fopen(filename, "r");
     if (!fp)
         printf("fail to read the file.\n");
-    Particle *all_particle = (Particle *)malloc(sizeof(Particle) * NUMBER_OF_PARTICLE);
+    Particle *all_particle = (Particle *)malloc(sizeof(Particle) * number_of_particle);
     char str[1024];
     double x1, x2, v1, v2, m, rho, p, a1, a2;
     int t;
     fgets(str, 1024, fp);
-    for (int i = 0; i < NUMBER_OF_PARTICLE; i++) {
+    for (int i = 0; i < number_of_particle; i++) {
         fgets(str, 1024, fp);
         sscanf(str, "%lf,%lf,%d,%lf,%lf,%lf,%lf,%lf,%lf,%lf", &x1, &x2, &t, &v1, &v2, &m, &rho, &p, &a1, &a2);
         all_particle[i].position.first = x1;
@@ -189,16 +202,18 @@ double validate(char filename[], char output_name[], double smoothing_length){
 }
 
 void validation_main(){
-    char folder_name[60] = "data_sdt_3959/data-"; //to be changed if the number of particles is different from 3959
-    char output_name[60] = "level_set_function_3959/data-"; //to be changed if the number of particles is different from 3959
-    char file_name1[60];
-    char file_name2[60];
+    //Validation for master data
+    char folder_name[60] = "Validation/data_master_2000/data-";
+    char output_name[60] = "Validation/level_set_function_master/data-";
+    char file_name1[100];
+    char file_name2[100];
     char si[100];
     char post[60] = "00000.csv";
-    double point_of_interest[217];
-    for(int i = 0; i < 217; ++i){
-      gcvt(i, 5, si);
-      if(i < 10){
+    double point_of_interest[200];
+    for(int i = 0; i < 200; ++i){
+      int ii = i + 1;
+      gcvt(ii, 5, si);
+      if(ii < 10){
           strcpy(file_name1, folder_name);
           char pre[40] = "00";
           strcat(file_name1, pre);
@@ -210,7 +225,7 @@ void validation_main(){
           strcat(file_name2, si);
           strcat(file_name2, post);
       }
-      else if (i >= 10 && i < 100){
+      else if (ii >= 10 && ii < 100){
           strcpy(file_name1, folder_name);
           char pre[40] = "0";
           strcat(file_name1, pre);
@@ -231,14 +246,67 @@ void validation_main(){
           strcat(file_name2, si);
           strcat(file_name2, post);
       }
-      point_of_interest[i] = validate(file_name1, file_name2, 0.01603); //to be changed if the number of particles is different from 3959
+      printf("%s \n", file_name1);
+      point_of_interest[i] = validate(file_name1, file_name2, 0.02263);
     }
     
     //Output of level set function
     FILE *fp = NULL;
-    char final_file[40] = "points_of_interest";
+    char final_file[40] = "Validation/points_of_interest_master";
     fp = fopen(final_file,"w");
-    for (int i = 0; i < 217; i++) {
+    for (int i = 0; i < 200; i++) {
+        fprintf(fp, "%lf \n",  
+                point_of_interest[i]);
+    }
+    fclose(fp);
+    
+    //Validation for optimization3 data
+    char folder_name2[60] = "Validation/data_optimization3_2000/data-";
+    char output_name2[60] = "Validation/level_set_function_optimization3/data-";
+    for(int i = 0; i < 200; ++i){
+      int ii = i + 1;
+      gcvt(ii, 5, si);
+      if(ii < 10){
+          strcpy(file_name1, folder_name2);
+          char pre[40] = "00";
+          strcat(file_name1, pre);
+          strcat(file_name1, si);
+          strcat(file_name1, post);
+    
+          strcpy(file_name2, output_name2);
+          strcat(file_name2, pre);
+          strcat(file_name2, si);
+          strcat(file_name2, post);
+      }
+      else if (ii >= 10 && ii < 100){
+          strcpy(file_name1, folder_name2);
+          char pre[40] = "0";
+          strcat(file_name1, pre);
+          strcat(file_name1, si);
+          strcat(file_name1, post);
+          
+          strcpy(file_name2, output_name2);
+          strcat(file_name2, pre);
+          strcat(file_name2, si);
+          strcat(file_name2, post);
+      }
+      else{
+          strcpy(file_name1, folder_name2);
+          strcat(file_name1, si);
+          strcat(file_name1, post);
+          
+          strcpy(file_name2, output_name2);
+          strcat(file_name2, si);
+          strcat(file_name2, post);
+      }
+      printf("%s \n", file_name1);
+      point_of_interest[i] = validate(file_name1, file_name2, 0.02263);
+    }
+    
+    //Output of level set function
+    char final_file2[60] = "Validation/points_of_interest_optimization3";
+    fp = fopen(final_file2,"w");
+    for (int i = 0; i < 200; i++) {
         fprintf(fp, "%lf \n",  
                 point_of_interest[i]);
     }
