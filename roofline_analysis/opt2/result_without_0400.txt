@@ -1,0 +1,8 @@
+# started on Sat Jun  6 16:57:02 2020
+
+8506798,,LLC-loads:u,0.22%,1044440049,66.20,,
+818,,LLC-load-misses:u,10.31%,1047709832,66.41,0.01,of all LL-cache hits
+12210637,,LLC-stores:u,0.25%,533312553,33.80,,
+31,,LLC-store-misses:u,34.47%,530042770,33.59,,
+4946332969,,cycles:u,0.06%,790477701,50.10,,
+9493379255,,instructions:u,0.03%,1047938117,66.42,1.92,insn per cycle
