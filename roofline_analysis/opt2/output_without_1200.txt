@@ -13,7 +13,102 @@ cycles_CompPressure   = 15
 cycles_CompAccelerat  = 15 
 cycles_RepulsiveForce = 15 
 cycles_TimeIntegral   = 15 
-cycles_all            = 3244 
+cycles_all            = 3262 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 1218 (x: 58, y: 21)
+boundary particles: 838
+smoothing length: 0.02916
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 15 
+cycles_SearchNeighbor = 15 
+cycles_CompGlbDensity = 15 
+cycles_DensityCorr    = 15 
+cycles_CompPressure   = 15 
+cycles_CompAccelerat  = 15 
+cycles_RepulsiveForce = 15 
+cycles_TimeIntegral   = 15 
+cycles_all            = 3352 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 1218 (x: 58, y: 21)
+boundary particles: 838
+smoothing length: 0.02916
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 15 
+cycles_SearchNeighbor = 15 
+cycles_CompGlbDensity = 15 
+cycles_DensityCorr    = 15 
+cycles_CompPressure   = 15 
+cycles_CompAccelerat  = 15 
+cycles_RepulsiveForce = 15 
+cycles_TimeIntegral   = 15 
+cycles_all            = 3371 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 1218 (x: 58, y: 21)
+boundary particles: 838
+smoothing length: 0.02916
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 15 
+cycles_SearchNeighbor = 15 
+cycles_CompGlbDensity = 15 
+cycles_DensityCorr    = 15 
+cycles_CompPressure   = 15 
+cycles_CompAccelerat  = 15 
+cycles_RepulsiveForce = 15 
+cycles_TimeIntegral   = 15 
+cycles_all            = 3279 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 1218 (x: 58, y: 21)
+boundary particles: 838
+smoothing length: 0.02916
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 16 
+cycles_SearchNeighbor = 16 
+cycles_CompGlbDensity = 16 
+cycles_DensityCorr    = 16 
+cycles_CompPressure   = 16 
+cycles_CompAccelerat  = 16 
+cycles_RepulsiveForce = 16 
+cycles_TimeIntegral   = 16 
+cycles_all            = 3309 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 1218 (x: 58, y: 21)
+boundary particles: 838
+smoothing length: 0.02916
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 15 
+cycles_SearchNeighbor = 15 
+cycles_CompGlbDensity = 15 
+cycles_DensityCorr    = 15 
+cycles_CompPressure   = 15 
+cycles_CompAccelerat  = 15 
+cycles_RepulsiveForce = 15 
+cycles_TimeIntegral   = 15 
+cycles_all            = 3385 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -32,7 +127,7 @@ cycles_CompPressure   = 15
 cycles_CompAccelerat  = 16 
 cycles_RepulsiveForce = 15 
 cycles_TimeIntegral   = 15 
-cycles_all            = 3337 
+cycles_all            = 3331 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -43,15 +138,34 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 15 
+cycles_DispBoundar    = 14 
+cycles_SearchNeighbor = 14 
+cycles_CompGlbDensity = 14 
+cycles_DensityCorr    = 15 
+cycles_CompPressure   = 14 
+cycles_CompAccelerat  = 15 
+cycles_RepulsiveForce = 14 
+cycles_TimeIntegral   = 15 
+cycles_all            = 3181 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 1218 (x: 58, y: 21)
+boundary particles: 838
+smoothing length: 0.02916
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 14 
 cycles_SearchNeighbor = 15 
-cycles_CompGlbDensity = 15 
+cycles_CompGlbDensity = 65 
 cycles_DensityCorr    = 15 
 cycles_CompPressure   = 15 
 cycles_CompAccelerat  = 15 
 cycles_RepulsiveForce = 15 
-cycles_TimeIntegral   = 15 
-cycles_all            = 3253 
+cycles_TimeIntegral   = 14 
+cycles_all            = 3357 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -62,129 +176,15 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 15 
-cycles_SearchNeighbor = 15 
-cycles_CompGlbDensity = 15 
+cycles_DispBoundar    = 14 
+cycles_SearchNeighbor = 14 
+cycles_CompGlbDensity = 14 
 cycles_DensityCorr    = 15 
-cycles_CompPressure   = 15 
-cycles_CompAccelerat  = 16 
-cycles_RepulsiveForce = 15 
-cycles_TimeIntegral   = 15 
-cycles_all            = 3363 
-
-Done. End time is: 0.050000
-------------------------------------------------
-interior particles: 1218 (x: 58, y: 21)
-boundary particles: 838
-smoothing length: 0.02916
-
-output path: data
-init completed.
-
-cycles_DispBoundar    = 15 
-cycles_SearchNeighbor = 15 
-cycles_CompGlbDensity = 15 
-cycles_DensityCorr    = 15 
-cycles_CompPressure   = 15 
+cycles_CompPressure   = 14 
 cycles_CompAccelerat  = 15 
-cycles_RepulsiveForce = 15 
+cycles_RepulsiveForce = 14 
 cycles_TimeIntegral   = 15 
-cycles_all            = 3254 
-
-Done. End time is: 0.050000
-------------------------------------------------
-interior particles: 1218 (x: 58, y: 21)
-boundary particles: 838
-smoothing length: 0.02916
-
-output path: data
-init completed.
-
-cycles_DispBoundar    = 15 
-cycles_SearchNeighbor = 15 
-cycles_CompGlbDensity = 15 
-cycles_DensityCorr    = 15 
-cycles_CompPressure   = 15 
-cycles_CompAccelerat  = 16 
-cycles_RepulsiveForce = 15 
-cycles_TimeIntegral   = 15 
-cycles_all            = 3429 
-
-Done. End time is: 0.050000
-------------------------------------------------
-interior particles: 1218 (x: 58, y: 21)
-boundary particles: 838
-smoothing length: 0.02916
-
-output path: data
-init completed.
-
-cycles_DispBoundar    = 15 
-cycles_SearchNeighbor = 15 
-cycles_CompGlbDensity = 15 
-cycles_DensityCorr    = 15 
-cycles_CompPressure   = 15 
-cycles_CompAccelerat  = 15 
-cycles_RepulsiveForce = 15 
-cycles_TimeIntegral   = 15 
-cycles_all            = 3389 
-
-Done. End time is: 0.050000
-------------------------------------------------
-interior particles: 1218 (x: 58, y: 21)
-boundary particles: 838
-smoothing length: 0.02916
-
-output path: data
-init completed.
-
-cycles_DispBoundar    = 15 
-cycles_SearchNeighbor = 15 
-cycles_CompGlbDensity = 15 
-cycles_DensityCorr    = 15 
-cycles_CompPressure   = 15 
-cycles_CompAccelerat  = 15 
-cycles_RepulsiveForce = 15 
-cycles_TimeIntegral   = 15 
-cycles_all            = 3318 
-
-Done. End time is: 0.050000
-------------------------------------------------
-interior particles: 1218 (x: 58, y: 21)
-boundary particles: 838
-smoothing length: 0.02916
-
-output path: data
-init completed.
-
-cycles_DispBoundar    = 15 
-cycles_SearchNeighbor = 15 
-cycles_CompGlbDensity = 15 
-cycles_DensityCorr    = 15 
-cycles_CompPressure   = 15 
-cycles_CompAccelerat  = 15 
-cycles_RepulsiveForce = 15 
-cycles_TimeIntegral   = 15 
-cycles_all            = 3304 
-
-Done. End time is: 0.050000
-------------------------------------------------
-interior particles: 1218 (x: 58, y: 21)
-boundary particles: 838
-smoothing length: 0.02916
-
-output path: data
-init completed.
-
-cycles_DispBoundar    = 15 
-cycles_SearchNeighbor = 15 
-cycles_CompGlbDensity = 15 
-cycles_DensityCorr    = 15 
-cycles_CompPressure   = 15 
-cycles_CompAccelerat  = 15 
-cycles_RepulsiveForce = 15 
-cycles_TimeIntegral   = 15 
-cycles_all            = 3261 
+cycles_all            = 3047 
 
 Done. End time is: 0.050000
 ------------------------------------------------

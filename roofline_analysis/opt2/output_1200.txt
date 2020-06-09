@@ -5,15 +5,15 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 3213 
-cycles_SearchNeighbor = 7450119 
-cycles_CompGlbDensity = 76981 
-cycles_DensityCorr    = 71037 
-cycles_CompPressure   = 13956 
-cycles_CompAccelerat  = 317506 
-cycles_RepulsiveForce = 79594 
-cycles_TimeIntegral   = 3328 
-cycles_all            = 8019463 
+cycles_DispBoundar    = 3331 
+cycles_SearchNeighbor = 7229660 
+cycles_CompGlbDensity = 78625 
+cycles_DensityCorr    = 75086 
+cycles_CompPressure   = 13351 
+cycles_CompAccelerat  = 306288 
+cycles_RepulsiveForce = 81340 
+cycles_TimeIntegral   = 3232 
+cycles_all            = 7794673 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -24,15 +24,15 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 3223 
-cycles_SearchNeighbor = 7407775 
-cycles_CompGlbDensity = 76902 
-cycles_DensityCorr    = 70332 
-cycles_CompPressure   = 13946 
-cycles_CompAccelerat  = 316023 
-cycles_RepulsiveForce = 79244 
-cycles_TimeIntegral   = 3306 
-cycles_all            = 7974517 
+cycles_DispBoundar    = 3188 
+cycles_SearchNeighbor = 6971744 
+cycles_CompGlbDensity = 82507 
+cycles_DensityCorr    = 73828 
+cycles_CompPressure   = 12872 
+cycles_CompAccelerat  = 297623 
+cycles_RepulsiveForce = 80057 
+cycles_TimeIntegral   = 3293 
+cycles_all            = 7528721 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -43,15 +43,34 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 3036 
-cycles_SearchNeighbor = 7042631 
-cycles_CompGlbDensity = 76441 
-cycles_DensityCorr    = 68750 
+cycles_DispBoundar    = 3287 
+cycles_SearchNeighbor = 7321666 
+cycles_CompGlbDensity = 78344 
+cycles_DensityCorr    = 76823 
+cycles_CompPressure   = 13373 
+cycles_CompAccelerat  = 309621 
+cycles_RepulsiveForce = 82600 
+cycles_TimeIntegral   = 3280 
+cycles_all            = 7892871 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 1218 (x: 58, y: 21)
+boundary particles: 838
+smoothing length: 0.02916
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 3176 
+cycles_SearchNeighbor = 7232587 
+cycles_CompGlbDensity = 77964 
+cycles_DensityCorr    = 74784 
 cycles_CompPressure   = 13184 
-cycles_CompAccelerat  = 301840 
-cycles_RepulsiveForce = 75878 
-cycles_TimeIntegral   = 3244 
-cycles_all            = 7588606 
+cycles_CompAccelerat  = 305748 
+cycles_RepulsiveForce = 80821 
+cycles_TimeIntegral   = 3195 
+cycles_all            = 7795200 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -62,15 +81,15 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 3413 
-cycles_SearchNeighbor = 7422196 
-cycles_CompGlbDensity = 76916 
-cycles_DensityCorr    = 70605 
-cycles_CompPressure   = 14239 
-cycles_CompAccelerat  = 317011 
-cycles_RepulsiveForce = 79769 
-cycles_TimeIntegral   = 3290 
-cycles_all            = 7991195 
+cycles_DispBoundar    = 3204 
+cycles_SearchNeighbor = 7206675 
+cycles_CompGlbDensity = 78363 
+cycles_DensityCorr    = 74601 
+cycles_CompPressure   = 13115 
+cycles_CompAccelerat  = 304919 
+cycles_RepulsiveForce = 80714 
+cycles_TimeIntegral   = 3206 
+cycles_all            = 7768557 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -81,15 +100,15 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 3199 
-cycles_SearchNeighbor = 6999034 
-cycles_CompGlbDensity = 79330 
-cycles_DensityCorr    = 70697 
-cycles_CompPressure   = 13157 
-cycles_CompAccelerat  = 302758 
-cycles_RepulsiveForce = 75769 
-cycles_TimeIntegral   = 3182 
-cycles_all            = 7550721 
+cycles_DispBoundar    = 3194 
+cycles_SearchNeighbor = 7218401 
+cycles_CompGlbDensity = 78144 
+cycles_DensityCorr    = 74712 
+cycles_CompPressure   = 13208 
+cycles_CompAccelerat  = 305141 
+cycles_RepulsiveForce = 80700 
+cycles_TimeIntegral   = 3222 
+cycles_all            = 7780423 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -100,15 +119,15 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 3437 
-cycles_SearchNeighbor = 7480690 
-cycles_CompGlbDensity = 79718 
-cycles_DensityCorr    = 74378 
-cycles_CompPressure   = 14517 
-cycles_CompAccelerat  = 321745 
-cycles_RepulsiveForce = 80560 
-cycles_TimeIntegral   = 3349 
-cycles_all            = 8062228 
+cycles_DispBoundar    = 3120 
+cycles_SearchNeighbor = 7170849 
+cycles_CompGlbDensity = 78560 
+cycles_DensityCorr    = 74404 
+cycles_CompPressure   = 13236 
+cycles_CompAccelerat  = 303731 
+cycles_RepulsiveForce = 80323 
+cycles_TimeIntegral   = 3192 
+cycles_all            = 7731102 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -119,15 +138,15 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 3186 
-cycles_SearchNeighbor = 7395855 
-cycles_CompGlbDensity = 79266 
-cycles_DensityCorr    = 73584 
-cycles_CompPressure   = 13975 
-cycles_CompAccelerat  = 317419 
-cycles_RepulsiveForce = 79523 
-cycles_TimeIntegral   = 3336 
-cycles_all            = 7969951 
+cycles_DispBoundar    = 3151 
+cycles_SearchNeighbor = 7188452 
+cycles_CompGlbDensity = 77314 
+cycles_DensityCorr    = 73244 
+cycles_CompPressure   = 13214 
+cycles_CompAccelerat  = 302746 
+cycles_RepulsiveForce = 80397 
+cycles_TimeIntegral   = 3183 
+cycles_all            = 7745384 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -138,15 +157,15 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 3109 
-cycles_SearchNeighbor = 7029469 
-cycles_CompGlbDensity = 79233 
-cycles_DensityCorr    = 72031 
-cycles_CompPressure   = 13749 
-cycles_CompAccelerat  = 303844 
-cycles_RepulsiveForce = 76066 
-cycles_TimeIntegral   = 3311 
-cycles_all            = 7584456 
+cycles_DispBoundar    = 3118 
+cycles_SearchNeighbor = 7172055 
+cycles_CompGlbDensity = 78290 
+cycles_DensityCorr    = 74079 
+cycles_CompPressure   = 13104 
+cycles_CompAccelerat  = 303203 
+cycles_RepulsiveForce = 80348 
+cycles_TimeIntegral   = 3251 
+cycles_all            = 7731146 
 
 Done. End time is: 0.050000
 ------------------------------------------------
@@ -157,34 +176,15 @@ smoothing length: 0.02916
 output path: data
 init completed.
 
-cycles_DispBoundar    = 3219 
-cycles_SearchNeighbor = 7383315 
-cycles_CompGlbDensity = 78412 
-cycles_DensityCorr    = 72435 
-cycles_CompPressure   = 13833 
-cycles_CompAccelerat  = 317069 
-cycles_RepulsiveForce = 78801 
-cycles_TimeIntegral   = 3363 
-cycles_all            = 7954242 
-
-Done. End time is: 0.050000
-------------------------------------------------
-interior particles: 1218 (x: 58, y: 21)
-boundary particles: 838
-smoothing length: 0.02916
-
-output path: data
-init completed.
-
-cycles_DispBoundar    = 3323 
-cycles_SearchNeighbor = 7400510 
-cycles_CompGlbDensity = 78757 
-cycles_DensityCorr    = 73100 
-cycles_CompPressure   = 14320 
-cycles_CompAccelerat  = 317850 
-cycles_RepulsiveForce = 79537 
-cycles_TimeIntegral   = 3318 
-cycles_all            = 7974521 
+cycles_DispBoundar    = 3278 
+cycles_SearchNeighbor = 7375065 
+cycles_CompGlbDensity = 78848 
+cycles_DensityCorr    = 76401 
+cycles_CompPressure   = 13646 
+cycles_CompAccelerat  = 311915 
+cycles_RepulsiveForce = 83171 
+cycles_TimeIntegral   = 3275 
+cycles_all            = 7949473 
 
 Done. End time is: 0.050000
 ------------------------------------------------

@@ -1,8 +1,8 @@
-# started on Sat Jun  6 16:57:18 2020
+# started on Mon Jun  8 22:53:26 2020
 
-23772590,,LLC-loads:u,0.14%,4232850591,66.59,,
-956,,LLC-load-misses:u,5.75%,4236459660,66.65,0.00,of all LL-cache hits
-37295399,,LLC-stores:u,0.19%,2123510500,33.41,,
-266,,LLC-store-misses:u,6.22%,2119901431,33.35,,
-20981608991,,cycles:u,0.01%,3177043598,49.98,,
-40508755250,,instructions:u,0.01%,4233215837,66.60,1.93,insn per cycle
+23703387,,LLC-loads:u,0.16%,4874910469,66.58,,
+182710,,LLC-load-misses:u,30.99%,4879768004,66.65,0.77,of all LL-cache hits
+39593510,,LLC-stores:u,0.19%,2447002533,33.42,,
+482753,,LLC-store-misses:u,35.77%,2442144998,33.35,,
+21330704169,,cycles:u,0.12%,3660259424,49.99,,
+40439254970,,instructions:u,0.01%,4877109904,66.61,1.90,insn per cycle
