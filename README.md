@@ -8,7 +8,7 @@ According to the requirement of the course, the project is fully implemented in 
 - master:               baseline implementation
 - optimization 1:       + changing data structure, + function inling, + scalar replacement, + reducing branchings
 - optimization 2:       + unrolling (unrolling factor 4), + blocking (block size 64)
-- optimization 3:       + vectorization (unrolling factor 64)
+- optimization 3:       + vectorization (unrolling factor 16)
 - optimization 4:       + postponing sqrt
 - validation:           specialised for validation
 
