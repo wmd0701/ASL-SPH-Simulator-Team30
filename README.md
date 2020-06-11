@@ -10,6 +10,7 @@ According to the requirement of the course, the project is fully implemented in 
 - optimization 2:       + unrolling (unrolling factor 4), + blocking (block size 64)
 - optimization 3:       + vectorization (unrolling factor 64)
 - optimization 4:       + postponing sqrt
+- validation:           specialised for validation
 
 ## Files
 - Makefile:             makefile
