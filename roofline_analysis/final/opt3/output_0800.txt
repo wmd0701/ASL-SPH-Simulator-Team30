@@ -1,0 +1,190 @@
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2313 
+cycles_SearchNeighbor = 4530674 
+cycles_CompGlbDensity = 64504 
+cycles_DensityCorr    = 97762 
+cycles_CompPressure   = 18010 
+cycles_CompAccelerat  = 415499 
+cycles_RepulsiveForce = 115059 
+cycles_TimeIntegral   = 5712 
+cycles_all            = 5255335 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2276 
+cycles_SearchNeighbor = 4490855 
+cycles_CompGlbDensity = 62942 
+cycles_DensityCorr    = 93957 
+cycles_CompPressure   = 17955 
+cycles_CompAccelerat  = 412942 
+cycles_RepulsiveForce = 113446 
+cycles_TimeIntegral   = 5645 
+cycles_all            = 5205797 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2267 
+cycles_SearchNeighbor = 4559657 
+cycles_CompGlbDensity = 63309 
+cycles_DensityCorr    = 94334 
+cycles_CompPressure   = 17983 
+cycles_CompAccelerat  = 413988 
+cycles_RepulsiveForce = 113195 
+cycles_TimeIntegral   = 5667 
+cycles_all            = 5276166 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2384 
+cycles_SearchNeighbor = 4515066 
+cycles_CompGlbDensity = 64574 
+cycles_DensityCorr    = 97843 
+cycles_CompPressure   = 17978 
+cycles_CompAccelerat  = 415283 
+cycles_RepulsiveForce = 113573 
+cycles_TimeIntegral   = 5690 
+cycles_all            = 5238251 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2286 
+cycles_SearchNeighbor = 4544489 
+cycles_CompGlbDensity = 63574 
+cycles_DensityCorr    = 94298 
+cycles_CompPressure   = 17965 
+cycles_CompAccelerat  = 412975 
+cycles_RepulsiveForce = 118199 
+cycles_TimeIntegral   = 5650 
+cycles_all            = 5265217 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2240 
+cycles_SearchNeighbor = 4494947 
+cycles_CompGlbDensity = 63305 
+cycles_DensityCorr    = 93984 
+cycles_CompPressure   = 17983 
+cycles_CompAccelerat  = 412180 
+cycles_RepulsiveForce = 113164 
+cycles_TimeIntegral   = 5607 
+cycles_all            = 5209199 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2270 
+cycles_SearchNeighbor = 4550371 
+cycles_CompGlbDensity = 63323 
+cycles_DensityCorr    = 94636 
+cycles_CompPressure   = 17977 
+cycles_CompAccelerat  = 414753 
+cycles_RepulsiveForce = 114081 
+cycles_TimeIntegral   = 5666 
+cycles_all            = 5268790 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2231 
+cycles_SearchNeighbor = 4556294 
+cycles_CompGlbDensity = 63272 
+cycles_DensityCorr    = 94374 
+cycles_CompPressure   = 17865 
+cycles_CompAccelerat  = 413677 
+cycles_RepulsiveForce = 113835 
+cycles_TimeIntegral   = 5676 
+cycles_all            = 5273173 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2304 
+cycles_SearchNeighbor = 4555867 
+cycles_CompGlbDensity = 63263 
+cycles_DensityCorr    = 94267 
+cycles_CompPressure   = 17995 
+cycles_CompAccelerat  = 413842 
+cycles_RepulsiveForce = 114597 
+cycles_TimeIntegral   = 5648 
+cycles_all            = 5273568 
+
+Done. End time is: 0.050000
+------------------------------------------------
+interior particles: 816 (x: 48, y: 17)
+boundary particles: 694
+smoothing length: 0.03565
+
+output path: data
+init completed.
+
+cycles_DispBoundar    = 2278 
+cycles_SearchNeighbor = 4534865 
+cycles_CompGlbDensity = 63442 
+cycles_DensityCorr    = 94078 
+cycles_CompPressure   = 18054 
+cycles_CompAccelerat  = 413136 
+cycles_RepulsiveForce = 113357 
+cycles_TimeIntegral   = 5659 
+cycles_all            = 5250663 
+
+Done. End time is: 0.050000
+------------------------------------------------
